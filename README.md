@@ -5,7 +5,9 @@
 [![Build Status](https://github.com/gdt-dev/gdt/actions/workflows/gate-tests.yml/badge.svg?branch=main)](https://github.com/gdt-dev/gdt/actions)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
 
-![gdt mascot](static/gdtlogo400x544.png)
+<div style="float: left">
+![gdt mascot](static/gdtlogo400x544.png | width=200px)
+</div>
 
 `gdt` is a testing library that allows test authors to cleanly describe tests
 in a YAML file. `gdt` reads YAML files that describe a test's assertions and
