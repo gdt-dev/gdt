@@ -5,6 +5,7 @@
 package gdt_test
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"testing"
@@ -107,4 +108,31 @@ tests:
 	// The scenario's path isn't set because we didn't supply a filepath...
 	assert.Equal("", sc.Path)
 	assert.Len(sc.Tests, 1)
+}
+
+func TestRunExecSuite(t *testing.T) {
+	assert := assert.New(t)
+
+	fp := filepath.Join("suite", "testdata", "exec")
+	s, err := gdt.From(fp)
+	assert.Nil(err)
+	assert.NotNil(s)
+
+	err = s.Run(context.TODO(), t)
+	assert.Nil(err)
+	assert.False(t.Failed())
+}
+
+func TestRunExecScenario(t *testing.T) {
+	assert := assert.New(t)
+	require := require.New(t)
+
+	fp := filepath.Join("suite", "testdata", "exec", "ls.yaml")
+	s, err := gdt.From(fp)
+	require.Nil(err)
+	require.NotNil(s)
+
+	err = s.Run(context.TODO(), t)
+	assert.Nil(err)
+	assert.False(t.Failed())
 }
