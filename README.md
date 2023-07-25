@@ -6,7 +6,7 @@
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
 
 <div style="float: left">
-![gdt mascot](static/gdtlogo400x544.png | width=200px)
+<img align=left src="static/gdtlogo400x544.png" width=200px />
 </div>
 
 `gdt` is a testing library that allows test authors to cleanly describe tests
