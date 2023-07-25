@@ -430,7 +430,7 @@ All `gdt` scenarios have the following fields:
 * `tests`: list of [`Spec`][basespec] specializations that represent the
   runnable test units in the test scenario.
 
-[basespec]: https://github.com/gdt-dev/gdt-core/blob/e1d23e0974447de0bcd273f151edebeebc2b96c6/spec/spec.go#L27-L39
+[basespec]: https://github.com/gdt-dev/gdt/blob/2791e11105fd3c36d1f11a7d111e089be7cdc84c/types/spec.go#L27-L44
 
 The scenario's `tests` field is the most important and the [`Spec`][basespec]
 objects that it contains are the meat of a test scenario.
@@ -466,8 +466,8 @@ classes inherit these fields):
 * `wait.after`: a string duration of time that gdt should wait after executing
   the test unit's action.
 
-[timeout]: https://github.com/gdt-dev/gdt-core/blob/e1d23e0974447de0bcd273f151edebeebc2b96c6/types/timeout.go#L11-L22
-[wait]: https://github.com/gdt-dev/gdt-core/blob/a204ffb055b284a1e943e1f7c7ec578408071d52/types/wait.go
+[timeout]: https://github.com/gdt-dev/gdt/blob/2791e11105fd3c36d1f11a7d111e089be7cdc84c/types/timeout.go#L11-L22
+[wait]: https://github.com/gdt-dev/gdt/blob/2791e11105fd3c36d1f11a7d111e089be7cdc84c/types/wait.go#L11-L25
 
 ### `exec` test spec structure
 
@@ -489,7 +489,7 @@ the base `Spec` fields listed above):
 * `exit_code`: (optional) an integer with the expected exit code from the
   executed command. The default successful exit code is 0 and therefore you do
   not need to specify this if you expect a successful exit code.
-* `out`: (optional) a [`PipeAssertions`][pipeassertions] object containing
+* `out`: (optional) a [`PipeExpect`][pipeexpect] object containing
   assertions about content in `stdout`.
 * `out.is`: (optional) a string with the exact contents of `stdout` you expect
   to get.
@@ -497,7 +497,7 @@ the base `Spec` fields listed above):
   present in `stdout`.
 * `out.contains_one_of`: (optional) a list of one or more strings of which *at
   least one* must be present in `stdout`.
-* `err`: (optional) a [`PipeAssertions`][pipeassertions] object containing
+* `err`: (optional) a [`PipeAssertions`][pipeexpect] object containing
   assertions about content in `stderr`.
 * `err.is`: (optional) a string with the exact contents of `stderr` you expect
   to get.
@@ -506,8 +506,8 @@ the base `Spec` fields listed above):
 * `err.contains_one_of`: (optional) a list of one or more strings of which *at
   least one* must be present in `stderr`.
 
-[execspec]: https://github.com/gdt-dev/gdt-core/blob/e1d23e0974447de0bcd273f151edebeebc2b96c6/types/timeout.go#L11-L22
-[pipeassertions]: https://github.com/gdt-dev/gdt-core/blob/debff55b194b222a0db65d20ffce94f0aba68504/exec/assertions.go#L16-L27
+[execspec]: https://github.com/gdt-dev/gdt/blob/2791e11105fd3c36d1f11a7d111e089be7cdc84c/exec/spec.go#L11-L34
+[pipeexpect]: https://github.com/gdt-dev/gdt/blob/2791e11105fd3c36d1f11a7d111e089be7cdc84c/exec/assertions.go#L15-L26
 
 ## Contributing and acknowledgements
 
