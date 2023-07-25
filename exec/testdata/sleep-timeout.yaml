@@ -1,0 +1,10 @@
+name: sleep-timeout
+description: a scenario that should timeout before the sleep completes
+tests:
+  - exec: sleep .01
+    timeout:
+      after: 5s
+  - exec: sleep 5
+    timeout:
+      after: 50ms
+      expected: true

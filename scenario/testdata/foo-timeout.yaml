@@ -1,0 +1,14 @@
+name: foo-timeout
+description: a scenario with a default timeout and test-specific timeouts
+defaults:
+  # This is the default test timeout
+  timeout:
+    after: 2s
+tests:
+  # This is a test-specific override timeout where we expect the test-specific
+  # timeout to trigger a failure.
+  - foo: baz
+    timeout:
+      after: 1s
+  # The scenario's default timeout should trigger after 2s
+  - foo: baz

@@ -1,0 +1,13 @@
+name: windows-sleep-timeout
+description: a scenario that should timeout before the sleep completes on Windows
+tests:
+  - exec: sleep .01
+    timeout:
+      after: 5s
+  - exec: sleep 5
+    timeout:
+      after: 5ms
+      expected: true
+    # the context's deadline cancels the pipe and results in a 1 result
+    # code on Windows...
+    exit_code: 1

@@ -1,0 +1,5 @@
+name: foo-bar
+description: a scenario with some foo and bar test specs
+tests:
+  - foo: bar
+  - bar: 42

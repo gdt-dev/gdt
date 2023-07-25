@@ -1,0 +1,4 @@
+name: fail-plugin
+description: a scenario with a test that has a failing plugin
+tests:
+  - fail: true

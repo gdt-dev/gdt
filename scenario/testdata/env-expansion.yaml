@@ -1,0 +1,10 @@
+name: env-expansion
+description: a scenario testing environ variable expansion
+defaults:
+  foo:
+    bar: $BAR_CONFIG
+tests:
+  - foo: $foo
+    name: $$NOT_EXPANDED
+  - foo: baz
+    description: ${DESCRIPTION}

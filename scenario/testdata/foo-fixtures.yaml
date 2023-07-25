@@ -1,0 +1,6 @@
+name: foo
+description: a scenario with some foo test specs
+require:
+  - baz
+tests:
+  - foo: bar

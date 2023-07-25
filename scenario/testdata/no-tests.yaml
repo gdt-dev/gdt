@@ -1,0 +1,8 @@
+name: no-tests
+description: a scenario with no tests in it
+require:
+ - books_api
+ - books_data
+defaults:
+  foo:
+    bar: barconfig

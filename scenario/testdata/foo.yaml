@@ -1,0 +1,10 @@
+name: foo
+description: a scenario with some foo test specs
+defaults:
+  foo:
+    bar: barconfig
+tests:
+  - foo: bar
+    name: bar
+  - foo: baz
+    description: Bazzy Bizzy

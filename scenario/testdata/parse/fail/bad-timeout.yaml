@@ -1,0 +1,5 @@
+name: bad-timeout
+description: a scenario with an invalid timeout spec
+tests:
+  - foo: baz
+    timeout: notatimeout

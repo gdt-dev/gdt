@@ -1,0 +1,11 @@
+name: echo-wait
+description: a scenario that echoes the word "cat" and has some waits configured
+tests:
+  - name: wait-before
+    exec: echo "cat"
+    wait:
+      before: 10ms
+  - name: wait-after
+    exec: echo "cat"
+    wait:
+      after: 20ms

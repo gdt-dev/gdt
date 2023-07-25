@@ -1,0 +1,5 @@
+name: shell-ls-test
+description: a scenario that runs the `ls` command within a Bash shell
+tests:
+  - exec: ls
+    shell: bash
