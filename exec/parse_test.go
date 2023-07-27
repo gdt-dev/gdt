@@ -51,7 +51,6 @@ func TestSimpleCommand(t *testing.T) {
 	assert.NotNil(s)
 
 	assert.IsType(&scenario.Scenario{}, s)
-	sc := s.(*scenario.Scenario)
 	expTests := []gdttypes.TestUnit{
 		&gdtexec.Spec{
 			Spec: gdttypes.Spec{
@@ -61,5 +60,5 @@ func TestSimpleCommand(t *testing.T) {
 			Exec: "ls",
 		},
 	}
-	assert.Equal(expTests, sc.Tests)
+	assert.Equal(expTests, s.Tests)
 }

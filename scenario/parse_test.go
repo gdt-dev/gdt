@@ -45,10 +45,9 @@ func TestNoTests(t *testing.T) {
 	assert.NotNil(s)
 
 	assert.IsType(&scenario.Scenario{}, s)
-	sc := s.(*scenario.Scenario)
-	assert.Equal("no-tests", sc.Name)
-	assert.Equal(filepath.Join("testdata", "no-tests.yaml"), sc.Path)
-	assert.Equal([]string{"books_api", "books_data"}, sc.Require)
+	assert.Equal("no-tests", s.Name)
+	assert.Equal(filepath.Join("testdata", "no-tests.yaml"), s.Path)
+	assert.Equal([]string{"books_api", "books_data"}, s.Require)
 	assert.Equal(
 		map[string]interface{}{
 			"foo": &fooDefaults{
@@ -61,9 +60,9 @@ func TestNoTests(t *testing.T) {
 			"priorRun":           &priorRunDefaults{},
 			scenario.DefaultsKey: &scenario.Defaults{},
 		},
-		sc.Defaults,
+		s.Defaults,
 	)
-	assert.Empty(sc.Tests)
+	assert.Empty(s.Tests)
 }
 
 func TestFailingPlugin(t *testing.T) {
@@ -145,10 +144,9 @@ func TestKnownSpec(t *testing.T) {
 	assert.NotNil(s)
 
 	assert.IsType(&scenario.Scenario{}, s)
-	sc := s.(*scenario.Scenario)
-	assert.Equal("foo", sc.Name)
-	assert.Equal(filepath.Join("testdata", "foo.yaml"), sc.Path)
-	assert.Empty(sc.Require)
+	assert.Equal("foo", s.Name)
+	assert.Equal(filepath.Join("testdata", "foo.yaml"), s.Path)
+	assert.Empty(s.Require)
 	assert.Equal(
 		map[string]interface{}{
 			"foo": &fooDefaults{
@@ -161,7 +159,7 @@ func TestKnownSpec(t *testing.T) {
 			"priorRun":           &priorRunDefaults{},
 			scenario.DefaultsKey: &scenario.Defaults{},
 		},
-		sc.Defaults,
+		s.Defaults,
 	)
 	expSpecDefaults := &gdttypes.Defaults{
 		"foo": &fooDefaults{
@@ -192,7 +190,7 @@ func TestKnownSpec(t *testing.T) {
 			Foo: "baz",
 		},
 	}
-	assert.Equal(expTests, sc.Tests)
+	assert.Equal(expTests, s.Tests)
 }
 
 func TestMultipleSpec(t *testing.T) {
@@ -208,9 +206,8 @@ func TestMultipleSpec(t *testing.T) {
 	assert.NotNil(s)
 
 	assert.IsType(&scenario.Scenario{}, s)
-	sc := s.(*scenario.Scenario)
-	assert.Equal("foo-bar", sc.Name)
-	assert.Equal(filepath.Join("testdata", "foo-bar.yaml"), sc.Path)
+	assert.Equal("foo-bar", s.Name)
+	assert.Equal(filepath.Join("testdata", "foo-bar.yaml"), s.Path)
 	expTests := []gdttypes.TestUnit{
 		&fooSpec{
 			Spec: gdttypes.Spec{
@@ -227,7 +224,7 @@ func TestMultipleSpec(t *testing.T) {
 			Bar: 42,
 		},
 	}
-	assert.Equal(expTests, sc.Tests)
+	assert.Equal(expTests, s.Tests)
 }
 
 func TestEnvExpansion(t *testing.T) {
@@ -247,10 +244,9 @@ func TestEnvExpansion(t *testing.T) {
 	assert.NotNil(s)
 
 	assert.IsType(&scenario.Scenario{}, s)
-	sc := s.(*scenario.Scenario)
-	assert.Equal("env-expansion", sc.Name)
-	assert.Equal(filepath.Join("testdata", "env-expansion.yaml"), sc.Path)
-	assert.Empty(sc.Require)
+	assert.Equal("env-expansion", s.Name)
+	assert.Equal(filepath.Join("testdata", "env-expansion.yaml"), s.Path)
+	assert.Empty(s.Require)
 	assert.Equal(
 		map[string]interface{}{
 			"foo": &fooDefaults{
@@ -263,7 +259,7 @@ func TestEnvExpansion(t *testing.T) {
 			"priorRun":           &priorRunDefaults{},
 			scenario.DefaultsKey: &scenario.Defaults{},
 		},
-		sc.Defaults,
+		s.Defaults,
 	)
 	expSpecDefaults := &gdttypes.Defaults{
 		"foo": &fooDefaults{
@@ -294,7 +290,7 @@ func TestEnvExpansion(t *testing.T) {
 			Foo: "baz",
 		},
 	}
-	assert.Equal(expTests, sc.Tests)
+	assert.Equal(expTests, s.Tests)
 }
 
 func TestScenarioDefaults(t *testing.T) {
@@ -310,10 +306,9 @@ func TestScenarioDefaults(t *testing.T) {
 	assert.NotNil(s)
 
 	assert.IsType(&scenario.Scenario{}, s)
-	sc := s.(*scenario.Scenario)
-	assert.Equal("foo-timeout", sc.Name)
-	assert.Equal(filepath.Join("testdata", "foo-timeout.yaml"), sc.Path)
-	assert.Empty(sc.Require)
+	assert.Equal("foo-timeout", s.Name)
+	assert.Equal(filepath.Join("testdata", "foo-timeout.yaml"), s.Path)
+	assert.Empty(s.Require)
 	assert.Equal(
 		map[string]interface{}{
 			"foo":      &fooDefaults{},
@@ -326,7 +321,7 @@ func TestScenarioDefaults(t *testing.T) {
 				},
 			},
 		},
-		sc.Defaults,
+		s.Defaults,
 	)
 	expSpecDefaults := &gdttypes.Defaults{
 		"foo":      &fooDefaults{},
@@ -358,5 +353,5 @@ func TestScenarioDefaults(t *testing.T) {
 			Foo: "baz",
 		},
 	}
-	assert.Equal(expTests, sc.Tests)
+	assert.Equal(expTests, s.Tests)
 }

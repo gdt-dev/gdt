@@ -11,8 +11,7 @@ import (
 
 // Runnable represents things that have a Run() method that accepts a Context
 // and a pointer to a testing.T. Example things that implement this interface
-// are `gdtcore.scenario.Scenario`, `gdtcore.spec.Spec` and
-// `gdtcore.suite.Suite`.
+// are `gdt.Scenario` and `gdt.Suite`.
 type Runnable interface {
 	Run(context.Context, *testing.T) error
 }
