@@ -1,6 +1,6 @@
 name: foo
 description: a scenario with some foo test specs
-require:
+fixtures:
   - baz
 tests:
   - foo: bar

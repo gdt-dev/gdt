@@ -47,7 +47,7 @@ func TestNoTests(t *testing.T) {
 	assert.IsType(&scenario.Scenario{}, s)
 	assert.Equal("no-tests", s.Name)
 	assert.Equal(filepath.Join("testdata", "no-tests.yaml"), s.Path)
-	assert.Equal([]string{"books_api", "books_data"}, s.Require)
+	assert.Equal([]string{"books_api", "books_data"}, s.Fixtures)
 	assert.Equal(
 		map[string]interface{}{
 			"foo": &fooDefaults{
@@ -146,7 +146,7 @@ func TestKnownSpec(t *testing.T) {
 	assert.IsType(&scenario.Scenario{}, s)
 	assert.Equal("foo", s.Name)
 	assert.Equal(filepath.Join("testdata", "foo.yaml"), s.Path)
-	assert.Empty(s.Require)
+	assert.Empty(s.Fixtures)
 	assert.Equal(
 		map[string]interface{}{
 			"foo": &fooDefaults{
@@ -246,7 +246,7 @@ func TestEnvExpansion(t *testing.T) {
 	assert.IsType(&scenario.Scenario{}, s)
 	assert.Equal("env-expansion", s.Name)
 	assert.Equal(filepath.Join("testdata", "env-expansion.yaml"), s.Path)
-	assert.Empty(s.Require)
+	assert.Empty(s.Fixtures)
 	assert.Equal(
 		map[string]interface{}{
 			"foo": &fooDefaults{
@@ -308,7 +308,7 @@ func TestScenarioDefaults(t *testing.T) {
 	assert.IsType(&scenario.Scenario{}, s)
 	assert.Equal("foo-timeout", s.Name)
 	assert.Equal(filepath.Join("testdata", "foo-timeout.yaml"), s.Path)
-	assert.Empty(s.Require)
+	assert.Empty(s.Fixtures)
 	assert.Equal(
 		map[string]interface{}{
 			"foo":      &fooDefaults{},

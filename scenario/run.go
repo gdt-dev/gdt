@@ -19,9 +19,9 @@ import (
 
 // Run executes the tests in the test scenario
 func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
-	if len(s.Require) > 0 {
+	if len(s.Fixtures) > 0 {
 		fixtures := gdtcontext.Fixtures(ctx)
-		for _, fname := range s.Require {
+		for _, fname := range s.Fixtures {
 			lookup := strings.ToLower(fname)
 			fix, found := fixtures[lookup]
 			if !found {

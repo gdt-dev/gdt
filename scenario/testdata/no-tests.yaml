@@ -1,6 +1,6 @@
 name: no-tests
 description: a scenario with no tests in it
-require:
+fixtures:
  - books_api
  - books_data
 defaults:
