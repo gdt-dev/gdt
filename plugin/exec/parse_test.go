@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/gdt-dev/gdt/errors"
-	gdtexec "github.com/gdt-dev/gdt/exec"
+	gdtexec "github.com/gdt-dev/gdt/plugin/exec"
 	"github.com/gdt-dev/gdt/scenario"
 	gdttypes "github.com/gdt-dev/gdt/types"
 	"github.com/stretchr/testify/assert"
@@ -51,7 +51,7 @@ func TestSimpleCommand(t *testing.T) {
 	assert.NotNil(s)
 
 	assert.IsType(&scenario.Scenario{}, s)
-	expTests := []gdttypes.TestUnit{
+	expTests := []gdttypes.Evaluable{
 		&gdtexec.Spec{
 			Spec: gdttypes.Spec{
 				Index:    0,

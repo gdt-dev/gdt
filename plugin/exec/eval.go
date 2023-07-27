@@ -15,10 +15,13 @@ import (
 	gdtcontext "github.com/gdt-dev/gdt/context"
 	"github.com/gdt-dev/gdt/debug"
 	gdterrors "github.com/gdt-dev/gdt/errors"
+	"github.com/gdt-dev/gdt/result"
 )
 
-// Run executes the specific exec test spec.
-func (s *Spec) Run(ctx context.Context, t *testing.T) error {
+// Eval performs an action and evaluates the results of that action, returning
+// a Result that informs the Scenario about what failed or succeeded about the
+// Evaluable's conditions.
+func (s *Spec) Eval(ctx context.Context, t *testing.T) *result.Result {
 	outbuf := &bytes.Buffer{}
 	errbuf := &bytes.Buffer{}
 
@@ -27,10 +30,9 @@ func (s *Spec) Run(ctx context.Context, t *testing.T) error {
 	var target string
 	var args []string
 	if s.Shell == "" {
-		args, err = shlex.Split(s.Exec)
-		if err != nil {
-			return err
-		}
+		// Parse time already validated exec string parses into valid shell
+		// args
+		args, _ = shlex.Split(s.Exec)
 		target = args[0]
 		args = args[1:]
 	} else {
@@ -43,26 +45,26 @@ func (s *Spec) Run(ctx context.Context, t *testing.T) error {
 
 	outpipe, err := cmd.StdoutPipe()
 	if err != nil {
-		return err
+		return result.New(result.WithRuntimeError(ExecRuntimeError(err)))
 	}
 	errpipe, err := cmd.StderrPipe()
 	if err != nil {
-		return err
+		return result.New(result.WithRuntimeError(ExecRuntimeError(err)))
 	}
 
 	err = cmd.Start()
 	if gdtcontext.TimedOut(ctx, err) {
-		return gdterrors.ErrTimeout
+		return result.New(result.WithFailures(gdterrors.ErrTimeoutExceeded))
 	}
 	if err != nil {
-		return err
+		return result.New(result.WithRuntimeError(ExecRuntimeError(err)))
 	}
 	outbuf.ReadFrom(outpipe)
 	errbuf.ReadFrom(errpipe)
 
 	err = cmd.Wait()
 	if gdtcontext.TimedOut(ctx, err) {
-		return gdterrors.ErrTimeout
+		return result.New(result.WithFailures(gdterrors.ErrTimeoutExceeded))
 	}
 	ec := 0
 	if err != nil {
@@ -72,11 +74,5 @@ func (s *Spec) Run(ctx context.Context, t *testing.T) error {
 	assertions := newAssertions(
 		s.ExitCode, ec, s.Out, outbuf, s.Err, errbuf,
 	)
-
-	if !assertions.OK() {
-		for _, failure := range assertions.Failures() {
-			t.Error(failure)
-		}
-	}
-	return nil
+	return result.New(result.WithFailures(assertions.Failures()...))
 }

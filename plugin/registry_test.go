@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/gdt-dev/gdt/plugin"
+	"github.com/gdt-dev/gdt/result"
 	gdttypes "github.com/gdt-dev/gdt/types"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v3"
@@ -35,7 +36,7 @@ func (s *fooSpec) Base() *gdttypes.Spec {
 	return &s.Spec
 }
 
-func (s *fooSpec) Run(context.Context, *testing.T) error {
+func (s *fooSpec) Eval(context.Context, *testing.T) *result.Result {
 	return nil
 }
 
@@ -55,8 +56,8 @@ func (p *fooPlugin) Defaults() yaml.Unmarshaler {
 	return &fooDefaults{}
 }
 
-func (p *fooPlugin) Specs() []gdttypes.TestUnit {
-	return []gdttypes.TestUnit{&fooSpec{}}
+func (p *fooPlugin) Specs() []gdttypes.Evaluable {
+	return []gdttypes.Evaluable{&fooSpec{}}
 }
 
 func TestRegisterAndList(t *testing.T) {

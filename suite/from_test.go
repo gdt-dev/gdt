@@ -7,7 +7,7 @@ package suite_test
 import (
 	"testing"
 
-	_ "github.com/gdt-dev/gdt/exec"
+	_ "github.com/gdt-dev/gdt/plugin/exec"
 	"github.com/gdt-dev/gdt/suite"
 	"github.com/stretchr/testify/assert"
 )

@@ -10,9 +10,9 @@ import (
 
 	gdtcontext "github.com/gdt-dev/gdt/context"
 	gdterrors "github.com/gdt-dev/gdt/errors"
-	_ "github.com/gdt-dev/gdt/exec"
 	jsonfix "github.com/gdt-dev/gdt/fixture/json"
 	"github.com/gdt-dev/gdt/plugin"
+	_ "github.com/gdt-dev/gdt/plugin/exec"
 	"github.com/gdt-dev/gdt/scenario"
 	"github.com/gdt-dev/gdt/suite"
 	gdttypes "github.com/gdt-dev/gdt/types"

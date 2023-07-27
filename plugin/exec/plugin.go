@@ -31,8 +31,8 @@ func (p *plugin) Defaults() yaml.Unmarshaler {
 	return &Defaults{}
 }
 
-func (p *plugin) Specs() []gdttypes.TestUnit {
-	return []gdttypes.TestUnit{&Spec{}}
+func (p *plugin) Specs() []gdttypes.Evaluable {
+	return []gdttypes.Evaluable{&Spec{}}
 }
 
 // Plugin returns the HTTP gdt plugin

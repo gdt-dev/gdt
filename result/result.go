@@ -4,17 +4,31 @@
 
 package result
 
-// Result is returned from a `Spec.Run` execution. It serves two purposes: 1)
-// to return the error, if any, from the Run execution and 2) to pass back
-// information about the Run that can be injected into the context's `PriorRun`
-// cache. Some plugins, e.g. the gdt-http plugin, use cached data from a
-// previous run in order to construct current Run fixtures. In the case of the
-// gdt=http plugin, the previous `nethttp.Response` is returned in the Result
-// and the `Scenario.Run` method injects that information into the context that
-// is supplied to the next Spec's `Run`.
+import (
+	"errors"
+	"fmt"
+
+	gdterrors "github.com/gdt-dev/gdt/errors"
+)
+
+// Result is returned from a `Evaluable.Eval` execution. It serves two
+// purposes:
+//
+// 1) to return an error, if any, from the Eval execution. This error will
+// *always* be a `gdterrors.RuntimeError`. Failed assertions are not errors.
+// 2) to pass back information about the Run that can be injected into the
+// context's `PriorRun` cache. Some plugins, e.g. the gdt-http plugin, use
+// cached data from a previous run in order to construct current Run fixtures.
+// In the case of the gdt=http plugin, the previous `nethttp.Response` is
+// returned in the Result and the `Scenario.Run` method injects that
+// information into the context that is supplied to the next Spec's `Run`.
 type Result struct {
-	// err is any error that was returned from the spec's execution
+	// err is any error that was returned from the Evaluable's execution. This
+	// is guaranteed to be a `gdterrors.RuntimeError`.
 	err error
+	// failures is the collection of error messages from assertion failures
+	// that occurred during Eval(). These are *not* `gdterrors.RuntimeError`.
+	failures []error
 	// data is a map, keyed by plugin name, of data about the spec run. Plugins
 	// can place anything they want in here and grab it from the context with
 	// the `gdtcontext.PriorRunData()` function. Plugins are responsible for
@@ -22,17 +36,15 @@ type Result struct {
 	data map[string]interface{}
 }
 
-// Unwrap returns the wrapped error
-func (r *Result) Unwrap() error {
-	return r.err
+// HasRuntimeError returns true if the Eval() returned a runtime error, false
+// otherwise.
+func (r *Result) HasRuntimeError() bool {
+	return r.err != nil
 }
 
-// Error implements the error interface.
-func (r *Result) Error() string {
-	if r.err != nil {
-		return r.err.Error()
-	}
-	return ""
+// RuntimeError returns the runtime error
+func (r *Result) RuntimeError() error {
+	return r.err
 }
 
 // HasData returns true if any of the run data has been set, false otherwise.
@@ -43,6 +55,17 @@ func (r *Result) HasData() bool {
 // Data returns the raw run data saved in the result
 func (r *Result) Data() map[string]interface{} {
 	return r.data
+}
+
+// Failed returns true if any assertion failed during Eval(), false otherwise.
+func (r *Result) Failed() bool {
+	return len(r.failures) > 0
+}
+
+// Failures returns the collection of assertion failures that occurred during
+// Eval().
+func (r *Result) Failures() []error {
+	return r.failures
 }
 
 // SetData sets a value in the result's run data cache.
@@ -56,10 +79,21 @@ func (r *Result) SetData(
 	r.data[key] = val
 }
 
+// SetFailures sets the result's collection of assertion failures.
+func (r *Result) SetFailures(failures ...error) {
+	r.failures = failures
+}
+
 type ResultModifier func(*Result)
 
-// WithError modifies the Result with the supplied error
-func WithError(err error) ResultModifier {
+// WithRuntimeError modifies the Result with the supplied error
+func WithRuntimeError(err error) ResultModifier {
+	if !errors.Is(err, gdterrors.RuntimeError) {
+		msg := fmt.Sprintf("expected %s to be a gdterrors.RuntimeError", err)
+		// panic here because a plugin author incorrectly implemented their
+		// plugin Spec's Eval() method...
+		panic(msg)
+	}
 	return func(r *Result) {
 		r.err = err
 	}
@@ -69,6 +103,14 @@ func WithError(err error) ResultModifier {
 func WithData(key string, val interface{}) ResultModifier {
 	return func(r *Result) {
 		r.SetData(key, val)
+	}
+}
+
+// WithFailures modifies the Result the supplied collection of assertion
+// failures
+func WithFailures(failures ...error) ResultModifier {
+	return func(r *Result) {
+		r.SetFailures(failures...)
 	}
 }
 
