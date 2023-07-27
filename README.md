@@ -70,7 +70,7 @@ they can instead have a test that looks like this:
 
 
 ```yaml
-require:
+fixtures:
  - books_api
 tests:
  - name: no such book was found
@@ -261,7 +261,7 @@ how `gdt` allows the test author to describe the same assertions
 ([`failures.yaml`](https://github.com/gdt-dev/gdt-examples/blob/main/http/tests/api/failures.yaml)):
 
 ```yaml
-require:
+fixtures:
  - books_api
 tests:
  - name: no such book was found
@@ -385,7 +385,7 @@ might create to describe the same assertions
 ([`create_then_get.yaml`](https://github.com/gdt-dev/gdt-examples/blob/main/http/tests/api/create_then_get.yaml)):
 
 ```yaml
-require:
+fixtures:
  - books_api
  - books_data
 tests:
@@ -425,7 +425,7 @@ All `gdt` scenarios have the following fields:
   contents
 * `defaults`: (optional) is a map, keyed by a plugin name, of default options
   and configuration values for that plugin.
-* `require`: (optional) list of strings indicating named fixtures that will be
+* `fixtures`: (optional) list of strings indicating named fixtures that will be
   started before any of the tests in the file are run
 * `tests`: list of [`Spec`][basespec] specializations that represent the
   runnable test units in the test scenario.

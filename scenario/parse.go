@@ -47,15 +47,15 @@ func (s *Scenario) UnmarshalYAML(node *yaml.Node) error {
 				return gdterrors.ExpectedScalarAt(valNode)
 			}
 			s.Description = valNode.Value
-		case "require":
+		case "fixtures":
 			if valNode.Kind != yaml.SequenceNode {
 				return gdterrors.ExpectedSequenceAt(valNode)
 			}
-			requires := make([]string, len(valNode.Content))
-			for x, n := range valNode.Content {
-				requires[x] = n.Value
+			var fixtures []string
+			if err := valNode.Decode(&fixtures); err != nil {
+				return gdterrors.ExpectedSequenceAt(valNode)
 			}
-			s.Require = requires
+			s.Fixtures = fixtures
 		case "defaults":
 			if valNode.Kind != yaml.MappingNode {
 				return gdterrors.ExpectedMapAt(valNode)

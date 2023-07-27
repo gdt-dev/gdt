@@ -26,8 +26,8 @@ type Scenario struct {
 	// During parsing, plugins are handed this raw data and asked to interpret
 	// it into known configuration values for that plugin.
 	Defaults map[string]interface{} `yaml:"defaults,omitempty"`
-	// Require specifies an ordered list of fixtures the test case depends on.
-	Require []string `yaml:"require,omitempty"`
+	// Fixtures specifies an ordered list of fixtures the test case depends on.
+	Fixtures []string `yaml:"fixtures,omitempty"`
 	// Tests is the collection of test units in this test case. These will be
 	// the fully parsed and materialized plugin Spec structs.
 	Tests []gdttypes.TestUnit `yaml:"tests,omitempty"`
@@ -73,10 +73,10 @@ func WithDefaults(defaults map[string]interface{}) ScenarioModifier {
 	}
 }
 
-// WithRequires sets a test scenario's Requires attribute
-func WithRequires(require []string) ScenarioModifier {
+// WithFixtures sets a test scenario's Fixtures attribute
+func WithRequires(fixtures []string) ScenarioModifier {
 	return func(s *Scenario) {
-		s.Require = require
+		s.Fixtures = fixtures
 	}
 }
 
