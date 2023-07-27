@@ -8,7 +8,7 @@ import (
 	"github.com/gdt-dev/gdt/scenario"
 )
 
-// Suite contains zero or more Runnable things, one for each YAML file
+// Suite contains zero or more scenarios, one for each YAML file
 // representing a Scenario in a given directory
 type Suite struct {
 	// Path is the filepath to the test suite directory.
@@ -77,7 +77,7 @@ func New(mods ...SuiteModifier) *Suite {
 	return s
 }
 
-// Append appends a runnable test element to the test suite
+// Append appends a test element to the test suite
 func (s *Suite) Append(sc *scenario.Scenario) {
 	s.Scenarios = append(s.Scenarios, sc)
 }

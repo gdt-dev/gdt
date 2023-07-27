@@ -12,8 +12,6 @@ import (
 
 	"github.com/gdt-dev/gdt"
 	gdterrors "github.com/gdt-dev/gdt/errors"
-	"github.com/gdt-dev/gdt/scenario"
-	"github.com/gdt-dev/gdt/suite"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -46,12 +44,9 @@ func TestFromSuite(t *testing.T) {
 	require := require.New(t)
 
 	fp := filepath.Join("suite", "testdata", "exec")
-	s, err := gdt.From(fp)
+	suite, err := gdt.From(fp)
 	require.Nil(err)
-	require.NotNil(s)
-
-	suite, ok := s.(*suite.Suite)
-	require.True(ok, "gdt.From() did not return a Suite")
+	require.NotNil(suite)
 
 	assert.Equal(fp, suite.Path)
 	assert.Len(suite.Scenarios, 2)
@@ -66,11 +61,10 @@ func TestFromScenarioPath(t *testing.T) {
 	require.Nil(err)
 	require.NotNil(s)
 
-	sc, ok := s.(*scenario.Scenario)
-	assert.True(ok, "gdt.From() with dir path did not return a Scenario")
-
-	assert.Equal(fp, sc.Path)
-	assert.Len(sc.Tests, 1)
+	assert.Equal(fp, s.Path)
+	assert.Len(s.Scenarios, 1)
+	assert.Len(s.Scenarios[0].Tests, 1)
+	assert.Equal("exec", s.Name)
 }
 
 func TestFromScenarioReader(t *testing.T) {
@@ -80,21 +74,18 @@ func TestFromScenarioReader(t *testing.T) {
 	fp := filepath.Join("suite", "testdata", "exec", "ls.yaml")
 	f, err := os.Open(fp)
 	require.Nil(err)
-	s, err := gdt.From(f)
-	require.Nil(err)
-	require.NotNil(s)
-
-	sc, ok := s.(*scenario.Scenario)
-	assert.True(ok, "gdt.From() from file path did not return a Scenario")
+	suite, err := gdt.From(f)
+	assert.Nil(err)
+	assert.NotNil(suite)
 
 	// The scenario's path isn't set because we didn't supply a filepath...
-	assert.Equal("", sc.Path)
-	assert.Len(sc.Tests, 1)
+	assert.Equal("", suite.Path)
+	assert.Len(suite.Scenarios, 1)
+	assert.Len(suite.Scenarios[0].Tests, 1)
 }
 
 func TestFromScenarioBytes(t *testing.T) {
 	assert := assert.New(t)
-	require := require.New(t)
 
 	raw := `name: foo
 description: simple foo test
@@ -102,16 +93,14 @@ tests:
  - exec: echo foo
 `
 	b := []byte(raw)
-	s, err := gdt.From(b)
-	require.Nil(err)
-	require.NotNil(s)
-
-	sc, ok := s.(*scenario.Scenario)
-	assert.True(ok, "gdt.From() with []byte did not return a Scenario")
+	suite, err := gdt.From(b)
+	assert.Nil(err)
+	assert.NotNil(suite)
 
 	// The scenario's path isn't set because we didn't supply a filepath...
-	assert.Equal("", sc.Path)
-	assert.Len(sc.Tests, 1)
+	assert.Equal("", suite.Path)
+	assert.Len(suite.Scenarios, 1)
+	assert.Len(suite.Scenarios[0].Tests, 1)
 }
 
 func TestRunExecSuite(t *testing.T) {
