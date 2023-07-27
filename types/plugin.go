@@ -26,5 +26,5 @@ type Plugin interface {
 	Defaults() yaml.Unmarshaler
 	// Specs returns a list of YAML Unmarshaler types that the plugin knows
 	// how to parse.
-	Specs() []TestUnit
+	Specs() []Evaluable
 }

@@ -10,6 +10,7 @@ import (
 
 	gdtcontext "github.com/gdt-dev/gdt/context"
 	"github.com/gdt-dev/gdt/fixture"
+	"github.com/gdt-dev/gdt/result"
 	gdttypes "github.com/gdt-dev/gdt/types"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v3"
@@ -42,7 +43,7 @@ func (s *fooSpec) UnmarshalYAML(node *yaml.Node) error {
 	return nil
 }
 
-func (s *fooSpec) Run(ctx context.Context, t *testing.T) error {
+func (s *fooSpec) Eval(ctx context.Context, t *testing.T) *result.Result {
 	return nil
 }
 
@@ -58,8 +59,8 @@ func (p *fooPlugin) Defaults() yaml.Unmarshaler {
 	return &fooDefaults{}
 }
 
-func (p *fooPlugin) Specs() []gdttypes.TestUnit {
-	return []gdttypes.TestUnit{&fooSpec{}}
+func (p *fooPlugin) Specs() []gdttypes.Evaluable {
+	return []gdttypes.Evaluable{&fooSpec{}}
 }
 
 func TestContext(t *testing.T) {

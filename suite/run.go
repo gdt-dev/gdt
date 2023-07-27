@@ -7,18 +7,14 @@ package suite
 import (
 	"context"
 	"testing"
-
-	gdterrors "github.com/gdt-dev/gdt/errors"
 )
 
 // Run executes the tests in the test case
 func (s *Suite) Run(ctx context.Context, t *testing.T) error {
-	errs := gdterrors.NewRuntimeErrors()
-	for _, unit := range s.Scenarios {
-		errs.AppendIf(unit.Run(ctx, t))
+	for _, sc := range s.Scenarios {
+		if err := sc.Run(ctx, t); err != nil {
+			return err
+		}
 	}
-	if errs.Empty() {
-		return nil
-	}
-	return errs
+	return nil
 }

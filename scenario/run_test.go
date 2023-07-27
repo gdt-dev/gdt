@@ -6,6 +6,7 @@ package scenario_test
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -13,24 +14,27 @@ import (
 	gdtcontext "github.com/gdt-dev/gdt/context"
 	"github.com/gdt-dev/gdt/debug"
 	gdterrors "github.com/gdt-dev/gdt/errors"
+	"github.com/gdt-dev/gdt/result"
 	"github.com/gdt-dev/gdt/scenario"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func (s *fooSpec) Run(ctx context.Context, t *testing.T) error {
+func (s *fooSpec) Eval(ctx context.Context, t *testing.T) *result.Result {
+	fails := []error{}
 	t.Run(s.Title(), func(t *testing.T) {
-		assert := assert.New(t)
 		debug.Printf(ctx, t, "in %s Foo=%s", s.Title(), s.Foo)
-		// This is just a silly test to demonstrate how to write Run() commands
+		// This is just a silly test to demonstrate how to write Eval() methods
 		// for plugin Spec specialization classes.
-		if s.Name == "bar" {
-			assert.Equal(s.Foo, "bar")
-		} else {
-			assert.Equal(s.Foo, "baz")
+		if s.Name == "bar" && s.Foo != "bar" {
+			fail := fmt.Errorf("expected s.Foo = 'bar', got %s", s.Foo)
+			fails = append(fails, fail)
+		} else if s.Name != "bar" && s.Foo != "baz" {
+			fail := fmt.Errorf("expected s.Foo = 'baz', got %s", s.Foo)
+			fails = append(fails, fail)
 		}
 	})
-	return nil
+	return result.New(result.WithFailures(fails...))
 }
 
 func TestRun(t *testing.T) {
@@ -76,8 +80,8 @@ func TestMissingFixtures(t *testing.T) {
 	// Pass a context with no fixtures registered...
 	err = s.Run(context.TODO(), t)
 	assert.NotNil(err)
-	assert.ErrorIs(err, gdterrors.ErrRuntime)
 	assert.ErrorIs(err, gdterrors.ErrRequiredFixture)
+	assert.ErrorIs(err, gdterrors.RuntimeError)
 }
 
 func TestDebugFlushing(t *testing.T) {

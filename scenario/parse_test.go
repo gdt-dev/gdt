@@ -172,7 +172,7 @@ func TestKnownSpec(t *testing.T) {
 		"priorRun":           &priorRunDefaults{},
 		scenario.DefaultsKey: &scenario.Defaults{},
 	}
-	expTests := []gdttypes.TestUnit{
+	expTests := []gdttypes.Evaluable{
 		&fooSpec{
 			Spec: gdttypes.Spec{
 				Index:    0,
@@ -208,7 +208,7 @@ func TestMultipleSpec(t *testing.T) {
 	assert.IsType(&scenario.Scenario{}, s)
 	assert.Equal("foo-bar", s.Name)
 	assert.Equal(filepath.Join("testdata", "foo-bar.yaml"), s.Path)
-	expTests := []gdttypes.TestUnit{
+	expTests := []gdttypes.Evaluable{
 		&fooSpec{
 			Spec: gdttypes.Spec{
 				Index:    0,
@@ -272,7 +272,7 @@ func TestEnvExpansion(t *testing.T) {
 		"priorRun":           &priorRunDefaults{},
 		scenario.DefaultsKey: &scenario.Defaults{},
 	}
-	expTests := []gdttypes.TestUnit{
+	expTests := []gdttypes.Evaluable{
 		&fooSpec{
 			Spec: gdttypes.Spec{
 				Index:    0,
@@ -334,7 +334,7 @@ func TestScenarioDefaults(t *testing.T) {
 			},
 		},
 	}
-	expTests := []gdttypes.TestUnit{
+	expTests := []gdttypes.Evaluable{
 		&fooSpec{
 			Spec: gdttypes.Spec{
 				Index:    0,

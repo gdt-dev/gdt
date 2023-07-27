@@ -102,7 +102,7 @@ func (s *Scenario) UnmarshalYAML(node *yaml.Node) error {
 				}
 				base.Index = idx
 				base.Defaults = &defaults
-				specs := []gdttypes.TestUnit{}
+				specs := []gdttypes.Evaluable{}
 				for _, p := range plugins {
 					specs = append(specs, p.Specs()...)
 				}

@@ -12,6 +12,7 @@ import (
 
 	gdtcontext "github.com/gdt-dev/gdt/context"
 	"github.com/gdt-dev/gdt/errors"
+	gdterrors "github.com/gdt-dev/gdt/errors"
 	"github.com/gdt-dev/gdt/plugin"
 	"github.com/gdt-dev/gdt/result"
 	gdttypes "github.com/gdt-dev/gdt/types"
@@ -82,8 +83,12 @@ func (s *failSpec) Base() *gdttypes.Spec {
 	return &s.Spec
 }
 
-func (s *failSpec) Run(context.Context, *testing.T) error {
-	return fmt.Errorf("Indy, bad dates!")
+func (s *failSpec) Eval(context.Context, *testing.T) *result.Result {
+	return result.New(
+		result.WithRuntimeError(
+			fmt.Errorf("%w: Indy, bad dates!", gdterrors.RuntimeError),
+		),
+	)
 }
 
 func (s *failSpec) UnmarshalYAML(node *yaml.Node) error {
@@ -130,8 +135,8 @@ func (p *failingPlugin) Defaults() yaml.Unmarshaler {
 	return &failDefaults{}
 }
 
-func (p *failingPlugin) Specs() []gdttypes.TestUnit {
-	return []gdttypes.TestUnit{&failSpec{}}
+func (p *failingPlugin) Specs() []gdttypes.Evaluable {
+	return []gdttypes.Evaluable{&failSpec{}}
 }
 
 type fooInnerDefaults struct {
@@ -226,8 +231,8 @@ func (p *fooPlugin) Defaults() yaml.Unmarshaler {
 	return &fooDefaults{}
 }
 
-func (p *fooPlugin) Specs() []gdttypes.TestUnit {
-	return []gdttypes.TestUnit{&fooSpec{}}
+func (p *fooPlugin) Specs() []gdttypes.Evaluable {
+	return []gdttypes.Evaluable{&fooSpec{}}
 }
 
 type barDefaults struct {
@@ -251,8 +256,8 @@ func (s *barSpec) Base() *gdttypes.Spec {
 	return &s.Spec
 }
 
-func (s *barSpec) Run(context.Context, *testing.T) error {
-	return nil
+func (s *barSpec) Eval(context.Context, *testing.T) *result.Result {
+	return result.New()
 }
 
 func (s *barSpec) UnmarshalYAML(node *yaml.Node) error {
@@ -300,8 +305,8 @@ func (p *barPlugin) Defaults() yaml.Unmarshaler {
 	return &barDefaults{}
 }
 
-func (p *barPlugin) Specs() []gdttypes.TestUnit {
-	return []gdttypes.TestUnit{&barSpec{}}
+func (p *barPlugin) Specs() []gdttypes.Evaluable {
+	return []gdttypes.Evaluable{&barSpec{}}
 }
 
 const priorRunDataKey = "priorrun"
@@ -360,7 +365,7 @@ func (s *priorRunSpec) UnmarshalYAML(node *yaml.Node) error {
 	return nil
 }
 
-func (s *priorRunSpec) Run(ctx context.Context, t *testing.T) error {
+func (s *priorRunSpec) Eval(ctx context.Context, t *testing.T) *result.Result {
 	t.Run(s.Title(), func(t *testing.T) {
 		assert := assert.New(t)
 		// Here we test that the prior run data that we save at the end of each
@@ -389,6 +394,6 @@ func (p *priorRunPlugin) Defaults() yaml.Unmarshaler {
 	return &priorRunDefaults{}
 }
 
-func (p *priorRunPlugin) Specs() []gdttypes.TestUnit {
-	return []gdttypes.TestUnit{&priorRunSpec{}}
+func (p *priorRunPlugin) Specs() []gdttypes.Evaluable {
+	return []gdttypes.Evaluable{&priorRunSpec{}}
 }

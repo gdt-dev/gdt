@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/google/shlex"
 	"github.com/samber/lo"
 	"gopkg.in/yaml.v3"
 
@@ -59,6 +60,9 @@ func (s *Spec) UnmarshalYAML(node *yaml.Node) error {
 				return errors.ExpectedScalarAt(valNode)
 			}
 			s.Exec = strings.TrimSpace(valNode.Value)
+			if s.Exec == "" {
+				return ExecEmpty(valNode)
+			}
 		case "exit_code":
 			if valNode.Kind != yaml.ScalarNode {
 				return errors.ExpectedScalarAt(valNode)
@@ -91,6 +95,15 @@ func (s *Spec) UnmarshalYAML(node *yaml.Node) error {
 				continue
 			}
 			return errors.UnknownFieldAt(key, keyNode)
+		}
+	}
+	if s.Exec == "" {
+		return ExecEmpty(node)
+	}
+	if s.Shell != "" {
+		_, err := shlex.Split(s.Exec)
+		if err != nil {
+			return ExecInvalidShellParse(err)
 		}
 	}
 	return nil

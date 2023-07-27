@@ -13,11 +13,16 @@ import (
 	gdtcontext "github.com/gdt-dev/gdt/context"
 	"github.com/gdt-dev/gdt/debug"
 	gdterrors "github.com/gdt-dev/gdt/errors"
-	"github.com/gdt-dev/gdt/result"
 	gdttypes "github.com/gdt-dev/gdt/types"
 )
 
-// Run executes the tests in the test scenario
+// Run executes the scenario. The error that is returned will always be derived
+// from `gdterrors.RuntimeError` and represents an *unrecoverable* error.
+//
+// Test assertion failures are *not* considered errors. The Scenario.Run()
+// method controls whether `testing.T.Fail()` or `testing.T.Skip()` is called
+// which will mark the test units failed or skipped if a test unit evaluates to
+// false.
 func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 	if len(s.Fixtures) > 0 {
 		fixtures := gdtcontext.Fixtures(ctx)
@@ -31,7 +36,7 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 			defer fix.Stop()
 		}
 	}
-	errs := gdterrors.NewRuntimeErrors()
+	var rterr error
 	var scDefaults *Defaults
 	scDefaultsAny, found := s.Defaults[DefaultsKey]
 	if found {
@@ -59,25 +64,25 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 				specCtx, cancel = context.WithTimeout(specCtx, to.Duration())
 				defer cancel()
 			}
-			err := spec.Run(specCtx, t)
-			if gdtcontext.TimedOut(specCtx, err) {
-				if to != nil && !to.Expected {
-					t.Fatal(gdterrors.TimeoutExceeded(to.After))
-				}
-				// Swallow the error since it's not a runtime error but rather
-				// an assertion failure.
-				err = nil
+			res := spec.Eval(specCtx, t)
+			if res.HasRuntimeError() {
+				rterr = res.RuntimeError()
+				break
 			}
-			if res, ok := err.(*result.Result); ok {
-				// Results can have arbitrary run data stored in them and we
-				// save this prior run data in the top-level context (and pass
-				// that context to the next Run invocation).
-				if res.HasData() {
-					ctx = gdtcontext.StorePriorRun(ctx, res.Data())
+			// Results can have arbitrary run data stored in them and we
+			// save this prior run data in the top-level context (and pass
+			// that context to the next Run invocation).
+			if res.HasData() {
+				ctx = gdtcontext.StorePriorRun(ctx, res.Data())
+			}
+			for _, failure := range res.Failures() {
+				if gdtcontext.TimedOut(specCtx, failure) {
+					if to != nil && !to.Expected {
+						t.Fatal(gdterrors.TimeoutExceeded(to.After))
+					}
+				} else {
+					t.Fatal(failure)
 				}
-				errs.AppendIf(res.Unwrap())
-			} else {
-				errs.AppendIf(err)
 			}
 			if wait != nil && wait.After != "" {
 				debug.Println(ctx, t, "wait: %s after", wait.After)
@@ -85,10 +90,7 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 			}
 		}
 	})
-	if errs.Empty() {
-		return nil
-	}
-	return errs
+	return rterr
 }
 
 // specTimeout returns the timeout value for the test spec. If the spec has a

@@ -30,7 +30,7 @@ type Scenario struct {
 	Fixtures []string `yaml:"fixtures,omitempty"`
 	// Tests is the collection of test units in this test case. These will be
 	// the fully parsed and materialized plugin Spec structs.
-	Tests []gdttypes.TestUnit `yaml:"tests,omitempty"`
+	Tests []gdttypes.Evaluable `yaml:"tests,omitempty"`
 }
 
 // Title returns the Name of the scenario or the Path's file/base name if there

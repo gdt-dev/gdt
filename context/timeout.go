@@ -25,7 +25,7 @@ func TimedOut(
 		return errors.Is(cerr, context.DeadlineExceeded)
 	}
 	if err != nil {
-		if errors.Is(err, gdterrors.ErrTimeout) {
+		if errors.Is(err, gdterrors.ErrTimeoutExceeded) {
 			return true
 		}
 		return strings.Contains(err.Error(), "signal: killed")
