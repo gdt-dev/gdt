@@ -8,9 +8,9 @@ import (
 	"io"
 	"io/ioutil"
 
-	"github.com/gdt-dev/gdt/parse"
-	gdttypes "github.com/gdt-dev/gdt/types"
 	"gopkg.in/yaml.v3"
+
+	"github.com/gdt-dev/gdt/parse"
 )
 
 // FromReader parses the supplied io.Reader and returns a Scenario representing
@@ -19,7 +19,7 @@ import (
 func FromReader(
 	r io.Reader,
 	mods ...ScenarioModifier,
-) (gdttypes.Runnable, error) {
+) (*Scenario, error) {
 	contents, err := ioutil.ReadAll(r)
 	if err != nil {
 		return nil, err
@@ -31,7 +31,7 @@ func FromReader(
 func FromBytes(
 	contents []byte,
 	mods ...ScenarioModifier,
-) (gdttypes.Runnable, error) {
+) (*Scenario, error) {
 	s := New(mods...)
 	expanded := parse.ExpandWithFixedDoubleDollar(string(contents))
 	if err := yaml.Unmarshal([]byte(expanded), s); err != nil {
