@@ -2,17 +2,19 @@ name: ls-contains-one-of
 description: a scenario that runs the `ls` command and checks the output contains one of a set of strings
 tests:
   - exec: ls -l
-    out:
-      contains_one_of:
-       - thisdoesnotexist
-       - neitherdoesthisexist
-       - parse.go
+    assert:
+      out:
+        contains_one_of:
+         - thisdoesnotexist
+         - neitherdoesthisexist
+         - parse.go
   # To test the stderr assertions, we redirect stdout to stderr in a shell
   # command...
   - exec: "ls -l 1>&2"
     shell: sh
-    err:
-      contains_one_of:
-       - thisdoesnotexist
-       - neitherdoesthisexist
-       - parse.go
+    assert:
+      err:
+        contains_one_of:
+         - thisdoesnotexist
+         - neitherdoesthisexist
+         - parse.go

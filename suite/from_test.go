@@ -10,22 +10,24 @@ import (
 	_ "github.com/gdt-dev/gdt/plugin/exec"
 	"github.com/gdt-dev/gdt/suite"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestFromDirNoSuchDir(t *testing.T) {
-	assert := assert.New(t)
+	require := require.New(t)
 
 	s, err := suite.FromDir("nosuchdirectory")
-	assert.NotNil(err)
-	assert.Nil(s)
+	require.NotNil(err)
+	require.Nil(s)
 }
 
 func TestFromDirExecSuite(t *testing.T) {
 	assert := assert.New(t)
+	require := require.New(t)
 
 	s, err := suite.FromDir("testdata/exec")
-	assert.Nil(err)
-	assert.NotNil(s)
+	require.Nil(err)
+	require.NotNil(s)
 
 	assert.Equal("testdata/exec", s.Path)
 	assert.Len(s.Scenarios, 2)
