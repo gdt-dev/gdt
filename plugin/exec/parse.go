@@ -63,33 +63,15 @@ func (s *Spec) UnmarshalYAML(node *yaml.Node) error {
 			if s.Exec == "" {
 				return ExecEmpty(valNode)
 			}
-		case "exit_code":
-			if valNode.Kind != yaml.ScalarNode {
-				return errors.ExpectedScalarAt(valNode)
-			}
-			ec, err := strconv.Atoi(valNode.Value)
-			if err != nil {
-				return err
-			}
-			s.ExitCode = ec
-		case "out":
+		case "assert":
 			if valNode.Kind != yaml.MappingNode {
 				return errors.ExpectedMapAt(valNode)
 			}
-			var pe *PipeExpect
-			if err := valNode.Decode(&pe); err != nil {
+			var e *Expect
+			if err := valNode.Decode(&e); err != nil {
 				return err
 			}
-			s.Out = pe
-		case "err":
-			if valNode.Kind != yaml.MappingNode {
-				return errors.ExpectedMapAt(valNode)
-			}
-			var pe *PipeExpect
-			if err := valNode.Decode(&pe); err != nil {
-				return err
-			}
-			s.Err = pe
+			s.Assert = e
 		default:
 			if lo.Contains(gdttypes.BaseSpecFields, key) {
 				continue
@@ -104,6 +86,54 @@ func (s *Spec) UnmarshalYAML(node *yaml.Node) error {
 		_, err := shlex.Split(s.Exec)
 		if err != nil {
 			return ExecInvalidShellParse(err)
+		}
+	}
+	return nil
+}
+
+func (e *Expect) UnmarshalYAML(node *yaml.Node) error {
+	if node.Kind != yaml.MappingNode {
+		return errors.ExpectedMapAt(node)
+	}
+	// maps/structs are stored in a top-level Node.Content field which is a
+	// concatenated slice of Node pointers in pairs of key/values.
+	for i := 0; i < len(node.Content); i += 2 {
+		keyNode := node.Content[i]
+		if keyNode.Kind != yaml.ScalarNode {
+			return errors.ExpectedScalarAt(keyNode)
+		}
+		key := keyNode.Value
+		valNode := node.Content[i+1]
+		switch key {
+		case "exit_code":
+			if valNode.Kind != yaml.ScalarNode {
+				return errors.ExpectedScalarAt(valNode)
+			}
+			ec, err := strconv.Atoi(valNode.Value)
+			if err != nil {
+				return err
+			}
+			e.ExitCode = ec
+		case "out":
+			if valNode.Kind != yaml.MappingNode {
+				return errors.ExpectedMapAt(valNode)
+			}
+			var pe *PipeExpect
+			if err := valNode.Decode(&pe); err != nil {
+				return err
+			}
+			e.Out = pe
+		case "err":
+			if valNode.Kind != yaml.MappingNode {
+				return errors.ExpectedMapAt(valNode)
+			}
+			var pe *PipeExpect
+			if err := valNode.Decode(&pe); err != nil {
+				return err
+			}
+			e.Err = pe
+		default:
+			return errors.UnknownFieldAt(key, keyNode)
 		}
 	}
 	return nil

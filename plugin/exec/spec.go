@@ -23,14 +23,8 @@ type Spec struct {
 	// (the default), no shell is used to execute the command and instead the
 	// operating system's `exec` family of calls is used.
 	Shell string `yaml:"shell,omitempty"`
-	// ExitCode is the expected exit code for the executed command. The default
-	// (0) is the universal successful exit code, so you only need to set this
-	// if you expect a non-successful result from executing the command.
-	ExitCode int `yaml:"exit_code,omitempty"`
-	// Out has things that are expected in the stdout response
-	Out *PipeExpect `yaml:"out,omitempty"`
-	// Err has things that are expected in the stderr response
-	Err *PipeExpect `yaml:"err,omitempty"`
+	// Assert is an object containing the conditions that the Spec will assert.
+	Assert *Expect `yaml:"assert,omitempty"`
 }
 
 func (s *Spec) SetBase(b gdttypes.Spec) {

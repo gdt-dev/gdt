@@ -2,13 +2,15 @@ name: ls-contains
 description: a scenario that runs the `ls` command and checks the output contains a string
 tests:
   - exec: ls -l
-    out:
-      contains:
-       - parse.go
+    assert:
+      out:
+        contains:
+         - parse.go
   # To test the stderr assertions, we redirect stdout to stderr in a shell
   # command...
   - exec: "ls -l 1>&2"
     shell: sh
-    err:
-      contains:
-        - parse.go
+    assert:
+      err:
+        contains:
+         - parse.go

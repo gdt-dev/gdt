@@ -10,4 +10,5 @@ tests:
       expected: true
     # the context's deadline cancels the pipe and results in a 1 result
     # code on Windows...
-    exit_code: 1
+    assert:
+      exit_code: 1

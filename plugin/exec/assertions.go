@@ -12,6 +12,18 @@ import (
 	gdttypes "github.com/gdt-dev/gdt/types"
 )
 
+// Expect contains the assertions about an Exec Spec's actions
+type Expect struct {
+	// ExitCode is the expected exit code for the executed command. The default
+	// (0) is the universal successful exit code, so you only need to set this
+	// if you expect a non-successful result from executing the command.
+	ExitCode int `yaml:"exit_code,omitempty"`
+	// Out has things that are expected in the stdout response
+	Out *PipeExpect `yaml:"out,omitempty"`
+	// Err has things that are expected in the stderr response
+	Err *PipeExpect `yaml:"err,omitempty"`
+}
+
 // PipeExpect contains assertions about the contents of a pipe
 type PipeExpect struct {
 	// Is contains the exact match (minus whitespace) of the contents of the
@@ -165,11 +177,9 @@ func (a *assertions) OK() bool {
 // newAssertions returns an assertions object populated with the supplied exec
 // spec assertions
 func newAssertions(
-	expExitCode int,
+	e *Expect,
 	exitCode int,
-	expOutPipe *PipeExpect,
 	outPipe *bytes.Buffer,
-	expErrPipe *PipeExpect,
 	errPipe *bytes.Buffer,
 ) gdttypes.Assertions {
 	a := &assertions{
@@ -177,18 +187,20 @@ func newAssertions(
 		expExitCode: exitCode,
 		exitCode:    exitCode,
 	}
-	if expOutPipe != nil {
-		a.expOutPipe = &pipeAssertions{
-			PipeExpect: *expOutPipe,
-			name:       "stdout",
-			pipe:       outPipe,
+	if e != nil {
+		if e.Out != nil {
+			a.expOutPipe = &pipeAssertions{
+				PipeExpect: *e.Out,
+				name:       "stdout",
+				pipe:       outPipe,
+			}
 		}
-	}
-	if expErrPipe != nil {
-		a.expErrPipe = &pipeAssertions{
-			PipeExpect: *expErrPipe,
-			name:       "stderr",
-			pipe:       errPipe,
+		if e.Err != nil {
+			a.expErrPipe = &pipeAssertions{
+				PipeExpect: *e.Err,
+				name:       "stderr",
+				pipe:       errPipe,
+			}
 		}
 	}
 	return a

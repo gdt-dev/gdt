@@ -20,15 +20,17 @@ import (
 
 func TestFromUnknownSourceType(t *testing.T) {
 	assert := assert.New(t)
+	require := require.New(t)
 
 	s, err := gdt.From(1)
-	assert.NotNil(err)
-	assert.Nil(s)
+	require.NotNil(err)
+	require.Nil(s)
 
 	assert.ErrorIs(err, gdterrors.ErrUnknownSourceType)
 }
 
 func TestFromFileNotFound(t *testing.T) {
+	assert := assert.New(t)
 	require := require.New(t)
 
 	fp := filepath.Join("path", "to", "nonexisting", "file.yaml")
@@ -36,7 +38,7 @@ func TestFromFileNotFound(t *testing.T) {
 	require.NotNil(err)
 	require.Nil(s)
 
-	require.True(os.IsNotExist(err))
+	assert.True(os.IsNotExist(err))
 }
 
 func TestFromSuite(t *testing.T) {
@@ -57,11 +59,12 @@ func TestFromSuite(t *testing.T) {
 
 func TestFromScenarioPath(t *testing.T) {
 	assert := assert.New(t)
+	require := require.New(t)
 
 	fp := filepath.Join("suite", "testdata", "exec", "ls.yaml")
 	s, err := gdt.From(fp)
-	assert.Nil(err)
-	assert.NotNil(s)
+	require.Nil(err)
+	require.NotNil(s)
 
 	sc, ok := s.(*scenario.Scenario)
 	assert.True(ok, "gdt.From() with dir path did not return a Scenario")
@@ -78,8 +81,8 @@ func TestFromScenarioReader(t *testing.T) {
 	f, err := os.Open(fp)
 	require.Nil(err)
 	s, err := gdt.From(f)
-	assert.Nil(err)
-	assert.NotNil(s)
+	require.Nil(err)
+	require.NotNil(s)
 
 	sc, ok := s.(*scenario.Scenario)
 	assert.True(ok, "gdt.From() from file path did not return a Scenario")
@@ -91,6 +94,7 @@ func TestFromScenarioReader(t *testing.T) {
 
 func TestFromScenarioBytes(t *testing.T) {
 	assert := assert.New(t)
+	require := require.New(t)
 
 	raw := `name: foo
 description: simple foo test
@@ -99,8 +103,8 @@ tests:
 `
 	b := []byte(raw)
 	s, err := gdt.From(b)
-	assert.Nil(err)
-	assert.NotNil(s)
+	require.Nil(err)
+	require.NotNil(s)
 
 	sc, ok := s.(*scenario.Scenario)
 	assert.True(ok, "gdt.From() with []byte did not return a Scenario")
@@ -111,20 +115,19 @@ tests:
 }
 
 func TestRunExecSuite(t *testing.T) {
-	assert := assert.New(t)
+	require := require.New(t)
 
 	fp := filepath.Join("suite", "testdata", "exec")
 	s, err := gdt.From(fp)
-	assert.Nil(err)
-	assert.NotNil(s)
+	require.Nil(err)
+	require.NotNil(s)
 
 	err = s.Run(context.TODO(), t)
-	assert.Nil(err)
-	assert.False(t.Failed())
+	require.Nil(err)
+	require.False(t.Failed())
 }
 
 func TestRunExecScenario(t *testing.T) {
-	assert := assert.New(t)
 	require := require.New(t)
 
 	fp := filepath.Join("suite", "testdata", "exec", "ls.yaml")
@@ -133,6 +136,6 @@ func TestRunExecScenario(t *testing.T) {
 	require.NotNil(s)
 
 	err = s.Run(context.TODO(), t)
-	assert.Nil(err)
-	assert.False(t.Failed())
+	require.Nil(err)
+	require.False(t.Failed())
 }

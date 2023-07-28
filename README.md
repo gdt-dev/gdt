@@ -489,24 +489,26 @@ the base `Spec` fields listed above):
 * `shell`: (optional) a string with the specific shell to use in executing the
   command. If empty (the default), no shell is used to execute the command and
   instead the operating system's `exec` family of calls is used.
-* `exit_code`: (optional) an integer with the expected exit code from the
+* `assert`: (optional) an object describing the conditions that will be
+  asserted about the test action.
+* `assert.exit_code`: (optional) an integer with the expected exit code from the
   executed command. The default successful exit code is 0 and therefore you do
   not need to specify this if you expect a successful exit code.
-* `out`: (optional) a [`PipeExpect`][pipeexpect] object containing
+* `assert.out`: (optional) a [`PipeExpect`][pipeexpect] object containing
   assertions about content in `stdout`.
-* `out.is`: (optional) a string with the exact contents of `stdout` you expect
+* `assert.out.is`: (optional) a string with the exact contents of `stdout` you expect
   to get.
-* `out.contains`: (optional) a list of one or more strings that *all* must be
+* `assert.out.contains`: (optional) a list of one or more strings that *all* must be
   present in `stdout`.
-* `out.contains_one_of`: (optional) a list of one or more strings of which *at
+* `assert.out.contains_one_of`: (optional) a list of one or more strings of which *at
   least one* must be present in `stdout`.
-* `err`: (optional) a [`PipeAssertions`][pipeexpect] object containing
+* `assert.err`: (optional) a [`PipeAssertions`][pipeexpect] object containing
   assertions about content in `stderr`.
-* `err.is`: (optional) a string with the exact contents of `stderr` you expect
+* `assert.err.is`: (optional) a string with the exact contents of `stderr` you expect
   to get.
-* `err.contains`: (optional) a list of one or more strings that *all* must be
+* `assert.err.contains`: (optional) a list of one or more strings that *all* must be
   present in `stderr`.
-* `err.contains_one_of`: (optional) a list of one or more strings of which *at
+* `assert.err.contains_one_of`: (optional) a list of one or more strings of which *at
   least one* must be present in `stderr`.
 
 [execspec]: https://github.com/gdt-dev/gdt/blob/2791e11105fd3c36d1f11a7d111e089be7cdc84c/exec/spec.go#L11-L34

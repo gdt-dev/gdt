@@ -2,4 +2,5 @@ name: ls-with-exit-code
 description: a scenario that runs the `ls` command expecting a non-0 exit code
 tests:
   - exec: ls /this/dir/does/not/exist
-    exit_code: 2
+    assert:
+      exit_code: 2
