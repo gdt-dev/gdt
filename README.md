@@ -427,6 +427,9 @@ All `gdt` scenarios have the following fields:
   and configuration values for that plugin.
 * `fixtures`: (optional) list of strings indicating named fixtures that will be
   started before any of the tests in the file are run
+* `skip-if`: (optional) list of [`Spec`][basespec] specializations that will be
+  evaluated *before* running any test in the scenario. If any of these
+  conditions evaluates successfully, the test scenario will be skipped.
 * `tests`: list of [`Spec`][basespec] specializations that represent the
   runnable test units in the test scenario.
 

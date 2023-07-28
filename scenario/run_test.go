@@ -6,36 +6,16 @@ package scenario_test
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
 
 	gdtcontext "github.com/gdt-dev/gdt/context"
-	"github.com/gdt-dev/gdt/debug"
 	gdterrors "github.com/gdt-dev/gdt/errors"
-	"github.com/gdt-dev/gdt/result"
 	"github.com/gdt-dev/gdt/scenario"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-func (s *fooSpec) Eval(ctx context.Context, t *testing.T) *result.Result {
-	fails := []error{}
-	t.Run(s.Title(), func(t *testing.T) {
-		debug.Printf(ctx, t, "in %s Foo=%s", s.Title(), s.Foo)
-		// This is just a silly test to demonstrate how to write Eval() methods
-		// for plugin Spec specialization classes.
-		if s.Name == "bar" && s.Foo != "bar" {
-			fail := fmt.Errorf("expected s.Foo = 'bar', got %s", s.Foo)
-			fails = append(fails, fail)
-		} else if s.Name != "bar" && s.Foo != "baz" {
-			fail := fmt.Errorf("expected s.Foo = 'baz', got %s", s.Foo)
-			fails = append(fails, fail)
-		}
-	})
-	return result.New(result.WithFailures(fails...))
-}
 
 func TestRun(t *testing.T) {
 	require := require.New(t)
@@ -62,7 +42,8 @@ func TestPriorRun(t *testing.T) {
 	require.Nil(err)
 	require.NotNil(s)
 
-	s.Run(context.TODO(), t)
+	err = s.Run(context.TODO(), t)
+	require.Nil(err)
 }
 
 func TestMissingFixtures(t *testing.T) {
@@ -116,4 +97,20 @@ func TestTimeoutCascade(t *testing.T) {
 
 	err = s.Run(context.TODO(), t)
 	require.Nil(err)
+}
+
+func TestSkipIf(t *testing.T) {
+	require := require.New(t)
+
+	fp := filepath.Join("testdata", "skip-if.yaml")
+	f, err := os.Open(fp)
+	require.Nil(err)
+
+	s, err := scenario.FromReader(f, scenario.WithPath(fp))
+	require.Nil(err)
+	require.NotNil(s)
+
+	err = s.Run(context.TODO(), t)
+	require.Nil(err)
+	require.True(t.Skipped())
 }

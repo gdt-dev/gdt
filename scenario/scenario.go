@@ -28,6 +28,48 @@ type Scenario struct {
 	Defaults map[string]interface{} `yaml:"defaults,omitempty"`
 	// Fixtures specifies an ordered list of fixtures the test case depends on.
 	Fixtures []string `yaml:"fixtures,omitempty"`
+	// SkipIf contains a list of evaluable conditions. If any of the conditions
+	// evaluates successfully, the test scenario will be skipped.  This allows
+	// test authors to specify "pre-flight checks" that should pass before
+	// attempting any of the actions in the scenario's tests.
+	//
+	// For example, let's assume you have a `gdt-kube` scenario that looks like
+	// this:
+	//
+	// ```yaml
+	// tests:
+	//  - kube.create: manifests/nginx-deployment.yaml
+	//  - kube:
+	//      get: deployments/nginx
+	//      assert:
+	//        matches:
+	//          status:
+	//            readyReplicas: 2
+	//  - kube.delete: deployments/nginx
+	// ```
+	//
+	// If you execute the above test and there is already an 'nginx'
+	// deployment, the `kube.create` test will fail. To prevent the scenario
+	// from proceeding with the tests if an 'nginx' deployment already exists,
+	// you could add the following
+	//
+	// ```yaml
+	// skip-if:
+	//  - kube.get: deployments/nginx
+	// tests:
+	//  - kube.create: manifests/nginx-deployment.yaml
+	//  - kube:
+	//      get: deployments/nginx
+	//      assert:
+	//        matches:
+	//          status:
+	//            readyReplicas: 2
+	//  - kube.delete: deployments/nginx
+	// ```
+	//
+	// With the above, if an 'nginx' deployment exists already, the scenario
+	// will skip all the tests.
+	SkipIf []gdttypes.Evaluable `yaml:"skip-if,omitempty"`
 	// Tests is the collection of test units in this test case. These will be
 	// the fully parsed and materialized plugin Spec structs.
 	Tests []gdttypes.Evaluable `yaml:"tests,omitempty"`

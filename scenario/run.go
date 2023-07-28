@@ -42,6 +42,22 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 	if found {
 		scDefaults = scDefaultsAny.(*Defaults)
 	}
+	// If the test author has specified any pre-flight checks in the `skip-if`
+	// collection, evaluate those first and if any failed, skip the scenario's
+	// tests.
+	for _, skipIf := range s.SkipIf {
+		res := skipIf.Eval(ctx, t)
+		if res.HasRuntimeError() {
+			return res.RuntimeError()
+		}
+		if len(res.Failures()) == 0 {
+			t.Skipf(
+				"skip-if: %s passed. skipping test.",
+				skipIf.Base().Title(),
+			)
+			return nil
+		}
+	}
 	t.Run(s.Title(), func(t *testing.T) {
 		for _, spec := range s.Tests {
 			// Create a brand new context that inherits the top-level context's

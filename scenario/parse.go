@@ -89,8 +89,9 @@ func (s *Scenario) UnmarshalYAML(node *yaml.Node) error {
 			return gdterrors.ExpectedScalarAt(keyNode)
 		}
 		key := keyNode.Value
-		if key == "tests" {
-			valNode := node.Content[i+1]
+		valNode := node.Content[i+1]
+		switch key {
+		case "tests":
 			if valNode.Kind != yaml.SequenceNode {
 				return gdterrors.ExpectedSequenceAt(valNode)
 			}
@@ -115,6 +116,38 @@ func (s *Scenario) UnmarshalYAML(node *yaml.Node) error {
 					}
 					sp.SetBase(base)
 					s.Tests = append(s.Tests, sp)
+					parsed = true
+					break
+				}
+				if !parsed {
+					return gdterrors.UnknownSpecAt(s.Path, valNode)
+				}
+			}
+		case "skip-if":
+			if valNode.Kind != yaml.SequenceNode {
+				return gdterrors.ExpectedSequenceAt(valNode)
+			}
+			for idx, testNode := range valNode.Content {
+				parsed := false
+				base := gdttypes.Spec{}
+				if err := testNode.Decode(&base); err != nil {
+					return err
+				}
+				base.Index = idx
+				base.Defaults = &defaults
+				specs := []gdttypes.Evaluable{}
+				for _, p := range plugins {
+					specs = append(specs, p.Specs()...)
+				}
+				for _, sp := range specs {
+					if err := testNode.Decode(sp); err != nil {
+						if errors.Is(err, gdterrors.ErrUnknownField) {
+							continue
+						}
+						return err
+					}
+					sp.SetBase(base)
+					s.SkipIf = append(s.SkipIf, sp)
 					parsed = true
 					break
 				}

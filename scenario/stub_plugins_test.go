@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	gdtcontext "github.com/gdt-dev/gdt/context"
+	"github.com/gdt-dev/gdt/debug"
 	"github.com/gdt-dev/gdt/errors"
 	gdterrors "github.com/gdt-dev/gdt/errors"
 	"github.com/gdt-dev/gdt/plugin"
@@ -217,6 +218,23 @@ func (s *fooSpec) UnmarshalYAML(node *yaml.Node) error {
 		}
 	}
 	return nil
+}
+
+func (s *fooSpec) Eval(ctx context.Context, t *testing.T) *result.Result {
+	fails := []error{}
+	t.Run(s.Title(), func(t *testing.T) {
+		debug.Printf(ctx, t, "in %s Foo=%s", s.Title(), s.Foo)
+		// This is just a silly test to demonstrate how to write Eval() methods
+		// for plugin Spec specialization classes.
+		if s.Name == "bar" && s.Foo != "bar" {
+			fail := fmt.Errorf("expected s.Foo = 'bar', got %s", s.Foo)
+			fails = append(fails, fail)
+		} else if s.Name != "bar" && s.Foo != "baz" {
+			fail := fmt.Errorf("expected s.Foo = 'baz', got %s", s.Foo)
+			fails = append(fails, fail)
+		}
+	})
+	return result.New(result.WithFailures(fails...))
 }
 
 type fooPlugin struct{}
