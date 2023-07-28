@@ -15,7 +15,6 @@ import (
 	_ "github.com/gdt-dev/gdt/plugin/exec"
 	"github.com/gdt-dev/gdt/scenario"
 	"github.com/gdt-dev/gdt/suite"
-	gdttypes "github.com/gdt-dev/gdt/types"
 )
 
 var (
@@ -27,7 +26,7 @@ var (
 	// RegisterFixture registers a named fixtures with the context
 	RegisterFixture = gdtcontext.RegisterFixture
 	// NewContext returns a new `context.Context` that can be passed to a
-	// `Runnable` (a `Suite` or `Scenario` returned from the `From` function).
+	// `scenario.Run` or `suite.Run` pointer receivers.
 	NewContext = gdtcontext.New
 	// WithFixtures sets a context's Fixtures
 	WithFixtures = gdtcontext.WithFixtures
@@ -90,18 +89,19 @@ var (
 	NewJSONFixture = jsonfix.New
 )
 
-// From returns a new Runnable thing from an `io.Reader`, a string file or
+// From returns a new suite.Suite from an `io.Reader`, a string file or
 // directory path, or the raw bytes of YAML content describing a scenario or
 // suite.
-func From(source interface{}) (gdttypes.Runnable, error) {
-	switch source.(type) {
+func From(source interface{}) (*suite.Suite, error) {
+	switch src := source.(type) {
 	case io.Reader:
-		return scenario.FromReader(
-			source.(io.Reader),
-		)
+		s, err := scenario.FromReader(src)
+		if err != nil {
+			return nil, err
+		}
+		return suite.FromScenario(s), nil
 	case string:
-		path := source.(string)
-		f, err := os.Open(path)
+		f, err := os.Open(src)
 		if err != nil {
 			return nil, err
 		}
@@ -110,12 +110,19 @@ func From(source interface{}) (gdttypes.Runnable, error) {
 			return nil, err
 		}
 		if fi.IsDir() {
-			return suite.FromDir(path)
-		} else {
-			return scenario.FromReader(f, scenario.WithPath(path))
+			return suite.FromDir(src)
 		}
+		s, err := scenario.FromReader(f, scenario.WithPath(src))
+		if err != nil {
+			return nil, err
+		}
+		return suite.FromScenario(s), nil
 	case []byte:
-		return scenario.FromBytes(source.([]byte))
+		s, err := scenario.FromBytes(src)
+		if err != nil {
+			return nil, err
+		}
+		return suite.FromScenario(s), nil
 	default:
 		return nil, gdterrors.UnknownSourceType(source)
 	}

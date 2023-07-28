@@ -58,3 +58,22 @@ func FromDir(
 	}
 	return s, nil
 }
+
+// FromScenario encapsulates a given scenario in a fresh suite and returns it.
+func FromScenario(s *scenario.Scenario) *Suite {
+	return &Suite{
+		Path:        s.Path,
+		Name:        suiteNameFromScenarioPath(s.Path),
+		Description: s.Description,
+		// NOTE: require needs to be named to fixture?
+		Require:   s.Fixtures,
+		Defaults:  s.Defaults,
+		Scenarios: []*scenario.Scenario{s},
+	}
+}
+
+func suiteNameFromScenarioPath(p string) string {
+	dir := filepath.Dir(p)
+	parent := filepath.Base(dir)
+	return parent
+}
