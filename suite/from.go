@@ -50,6 +50,11 @@ func FromDir(
 			if err != nil {
 				return err
 			}
+			if len(tc.Tests) == 0 {
+				// Either wasn't a test scenario or didn't have any tests in
+				// it, so ignore...
+				return nil
+			}
 			s.Append(tc)
 			return nil
 		},
