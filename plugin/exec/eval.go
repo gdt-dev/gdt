@@ -71,6 +71,11 @@ func (s *Spec) Eval(ctx context.Context, t *testing.T) *result.Result {
 		eerr, _ := err.(*exec.ExitError)
 		ec = eerr.ExitCode()
 	}
-	assertions := newAssertions(s.Assert, ec, outbuf, errbuf)
-	return result.New(result.WithFailures(assertions.Failures()...))
+	a := newAssertions(s.Assert, ec, outbuf, errbuf)
+	if !a.OK() {
+		for _, fail := range a.Failures() {
+			t.Error(fail)
+		}
+	}
+	return result.New(result.WithFailures(a.Failures()...))
 }

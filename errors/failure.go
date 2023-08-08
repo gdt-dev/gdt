@@ -31,8 +31,15 @@ var (
 )
 
 // TimeoutExceeded returns an ErrTimeoutExceeded when a test's execution
-// exceeds a timeout length.
-func TimeoutExceeded(duration string) error {
+// exceeds a timeout length. The optional failure parameter indicates a failed
+// assertion that occurred before a timeout was reached.
+func TimeoutExceeded(duration string, failure error) error {
+	if failure != nil {
+		return fmt.Errorf(
+			"%w: timed out waiting for assertion to succeed (%s)",
+			failure, duration,
+		)
+	}
 	return fmt.Errorf("%s (%s)", ErrTimeoutExceeded, duration)
 }
 
