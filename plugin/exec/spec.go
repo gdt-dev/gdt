@@ -15,6 +15,8 @@ type Spec struct {
 	Action
 	// Assert is an object containing the conditions that the Spec will assert.
 	Assert *Expect `yaml:"assert,omitempty"`
+	// On is an object containing actions to take upon certain conditions.
+	On *On `yaml:"on,omitempty"`
 }
 
 func (s *Spec) SetBase(b gdttypes.Spec) {

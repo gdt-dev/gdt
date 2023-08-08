@@ -72,6 +72,15 @@ func (s *Spec) UnmarshalYAML(node *yaml.Node) error {
 				return err
 			}
 			s.Assert = e
+		case "on":
+			if valNode.Kind != yaml.MappingNode {
+				return errors.ExpectedMapAt(valNode)
+			}
+			var o *On
+			if err := valNode.Decode(&o); err != nil {
+				return err
+			}
+			s.On = o
 		default:
 			if lo.Contains(gdttypes.BaseSpecFields, key) {
 				continue
