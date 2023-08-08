@@ -36,7 +36,7 @@ type Expect struct {
 	Paths map[string]string `yaml:"paths,omitempty"`
 	// PathFormats is a map, keyed by JSONPath expression, of expected formats
 	// that values found at the expression should have.
-	PathFormats map[string]string `yaml:"path_formats,omitempty"`
+	PathFormats map[string]string `yaml:"path-formats,omitempty"`
 	// Schema is a file path to the JSONSchema that the JSON should validate
 	// against.
 	Schema string `yaml:"schema,omitempty"`
@@ -112,7 +112,7 @@ func (e *Expect) UnmarshalYAML(node *yaml.Node) error {
 				}
 			}
 			e.Paths = paths
-		case "path_formats":
+		case "path_formats", "path-formats":
 			if valNode.Kind != yaml.MappingNode {
 				return gdterrors.ExpectedMapAt(valNode)
 			}
