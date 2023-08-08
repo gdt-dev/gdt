@@ -83,6 +83,7 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 			res := spec.Eval(specCtx, t)
 			if res.HasRuntimeError() {
 				rterr = res.RuntimeError()
+				t.Fatal(rterr)
 				break
 			}
 			// Results can have arbitrary run data stored in them and we
@@ -90,15 +91,6 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 			// that context to the next Run invocation).
 			if res.HasData() {
 				ctx = gdtcontext.StorePriorRun(ctx, res.Data())
-			}
-			for _, failure := range res.Failures() {
-				if gdtcontext.TimedOut(specCtx, failure) {
-					if to != nil && !to.Expected {
-						t.Fatal(gdterrors.TimeoutExceeded(to.After))
-					}
-				} else {
-					t.Fatal(failure)
-				}
 			}
 			if wait != nil && wait.After != "" {
 				debug.Println(ctx, t, "wait: %s after", wait.After)
