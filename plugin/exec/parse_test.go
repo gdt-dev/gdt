@@ -57,7 +57,9 @@ func TestSimpleCommand(t *testing.T) {
 				Index:    0,
 				Defaults: &gdttypes.Defaults{},
 			},
-			Exec: "ls",
+			Action: gdtexec.Action{
+				Exec: "ls",
+			},
 		},
 	}
 	assert.Equal(expTests, s.Tests)
