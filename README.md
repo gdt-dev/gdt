@@ -409,7 +409,7 @@ tests:
        paths:
          $.author.name: Ernest Hemingway
          $.publisher.address.state: New York
-       path_formats:
+       path-formats:
          $.id: uuid4
 ```
 
