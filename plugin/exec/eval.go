@@ -7,12 +7,8 @@ package exec
 import (
 	"bytes"
 	"context"
-	"os/exec"
 	"testing"
 
-	"github.com/google/shlex"
-
-	gdtcontext "github.com/gdt-dev/gdt/context"
 	"github.com/gdt-dev/gdt/debug"
 	gdterrors "github.com/gdt-dev/gdt/errors"
 	"github.com/gdt-dev/gdt/result"
@@ -25,56 +21,38 @@ func (s *Spec) Eval(ctx context.Context, t *testing.T) *result.Result {
 	outbuf := &bytes.Buffer{}
 	errbuf := &bytes.Buffer{}
 
-	var err error
-	var cmd *exec.Cmd
-	var target string
-	var args []string
-	if s.Shell == "" {
-		// Parse time already validated exec string parses into valid shell
-		// args
-		args, _ = shlex.Split(s.Exec)
-		target = args[0]
-		args = args[1:]
-	} else {
-		target = s.Shell
-		args = []string{"-c", s.Exec}
-	}
+	var ec int
 
-	debug.Println(ctx, t, "exec: %s %s", target, args)
-	cmd = exec.CommandContext(ctx, target, args...)
-
-	outpipe, err := cmd.StdoutPipe()
-	if err != nil {
+	if err := s.Do(ctx, t, outbuf, errbuf, &ec); err != nil {
+		if err == gdterrors.ErrTimeoutExceeded {
+			return result.New(result.WithFailures(gdterrors.ErrTimeoutExceeded))
+		}
 		return result.New(result.WithRuntimeError(ExecRuntimeError(err)))
-	}
-	errpipe, err := cmd.StderrPipe()
-	if err != nil {
-		return result.New(result.WithRuntimeError(ExecRuntimeError(err)))
-	}
-
-	err = cmd.Start()
-	if gdtcontext.TimedOut(ctx, err) {
-		return result.New(result.WithFailures(gdterrors.ErrTimeoutExceeded))
-	}
-	if err != nil {
-		return result.New(result.WithRuntimeError(ExecRuntimeError(err)))
-	}
-	outbuf.ReadFrom(outpipe)
-	errbuf.ReadFrom(errpipe)
-
-	err = cmd.Wait()
-	if gdtcontext.TimedOut(ctx, err) {
-		return result.New(result.WithFailures(gdterrors.ErrTimeoutExceeded))
-	}
-	ec := 0
-	if err != nil {
-		eerr, _ := err.(*exec.ExitError)
-		ec = eerr.ExitCode()
 	}
 	a := newAssertions(s.Assert, ec, outbuf, errbuf)
 	if !a.OK() {
 		for _, fail := range a.Failures() {
 			t.Error(fail)
+		}
+		if s.On != nil {
+			if s.On.Fail != nil {
+				outbuf.Reset()
+				errbuf.Reset()
+				err := s.On.Fail.Do(ctx, t, outbuf, errbuf, nil)
+				if err != nil {
+					debug.Println(ctx, t, "error in on.fail.exec: %s", err)
+				}
+				if outbuf.Len() > 0 {
+					debug.Println(
+						ctx, t, "on.fail.exec: stdout: %s", outbuf.String(),
+					)
+				}
+				if errbuf.Len() > 0 {
+					debug.Println(
+						ctx, t, "on.fail.exec: stderr: %s", errbuf.String(),
+					)
+				}
+			}
 		}
 	}
 	return result.New(result.WithFailures(a.Failures()...))

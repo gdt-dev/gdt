@@ -235,3 +235,50 @@ func TestTimeoutCascade(t *testing.T) {
 	require.Contains(debugout, "using timeout of 500ms (expected: false) [scenario default]")
 	require.Contains(debugout, "using timeout of 20ms (expected: true)")
 }
+
+// Unfortunately there's not really any good way of testing things like this
+// except by manually causing an assertion to fail in the test case and
+// checking to see if the `on.fail` action was taken and debug output emitted
+// to the console.
+//
+// When I change the `testdata/on-fail-exec.yaml` file to have a failed
+// assertion by changing `assert.out.is` to "dat" instead of "cat", I get the
+// correct behaviour:
+//
+// === RUN   TestOnFail
+// === RUN   TestOnFail/on-fail-exec
+//
+//	action.go:59: exec: echo [cat]
+//	eval.go:35: assertion failed: not equal: expected dat but got cat
+//	action.go:59: exec: echo [bad kitty]
+//	eval.go:46: on.fail.exec: stdout: bad kitty
+//
+// === NAME  TestOnFail
+//
+//	eval_test.go:256:
+//	    	Error Trace:	/home/jaypipes/src/github.com/gdt-dev/gdt/plugin/exec/eval_test.go:256
+//	    	Error:      	Should be false
+//	    	Test:       	TestOnFail
+//
+// --- FAIL: TestOnFail (0.00s)
+//
+//	--- FAIL: TestOnFail/on-fail-exec (0.00s)
+func TestOnFail(t *testing.T) {
+	require := require.New(t)
+
+	fp := filepath.Join("testdata", "on-fail-exec.yaml")
+	f, err := os.Open(fp)
+	require.Nil(err)
+
+	s, err := scenario.FromReader(
+		f,
+		scenario.WithPath(fp),
+	)
+	require.Nil(err)
+	require.NotNil(s)
+
+	ctx := gdtcontext.New(gdtcontext.WithDebug())
+	err = s.Run(ctx, t)
+	require.Nil(err)
+	require.False(t.Failed())
+}

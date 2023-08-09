@@ -510,6 +510,17 @@ the base `Spec` fields listed above):
   present in `stderr`.
 * `assert.err.contains_one_of`: (optional) a list of one or more strings of which *at
   least one* must be present in `stderr`.
+* `on`: (optional) an object describing actions to take upon certain
+  conditions.
+* `on.fail`: (optional) an object describing an action to take when any
+  assertion fails for the test action.
+* `on.fail.exec`: a string with the exact command to execute upon test
+  assertion failure. You may execute more than one command but must include the
+  `on.fail.shell` field to indicate that the command should be run in a shell.
+* `on.fail.shell`: (optional) a string with the specific shell to use in executing the
+  command to run upon test assertion failure. If empty (the default), no shell
+  is used to execute the command and instead the operating system's `exec` family
+  of calls is used.
 
 [execspec]: https://github.com/gdt-dev/gdt/blob/2791e11105fd3c36d1f11a7d111e089be7cdc84c/exec/spec.go#L11-L34
 [pipeexpect]: https://github.com/gdt-dev/gdt/blob/2791e11105fd3c36d1f11a7d111e089be7cdc84c/exec/assertions.go#L15-L26
