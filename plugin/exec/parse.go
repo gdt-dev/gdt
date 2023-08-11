@@ -37,6 +37,7 @@ func (s *Spec) UnmarshalYAML(node *yaml.Node) error {
 	if node.Kind != yaml.MappingNode {
 		return errors.ExpectedMapAt(node)
 	}
+	var execValNode *yaml.Node
 	// maps/structs are stored in a top-level Node.Content field which is a
 	// concatenated slice of Node pointers in pairs of key/values.
 	for i := 0; i < len(node.Content); i += 2 {
@@ -59,6 +60,7 @@ func (s *Spec) UnmarshalYAML(node *yaml.Node) error {
 			if valNode.Kind != yaml.ScalarNode {
 				return errors.ExpectedScalarAt(valNode)
 			}
+			execValNode = valNode
 			s.Exec = strings.TrimSpace(valNode.Value)
 			if s.Exec == "" {
 				return ExecEmpty(valNode)
@@ -94,7 +96,7 @@ func (s *Spec) UnmarshalYAML(node *yaml.Node) error {
 	if s.Shell != "" {
 		_, err := shlex.Split(s.Exec)
 		if err != nil {
-			return ExecInvalidShellParse(err)
+			return ExecInvalidShellParse(err, execValNode)
 		}
 	}
 	return nil

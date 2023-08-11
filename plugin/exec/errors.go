@@ -35,10 +35,10 @@ func ExecEmpty(node *yaml.Node) error {
 
 // ExecInvalidShellParse returns an ErrExecInvalid with the error from
 // shlex.Split
-func ExecInvalidShellParse(err error) error {
+func ExecInvalidShellParse(err error, node *yaml.Node) error {
 	return fmt.Errorf(
-		"%w: cannot parse shell args: %s",
-		ErrExecInvalid, err,
+		"%w: cannot parse shell args: %s at line %d, column %d",
+		ErrExecInvalid, err, node.Line, node.Column,
 	)
 }
 

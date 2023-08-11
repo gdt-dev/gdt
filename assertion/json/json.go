@@ -75,7 +75,7 @@ func (e *Expect) UnmarshalYAML(node *yaml.Node) error {
 			schemaURL := valNode.Value
 			if strings.HasPrefix(schemaURL, "http://") || strings.HasPrefix(schemaURL, "https://") {
 				// TODO(jaypipes): Support network lookups?
-				return UnsupportedJSONSchemaReference(schemaURL)
+				return UnsupportedJSONSchemaReference(schemaURL, valNode)
 			}
 			// Convert relative filepaths to absolute filepaths rooted in the context's
 			// testdir after stripping any "file://" scheme prefix
@@ -84,7 +84,7 @@ func (e *Expect) UnmarshalYAML(node *yaml.Node) error {
 
 			f, err := os.Open(schemaURL)
 			if err != nil {
-				return JSONSchemaFileNotFound(schemaURL)
+				return JSONSchemaFileNotFound(schemaURL, valNode)
 			}
 			defer f.Close()
 			if runtime.GOOS == "windows" {
@@ -105,10 +105,10 @@ func (e *Expect) UnmarshalYAML(node *yaml.Node) error {
 			}
 			for path, _ := range paths {
 				if len(path) == 0 || path[0] != '$' {
-					return JSONPathInvalidNoRoot(path)
+					return JSONPathInvalidNoRoot(path, valNode)
 				}
 				if _, err := lang.NewEvaluable(path); err != nil {
-					return JSONPathInvalid(path, err)
+					return JSONPathInvalid(path, err, valNode)
 				}
 			}
 			e.Paths = paths
@@ -122,10 +122,10 @@ func (e *Expect) UnmarshalYAML(node *yaml.Node) error {
 			}
 			for pathFormat, _ := range pathFormats {
 				if len(pathFormat) == 0 || pathFormat[0] != '$' {
-					return JSONPathInvalidNoRoot(pathFormat)
+					return JSONPathInvalidNoRoot(pathFormat, valNode)
 				}
 				if _, err := lang.NewEvaluable(pathFormat); err != nil {
-					return JSONPathInvalid(pathFormat, err)
+					return JSONPathInvalid(pathFormat, err, valNode)
 				}
 			}
 			e.PathFormats = pathFormats
@@ -228,7 +228,7 @@ func (a *assertions) pathsOK() bool {
 	}
 	v := interface{}(nil)
 	if err := json.Unmarshal(a.content, &v); err != nil {
-		a.Fail(JSONUnmarshalError(err))
+		a.Fail(JSONUnmarshalError(err, nil))
 		a.terminal = true
 		return false
 	}
@@ -299,7 +299,7 @@ func (a *assertions) pathFormatsOK() bool {
 	}
 	v := interface{}(nil)
 	if e := json.Unmarshal(a.content, &v); e != nil {
-		a.Fail(JSONUnmarshalError(e))
+		a.Fail(JSONUnmarshalError(e, nil))
 		a.terminal = true
 		return false
 	}

@@ -151,6 +151,9 @@ func UnknownSourceType(source interface{}) error {
 }
 
 // FileNotFound returns ErrFileNotFound for a given file path
-func FileNotFound(path string) error {
-	return fmt.Errorf("%w: %s", ErrFileNotFound, path)
+func FileNotFound(path string, node *yaml.Node) error {
+	return fmt.Errorf(
+		"%w: %s at line %d, column %d",
+		ErrFileNotFound, path, node.Line, node.Column,
+	)
 }
