@@ -43,6 +43,11 @@ var (
 	ErrExpectedInt = fmt.Errorf(
 		"%w: expected int value", ErrParse,
 	)
+	// ErrExpectedScalarOrMap indicates that we did not find an expected
+	// scalar or map field
+	ErrExpectedScalarOrMap = fmt.Errorf(
+		"%w: expected scalar or map field", ErrParse,
+	)
 	// ErrExpectedScalarOrSequence indicates that we did not find an expected
 	// scalar or sequence of scalars field
 	ErrExpectedScalarOrSequence = fmt.Errorf(
@@ -123,6 +128,15 @@ func ExpectedScalarOrSequenceAt(node *yaml.Node) error {
 	return fmt.Errorf(
 		"%w at line %d, column %d",
 		ErrExpectedScalarOrSequence, node.Line, node.Column,
+	)
+}
+
+// ExpectedScalarOrMapAt returns an ErrExpectedScalarOrMap error annotated with
+// the line/column of the supplied YAML node.
+func ExpectedScalarOrMapAt(node *yaml.Node) error {
+	return fmt.Errorf(
+		"%w at line %d, column %d",
+		ErrExpectedScalarOrMap, node.Line, node.Column,
 	)
 }
 
