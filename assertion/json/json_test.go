@@ -107,13 +107,11 @@ func TestLength(t *testing.T) {
 
 	a := gdtjson.New(&exp, c)
 	require.True(a.OK())
-	require.False(a.Terminal())
 	require.Empty(a.Failures())
 
 	expLen = 0
 	a = gdtjson.New(&exp, c)
 	require.False(a.OK())
-	require.False(a.Terminal())
 	failures := a.Failures()
 	require.Len(failures, 1)
 	require.ErrorIs(failures[0], gdterrors.ErrNotEqual)
@@ -132,7 +130,6 @@ func TestJSONUnmarshalError(t *testing.T) {
 
 	a := gdtjson.New(&exp, c)
 	require.False(a.OK())
-	require.True(a.Terminal())
 	failures := a.Failures()
 	require.Len(failures, 1)
 	require.ErrorIs(failures[0], gdtjson.ErrJSONUnmarshalError)
@@ -151,7 +148,6 @@ func TestJSONPathError(t *testing.T) {
 
 	a := gdtjson.New(&exp, c)
 	require.False(a.OK())
-	require.False(a.Terminal())
 	failures := a.Failures()
 	require.Len(failures, 1)
 	require.ErrorIs(failures[0], gdtjson.ErrJSONPathNotFound)
@@ -170,7 +166,6 @@ func TestJSONPathConversionError(t *testing.T) {
 
 	a := gdtjson.New(&exp, c)
 	require.False(a.OK())
-	require.True(a.Terminal())
 	failures := a.Failures()
 	require.Len(failures, 1)
 	require.ErrorIs(failures[0], gdtjson.ErrJSONPathConversionError)
@@ -189,7 +184,6 @@ func TestJSONPathNotEqual(t *testing.T) {
 
 	a := gdtjson.New(&exp, c)
 	require.True(a.OK())
-	require.False(a.Terminal())
 	require.Empty(a.Failures())
 
 	exp = gdtjson.Expect{
@@ -200,7 +194,6 @@ func TestJSONPathNotEqual(t *testing.T) {
 
 	a = gdtjson.New(&exp, c)
 	require.False(a.OK())
-	require.False(a.Terminal())
 	failures := a.Failures()
 	require.Len(failures, 1)
 	require.ErrorIs(failures[0], gdtjson.ErrJSONPathNotEqual)
@@ -219,7 +212,6 @@ func TestJSONPathFormatNotFound(t *testing.T) {
 
 	a := gdtjson.New(&exp, c)
 	require.False(a.OK())
-	require.False(a.Terminal())
 	failures := a.Failures()
 	require.Len(failures, 1)
 	require.ErrorIs(failures[0], gdtjson.ErrJSONPathNotFound)
@@ -238,7 +230,6 @@ func TestJSONPathFormatNotEqual(t *testing.T) {
 
 	a := gdtjson.New(&exp, c)
 	require.True(a.OK())
-	require.False(a.Terminal())
 	require.Empty(a.Failures())
 
 	exp = gdtjson.Expect{
@@ -249,7 +240,6 @@ func TestJSONPathFormatNotEqual(t *testing.T) {
 
 	a = gdtjson.New(&exp, c)
 	require.False(a.OK())
-	require.False(a.Terminal())
 	failures := a.Failures()
 	require.Len(failures, 1)
 	require.ErrorIs(failures[0], gdtjson.ErrJSONFormatNotEqual)
