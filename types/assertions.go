@@ -15,8 +15,4 @@ type Assertions interface {
 	// Failures returns a slice of failure messages indicating which assertions
 	// did not succeed.
 	Failures() []error
-	// Terminal returns true if re-executing the Assertions against the same
-	// result would be pointless. This allows Assertions to inform the Spec
-	// that retrying the same operation would not be necessary.
-	Terminal() bool
 }

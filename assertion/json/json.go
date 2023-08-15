@@ -152,10 +152,6 @@ func New(
 type assertions struct {
 	// failures contains the set of error messages for failed assertions
 	failures []error
-	// terminal indicates there was a failure in evaluating the assertions that
-	// should be considered a terminal condition (and therefore the test action
-	// should not be retried).
-	terminal bool
 	// exp contains the expected conditions for to be asserted
 	exp *Expect
 	// content is the JSON content we will check
@@ -171,13 +167,6 @@ func (a *assertions) Fail(err error) {
 // not succeed.
 func (a *assertions) Failures() []error {
 	return a.failures
-}
-
-// Terminal returns true if re-executing the assertions against the same result
-// would be pointless. This allows assertions to inform the Spec that retrying
-// the same operation would not be necessary.
-func (a *assertions) Terminal() bool {
-	return a.terminal
 }
 
 // OK returns true if all contained assertions pass successfully
@@ -229,7 +218,6 @@ func (a *assertions) pathsOK() bool {
 	v := interface{}(nil)
 	if err := json.Unmarshal(a.content, &v); err != nil {
 		a.Fail(JSONUnmarshalError(err, nil))
-		a.terminal = true
 		return false
 	}
 	for path, expVal := range a.exp.Paths {
@@ -250,7 +238,6 @@ func (a *assertions) pathsOK() bool {
 			expValInt, err := strconv.Atoi(expVal)
 			if err != nil {
 				a.Fail(JSONPathConversionError(path, expVal, got))
-				a.terminal = true
 				return false
 			}
 			if expValInt != got.(int) {
@@ -261,7 +248,6 @@ func (a *assertions) pathsOK() bool {
 			expValFloat, err := strconv.ParseFloat(expVal, 64)
 			if err != nil {
 				a.Fail(JSONPathConversionError(path, expVal, got))
-				a.terminal = true
 				return false
 			}
 			if expValFloat != got.(float64) {
@@ -272,7 +258,6 @@ func (a *assertions) pathsOK() bool {
 			expValBool, err := strconv.ParseBool(expVal)
 			if err != nil {
 				a.Fail(JSONPathConversionError(path, expVal, got))
-				a.terminal = true
 				return false
 			}
 			if expValBool != got.(bool) {
@@ -281,7 +266,6 @@ func (a *assertions) pathsOK() bool {
 			}
 		default:
 			a.Fail(JSONPathConversionError(path, expVal, got))
-			a.terminal = true
 			return false
 		}
 	}
@@ -300,7 +284,6 @@ func (a *assertions) pathFormatsOK() bool {
 	v := interface{}(nil)
 	if e := json.Unmarshal(a.content, &v); e != nil {
 		a.Fail(JSONUnmarshalError(e, nil))
-		a.terminal = true
 		return false
 	}
 	for path, format := range a.exp.PathFormats {
@@ -314,7 +297,6 @@ func (a *assertions) pathFormatsOK() bool {
 		ok, err := isFormatted(format, got)
 		if err != nil {
 			a.Fail(JSONFormatError(format, err))
-			a.terminal = true
 			return false
 		}
 		if !ok {
@@ -342,7 +324,6 @@ func (a *assertions) schemaOK() bool {
 	res, err := gjs.Validate(schemaLoader, docLoader)
 	if err != nil {
 		a.Fail(JSONSchemaValidateError(schemaPath, err))
-		a.terminal = true
 		return false
 	}
 
