@@ -138,6 +138,25 @@ func TestContainsOneOf(t *testing.T) {
 	require.Nil(err)
 }
 
+func TestContainsNoneOf(t *testing.T) {
+	require := require.New(t)
+
+	fp := filepath.Join("testdata", "ls-contains-none-of.yaml")
+	f, err := os.Open(fp)
+	require.Nil(err)
+
+	s, err := scenario.FromReader(
+		f,
+		scenario.WithPath(fp),
+	)
+	require.Nil(err)
+	require.NotNil(s)
+
+	ctx := context.TODO()
+	err = s.Run(ctx, t)
+	require.Nil(err)
+}
+
 func TestSleepTimeout(t *testing.T) {
 	require := require.New(t)
 

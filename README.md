@@ -491,25 +491,29 @@ the base `Spec` fields listed above):
   instead the operating system's `exec` family of calls is used.
 * `assert`: (optional) an object describing the conditions that will be
   asserted about the test action.
-* `assert.exit_code`: (optional) an integer with the expected exit code from the
+* `assert.exit-code`: (optional) an integer with the expected exit code from the
   executed command. The default successful exit code is 0 and therefore you do
   not need to specify this if you expect a successful exit code.
 * `assert.out`: (optional) a [`PipeExpect`][pipeexpect] object containing
   assertions about content in `stdout`.
 * `assert.out.is`: (optional) a string with the exact contents of `stdout` you expect
   to get.
-* `assert.out.contains`: (optional) a list of one or more strings that *all* must be
+* `assert.out.all`: (optional) a string or list of strings that *all* must be
   present in `stdout`.
-* `assert.out.contains_one_of`: (optional) a list of one or more strings of which *at
+* `assert.out.any`: (optional) a string or list of strings of which *at
   least one* must be present in `stdout`.
+* `assert.out.none`: (optional) a string or list of strings of which *none
+  should be present* in `stdout`.
 * `assert.err`: (optional) a [`PipeAssertions`][pipeexpect] object containing
   assertions about content in `stderr`.
 * `assert.err.is`: (optional) a string with the exact contents of `stderr` you expect
   to get.
-* `assert.err.contains`: (optional) a list of one or more strings that *all* must be
+* `assert.err.all`: (optional) a string or list of strings that *all* must be
   present in `stderr`.
-* `assert.err.contains_one_of`: (optional) a list of one or more strings of which *at
+* `assert.err.any`: (optional) a string or list of strings of which *at
   least one* must be present in `stderr`.
+* `assert.err.none`: (optional) a string or list of strings of which *none
+  should be present* in `stderr`.
 * `on`: (optional) an object describing actions to take upon certain
   conditions.
 * `on.fail`: (optional) an object describing an action to take when any

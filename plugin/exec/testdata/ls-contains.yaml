@@ -6,6 +6,29 @@ tests:
       out:
         contains:
          - parse.go
+  # Variants of contains-all
+  - exec: ls -l
+    assert:
+      out:
+        is: parse.go
+  - exec: ls -l
+    assert:
+      out:
+        is:
+         - parse.go
+  - exec: ls -l
+    assert:
+      out:
+        contains: parse.go
+  - exec: ls -l
+    assert:
+      out:
+        contains-all:
+         - parse.go
+  - exec: ls -l
+    assert:
+      out:
+        all: parse.go
   # To test the stderr assertions, we redirect stdout to stderr in a shell
   # command...
   - exec: "ls -l 1>&2"

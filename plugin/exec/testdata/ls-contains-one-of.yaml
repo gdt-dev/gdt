@@ -4,17 +4,34 @@ tests:
   - exec: ls -l
     assert:
       out:
+        any:
+         - thisdoesnotexist
+         - neitherdoesthisexist
+         - parse.go
+  # Variants of contains-any
+  - exec: ls -l
+    assert:
+      out:
         contains_one_of:
          - thisdoesnotexist
          - neitherdoesthisexist
          - parse.go
+  - exec: ls -l
+    assert:
+      out:
+        contains-any:
+         - parse.go
+  - exec: ls -l
+    assert:
+      out:
+        any: parse.go
   # To test the stderr assertions, we redirect stdout to stderr in a shell
   # command...
   - exec: "ls -l 1>&2"
     shell: sh
     assert:
       err:
-        contains_one_of:
+        any:
          - thisdoesnotexist
          - neitherdoesthisexist
          - parse.go
