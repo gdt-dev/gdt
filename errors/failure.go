@@ -19,6 +19,9 @@ var (
 	// ErrNotEqual is an ErrFailure when an expected thing doesn't equal an
 	// observed thing.
 	ErrNotEqual = fmt.Errorf("%w: not equal", ErrFailure)
+	// ErrIn is an ErrFailure when a thing unexpectedly appears in an
+	// container.
+	ErrIn = fmt.Errorf("%w: in", ErrFailure)
 	// ErrNotIn is an ErrFailure when an expected thing doesn't appear in an
 	// expected container.
 	ErrNotIn = fmt.Errorf("%w: not in", ErrFailure)
@@ -56,6 +59,14 @@ func NotEqualLength(exp, got int) error {
 // observed thing.
 func NotEqual(exp, got interface{}) error {
 	return fmt.Errorf("%w: expected %v but got %v", ErrNotEqual, exp, got)
+}
+
+// In returns an ErrIn when a thing unexpectedly appears in a container.
+func In(element, container interface{}) error {
+	return fmt.Errorf(
+		"%w: expected %v not to contain %v",
+		ErrIn, container, element,
+	)
 }
 
 // NotIn returns an ErrNotIn when an expected thing doesn't appear in an

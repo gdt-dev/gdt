@@ -11,4 +11,4 @@ tests:
     # the context's deadline cancels the pipe and results in a 1 result
     # code on Windows...
     assert:
-      exit_code: 1
+      exit-code: 1

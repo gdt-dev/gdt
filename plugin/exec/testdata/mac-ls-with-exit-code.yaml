@@ -3,4 +3,4 @@ description: a scenario that runs the `ls` command expecting a non-0 exit code o
 tests:
   - exec: ls /this/dir/does/not/exist
     assert:
-      exit_code: 1
+      exit-code: 1

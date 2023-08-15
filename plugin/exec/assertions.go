@@ -17,7 +17,7 @@ type Expect struct {
 	// ExitCode is the expected exit code for the executed command. The default
 	// (0) is the universal successful exit code, so you only need to set this
 	// if you expect a non-successful result from executing the command.
-	ExitCode int `yaml:"exit_code,omitempty"`
+	ExitCode int `yaml:"exit-code,omitempty"`
 	// Out has things that are expected in the stdout response
 	Out *PipeExpect `yaml:"out,omitempty"`
 	// Err has things that are expected in the stderr response
@@ -26,15 +26,15 @@ type Expect struct {
 
 // PipeExpect contains assertions about the contents of a pipe
 type PipeExpect struct {
-	// Is contains the exact match (minus whitespace) of the contents of the
-	// pipe
-	Is *string `yaml:"is,omitempty"`
-	// Contains is one or more strings that *all* must be present in the
+	// ContainsAll is one or more strings that *all* must be present in the
 	// contents of the pipe
-	Contains []string `yaml:"contains,omitempty"`
+	ContainsAll *gdttypes.FlexStrings `yaml:"contains,omitempty"`
+	// ContainsNone is one or more strings, *none of which* should be present in
+	// the contents of the pipe
+	ContainsNone *gdttypes.FlexStrings `yaml:"contains-none-of,omitempty"`
 	// ContainsOneOf is one or more strings of which *at least one* must be
 	// present in the contents of the pipe
-	ContainsOneOf []string `yaml:"contains_one_of,omitempty"`
+	ContainsAny *gdttypes.FlexStrings `yaml:"contains-one-of,omitempty"`
 }
 
 // pipeAssertions contains assertions about the contents of a pipe
@@ -83,33 +83,43 @@ func (a *pipeAssertions) OK() bool {
 
 	res := true
 	contents := strings.TrimSpace(a.pipe.String())
-	if a.Is != nil {
-		exp := *a.Is
-		got := contents
-		if exp != got {
-			a.Fail(errors.NotEqual(exp, got))
-			res = false
-		}
-	}
-	if len(a.Contains) > 0 {
-		for _, find := range a.Contains {
-			if !strings.Contains(contents, find) {
-				a.Fail(errors.NotIn(find, a.name))
+	if a.ContainsAll != nil {
+		// When there is just a single value, we use the NotEqual error,
+		// otherwise we use the NotIn error
+		vals := a.ContainsAll.Values()
+		if len(vals) == 1 {
+			if !strings.Contains(contents, vals[0]) {
+				a.Fail(errors.NotEqual(vals[0], contents))
 				res = false
+			}
+		} else {
+			for _, find := range vals {
+				if !strings.Contains(contents, find) {
+					a.Fail(errors.NotIn(find, a.name))
+					res = false
+				}
 			}
 		}
 	}
-	if len(a.ContainsOneOf) > 0 {
+	if a.ContainsAny != nil {
 		found := false
-		for _, find := range a.ContainsOneOf {
+		for _, find := range a.ContainsAny.Values() {
 			if idx := strings.Index(contents, find); idx > -1 {
 				found = true
 				break
 			}
 		}
 		if !found {
-			a.Fail(errors.NoneIn(a.ContainsOneOf, a.name))
+			a.Fail(errors.NoneIn(a.ContainsAny.Values(), a.name))
 			res = false
+		}
+	}
+	if a.ContainsNone != nil {
+		for _, find := range a.ContainsNone.Values() {
+			if strings.Contains(contents, find) {
+				a.Fail(errors.In(find, a.name))
+				res = false
+			}
 		}
 	}
 	return res

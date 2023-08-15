@@ -116,7 +116,7 @@ func (e *Expect) UnmarshalYAML(node *yaml.Node) error {
 		key := keyNode.Value
 		valNode := node.Content[i+1]
 		switch key {
-		case "exit_code":
+		case "exit_code", "exit-code":
 			if valNode.Kind != yaml.ScalarNode {
 				return errors.ExpectedScalarAt(valNode)
 			}
@@ -143,6 +143,54 @@ func (e *Expect) UnmarshalYAML(node *yaml.Node) error {
 				return err
 			}
 			e.Err = pe
+		default:
+			return errors.UnknownFieldAt(key, keyNode)
+		}
+	}
+	return nil
+}
+
+func (e *PipeExpect) UnmarshalYAML(node *yaml.Node) error {
+	if node.Kind != yaml.MappingNode {
+		return errors.ExpectedMapAt(node)
+	}
+	// maps/structs are stored in a top-level Node.Content field which is a
+	// concatenated slice of Node pointers in pairs of key/values.
+	for i := 0; i < len(node.Content); i += 2 {
+		keyNode := node.Content[i]
+		if keyNode.Kind != yaml.ScalarNode {
+			return errors.ExpectedScalarAt(keyNode)
+		}
+		key := keyNode.Value
+		valNode := node.Content[i+1]
+		switch key {
+		case "all", "is", "contains", "contains-all", "contains_all":
+			if valNode.Kind != yaml.ScalarNode && valNode.Kind != yaml.SequenceNode {
+				return errors.ExpectedScalarOrSequenceAt(valNode)
+			}
+			var v gdttypes.FlexStrings
+			if err := valNode.Decode(&v); err != nil {
+				return err
+			}
+			e.ContainsAll = &v
+		case "any", "contains-one-of", "contains-any", "contains_one_of", "contains_any":
+			if valNode.Kind != yaml.ScalarNode && valNode.Kind != yaml.SequenceNode {
+				return errors.ExpectedScalarOrSequenceAt(valNode)
+			}
+			var v gdttypes.FlexStrings
+			if err := valNode.Decode(&v); err != nil {
+				return err
+			}
+			e.ContainsAny = &v
+		case "none", "none-of", "contains-none-of", "contains-none", "none_of", "contains_none_of", "contains_none":
+			if valNode.Kind != yaml.ScalarNode && valNode.Kind != yaml.SequenceNode {
+				return errors.ExpectedScalarOrSequenceAt(valNode)
+			}
+			var v gdttypes.FlexStrings
+			if err := valNode.Decode(&v); err != nil {
+				return err
+			}
+			e.ContainsNone = &v
 		default:
 			return errors.UnknownFieldAt(key, keyNode)
 		}
