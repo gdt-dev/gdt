@@ -13,7 +13,7 @@ jobs:
   test:
     strategy:
       matrix:
-        go-version: [1.19.x, 1.20.x]
+        go: ['1.19', '1.20', '1.21']
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -24,11 +24,16 @@ jobs:
          disable-sudo: true
          allowed-endpoints: >
            github.com:443
+           api.github.com:443
+           proxy.github.com:443
+           raw.githubusercontent.com:443
+           objects.githubusercontent.com:443
            proxy.golang.org:443
      - name: checkout code
        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
      - name: setup go
-       uses: actions/setup-go@fac708d6674e30b6ba41289acaab6d4b75aa0753 # v4.0.1
+       uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
        with:
          go-version: ${{ matrix.go }}
+         check-latest: true
      - run: go test -v ./...

@@ -402,7 +402,7 @@ tests:
      headers:
       - Location
  - name: look up that created book
-   GET: $LOCATION
+   GET: $$LOCATION
    response:
      status: 200
      json:

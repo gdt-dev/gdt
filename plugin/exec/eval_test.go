@@ -199,7 +199,9 @@ func TestDebugWriter(t *testing.T) {
 	require.NotEqual(b.Len(), 0)
 	debugout := b.String()
 	require.Contains(debugout, "exec: echo [cat]")
+	require.Contains(debugout, "exec: stdout: cat")
 	require.Contains(debugout, "exec: sh [-c echo cat 1>&2]")
+	require.Contains(debugout, "exec: stderr: cat")
 }
 
 func TestWait(t *testing.T) {

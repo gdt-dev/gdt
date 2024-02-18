@@ -5,6 +5,8 @@
 package scenario_test
 
 import (
+	"bufio"
+	"bytes"
 	"context"
 	"os"
 	"path/filepath"
@@ -72,9 +74,9 @@ func TestDebugFlushing(t *testing.T) {
 	f, err := os.Open(fp)
 	require.Nil(err)
 
-	ctx := gdtcontext.New(
-		gdtcontext.WithDebug(),
-	)
+	var b bytes.Buffer
+	w := bufio.NewWriter(&b)
+	ctx := gdtcontext.New(gdtcontext.WithDebug(w))
 
 	s, err := scenario.FromReader(f, scenario.WithPath(fp))
 	require.Nil(err)
@@ -82,6 +84,11 @@ func TestDebugFlushing(t *testing.T) {
 
 	err = s.Run(ctx, t)
 	require.Nil(err)
+	require.False(t.Failed())
+	w.Flush()
+	require.NotEqual(b.Len(), 0)
+	debugout := b.String()
+	require.Contains(debugout, "TestDebugFlushing/foo-debug-wait-flush wait: 250ms before")
 }
 
 func TestTimeoutCascade(t *testing.T) {
