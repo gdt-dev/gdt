@@ -42,16 +42,6 @@ func (s *Spec) Eval(ctx context.Context, t *testing.T) *result.Result {
 				if err != nil {
 					debug.Println(ctx, t, "error in on.fail.exec: %s", err)
 				}
-				if outbuf.Len() > 0 {
-					debug.Println(
-						ctx, t, "on.fail.exec: stdout: %s", outbuf.String(),
-					)
-				}
-				if errbuf.Len() > 0 {
-					debug.Println(
-						ctx, t, "on.fail.exec: stderr: %s", errbuf.String(),
-					)
-				}
 			}
 		}
 	}

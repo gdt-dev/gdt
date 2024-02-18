@@ -23,13 +23,10 @@ func Printf(
 ) {
 	t.Helper()
 	writers := gdtcontext.Debug(ctx)
-	if writers == nil {
-		return
-	}
-	t.Logf(format, args...)
 	if len(writers) == 0 {
 		return
 	}
+	t.Logf(format, args...)
 
 	if !strings.HasPrefix(format, "[gdt] ") {
 		format = "[gdt] " + t.Name() + " " + format
@@ -50,14 +47,11 @@ func Println(
 ) {
 	t.Helper()
 	writers := gdtcontext.Debug(ctx)
-	if writers == nil {
+	if len(writers) == 0 {
 		return
 	}
 	// NOTE(jaypipes): T.Logf() automatically adds newlines...
 	t.Logf(format, args...)
-	if len(writers) == 0 {
-		return
-	}
 
 	if !strings.HasPrefix(format, "[gdt] ") {
 		format = "[gdt] " + t.Name() + " " + format

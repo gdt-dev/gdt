@@ -79,9 +79,15 @@ func (a *Action) Do(
 	}
 	if outbuf != nil {
 		outbuf.ReadFrom(outpipe)
+		if outbuf.Len() > 0 {
+			debug.Println(ctx, t, "exec: stdout: %s", outbuf.String())
+		}
 	}
 	if errbuf != nil {
 		errbuf.ReadFrom(errpipe)
+		if errbuf.Len() > 0 {
+			debug.Println(ctx, t, "exec: stderr: %s", errbuf.String())
+		}
 	}
 
 	err = cmd.Wait()
