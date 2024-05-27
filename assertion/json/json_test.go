@@ -5,6 +5,7 @@
 package json_test
 
 import (
+	"context"
 	"io/ioutil"
 	"path/filepath"
 	"testing"
@@ -98,6 +99,7 @@ func content() []byte {
 func TestLength(t *testing.T) {
 	require := require.New(t)
 
+	ctx := context.TODO()
 	c := content()
 	expLen := len(c)
 
@@ -106,12 +108,12 @@ func TestLength(t *testing.T) {
 	}
 
 	a := gdtjson.New(&exp, c)
-	require.True(a.OK())
+	require.True(a.OK(ctx))
 	require.Empty(a.Failures())
 
 	expLen = 0
 	a = gdtjson.New(&exp, c)
-	require.False(a.OK())
+	require.False(a.OK(ctx))
 	failures := a.Failures()
 	require.Len(failures, 1)
 	require.ErrorIs(failures[0], gdterrors.ErrNotEqual)
@@ -120,6 +122,7 @@ func TestLength(t *testing.T) {
 func TestJSONUnmarshalError(t *testing.T) {
 	require := require.New(t)
 
+	ctx := context.TODO()
 	c := []byte(`not { value } json`)
 
 	exp := gdtjson.Expect{
@@ -129,7 +132,7 @@ func TestJSONUnmarshalError(t *testing.T) {
 	}
 
 	a := gdtjson.New(&exp, c)
-	require.False(a.OK())
+	require.False(a.OK(ctx))
 	failures := a.Failures()
 	require.Len(failures, 1)
 	require.ErrorIs(failures[0], gdtjson.ErrJSONUnmarshalError)
@@ -138,6 +141,7 @@ func TestJSONUnmarshalError(t *testing.T) {
 func TestJSONPathError(t *testing.T) {
 	require := require.New(t)
 
+	ctx := context.TODO()
 	c := content()
 
 	exp := gdtjson.Expect{
@@ -147,7 +151,7 @@ func TestJSONPathError(t *testing.T) {
 	}
 
 	a := gdtjson.New(&exp, c)
-	require.False(a.OK())
+	require.False(a.OK(ctx))
 	failures := a.Failures()
 	require.Len(failures, 1)
 	require.ErrorIs(failures[0], gdtjson.ErrJSONPathNotFound)
@@ -156,6 +160,7 @@ func TestJSONPathError(t *testing.T) {
 func TestJSONPathConversionError(t *testing.T) {
 	require := require.New(t)
 
+	ctx := context.TODO()
 	c := content()
 
 	exp := gdtjson.Expect{
@@ -165,7 +170,7 @@ func TestJSONPathConversionError(t *testing.T) {
 	}
 
 	a := gdtjson.New(&exp, c)
-	require.False(a.OK())
+	require.False(a.OK(ctx))
 	failures := a.Failures()
 	require.Len(failures, 1)
 	require.ErrorIs(failures[0], gdtjson.ErrJSONPathConversionError)
@@ -174,6 +179,7 @@ func TestJSONPathConversionError(t *testing.T) {
 func TestJSONPathNotEqual(t *testing.T) {
 	require := require.New(t)
 
+	ctx := context.TODO()
 	c := content()
 
 	exp := gdtjson.Expect{
@@ -183,7 +189,7 @@ func TestJSONPathNotEqual(t *testing.T) {
 	}
 
 	a := gdtjson.New(&exp, c)
-	require.True(a.OK())
+	require.True(a.OK(ctx))
 	require.Empty(a.Failures())
 
 	exp = gdtjson.Expect{
@@ -193,7 +199,7 @@ func TestJSONPathNotEqual(t *testing.T) {
 	}
 
 	a = gdtjson.New(&exp, c)
-	require.False(a.OK())
+	require.False(a.OK(ctx))
 	failures := a.Failures()
 	require.Len(failures, 1)
 	require.ErrorIs(failures[0], gdtjson.ErrJSONPathNotEqual)
@@ -202,6 +208,7 @@ func TestJSONPathNotEqual(t *testing.T) {
 func TestJSONPathFormatNotFound(t *testing.T) {
 	require := require.New(t)
 
+	ctx := context.TODO()
 	c := content()
 
 	exp := gdtjson.Expect{
@@ -211,7 +218,7 @@ func TestJSONPathFormatNotFound(t *testing.T) {
 	}
 
 	a := gdtjson.New(&exp, c)
-	require.False(a.OK())
+	require.False(a.OK(ctx))
 	failures := a.Failures()
 	require.Len(failures, 1)
 	require.ErrorIs(failures[0], gdtjson.ErrJSONPathNotFound)
@@ -220,6 +227,7 @@ func TestJSONPathFormatNotFound(t *testing.T) {
 func TestJSONPathFormatNotEqual(t *testing.T) {
 	require := require.New(t)
 
+	ctx := context.TODO()
 	c := content()
 
 	exp := gdtjson.Expect{
@@ -229,7 +237,7 @@ func TestJSONPathFormatNotEqual(t *testing.T) {
 	}
 
 	a := gdtjson.New(&exp, c)
-	require.True(a.OK())
+	require.True(a.OK(ctx))
 	require.Empty(a.Failures())
 
 	exp = gdtjson.Expect{
@@ -239,7 +247,7 @@ func TestJSONPathFormatNotEqual(t *testing.T) {
 	}
 
 	a = gdtjson.New(&exp, c)
-	require.False(a.OK())
+	require.False(a.OK(ctx))
 	failures := a.Failures()
 	require.Len(failures, 1)
 	require.ErrorIs(failures[0], gdtjson.ErrJSONFormatNotEqual)

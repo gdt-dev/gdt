@@ -5,6 +5,7 @@
 package json
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -170,7 +171,7 @@ func (a *assertions) Failures() []error {
 }
 
 // OK returns true if all contained assertions pass successfully
-func (a *assertions) OK() bool {
+func (a *assertions) OK(ctx context.Context) bool {
 	if a == nil || a.exp == nil {
 		return true
 	}
