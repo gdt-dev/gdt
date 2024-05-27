@@ -6,6 +6,7 @@ package exec
 
 import (
 	"bytes"
+	"context"
 	"strings"
 
 	"github.com/gdt-dev/gdt/errors"
@@ -76,7 +77,7 @@ func (a *pipeAssertions) Terminal() bool {
 
 // OK checks all the assertions in the pipeAssertions against the supplied pipe
 // contents and returns true if all assertions pass.
-func (a *pipeAssertions) OK() bool {
+func (a *pipeAssertions) OK(ctx context.Context) bool {
 	if a == nil || a.pipe == nil {
 		return true
 	}
@@ -167,17 +168,17 @@ func (a *assertions) Terminal() bool {
 
 // OK checks all the assertions against the supplied arguments and returns true
 // if all assertions pass.
-func (a *assertions) OK() bool {
+func (a *assertions) OK(ctx context.Context) bool {
 	res := true
 	if a.expExitCode != a.exitCode {
 		a.Fail(errors.NotEqual(a.expExitCode, a.exitCode))
 		res = false
 	}
-	if !a.expOutPipe.OK() {
+	if !a.expOutPipe.OK(ctx) {
 		a.failures = append(a.failures, a.expOutPipe.Failures()...)
 		res = false
 	}
-	if !a.expErrPipe.OK() {
+	if !a.expErrPipe.OK(ctx) {
 		a.failures = append(a.failures, a.expErrPipe.Failures()...)
 		res = false
 	}

@@ -4,12 +4,14 @@
 
 package types
 
+import "context"
+
 // Assertions track zero or more assertions about some result
 type Assertions interface {
 	// OK returns true if all contained assertions pass successfully, false
 	// otherwise. If false is returned, Failures() is guaranteed to be
 	// non-empty.
-	OK() bool
+	OK(context.Context) bool
 	// Fail appends a supplied error to the set of failed assertions
 	Fail(error)
 	// Failures returns a slice of failure messages indicating which assertions
