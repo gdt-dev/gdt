@@ -30,7 +30,7 @@ func (s *Spec) Eval(ctx context.Context, t *testing.T) *result.Result {
 		return result.New(result.WithRuntimeError(ExecRuntimeError(err)))
 	}
 	a := newAssertions(s.Assert, ec, outbuf, errbuf)
-	if !a.OK() {
+	if !a.OK(ctx) {
 		for _, fail := range a.Failures() {
 			t.Error(fail)
 		}
