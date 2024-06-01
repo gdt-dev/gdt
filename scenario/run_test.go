@@ -88,7 +88,7 @@ func TestDebugFlushing(t *testing.T) {
 	w.Flush()
 	require.NotEqual(b.Len(), 0)
 	debugout := b.String()
-	require.Contains(debugout, "TestDebugFlushing/foo-debug-wait-flush wait: 250ms before")
+	require.Contains(debugout, "[gdt] [foo-debug-wait-flush] wait: 250ms before")
 }
 
 func TestTimeoutCascade(t *testing.T) {

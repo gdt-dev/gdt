@@ -40,7 +40,7 @@ func (s *Spec) Eval(ctx context.Context, t *testing.T) *result.Result {
 				errbuf.Reset()
 				err := s.On.Fail.Do(ctx, t, outbuf, errbuf, nil)
 				if err != nil {
-					debug.Println(ctx, t, "error in on.fail.exec: %s", err)
+					debug.Println(ctx, "error in on.fail.exec: %s", err)
 				}
 			}
 		}

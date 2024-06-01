@@ -59,6 +59,10 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 		}
 	}
 	t.Run(s.Title(), func(t *testing.T) {
+		ctx = gdtcontext.PushTrace(ctx, s.Title())
+		defer func() {
+			ctx = gdtcontext.PopTrace(ctx)
+		}()
 		for _, spec := range s.Tests {
 			// Create a brand new context that inherits the top-level context's
 			// cancel func. We want to set deadlines for each test spec and if
@@ -70,7 +74,7 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 			sb := spec.Base()
 			wait := sb.Wait
 			if wait != nil && wait.Before != "" {
-				debug.Println(ctx, t, "wait: %s before", wait.Before)
+				debug.Println(ctx, "wait: %s before", wait.Before)
 				time.Sleep(wait.BeforeDuration())
 			}
 
@@ -93,7 +97,7 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 				ctx = gdtcontext.StorePriorRun(ctx, res.Data())
 			}
 			if wait != nil && wait.After != "" {
-				debug.Println(ctx, t, "wait: %s after", wait.After)
+				debug.Println(ctx, "wait: %s after", wait.After)
 				time.Sleep(wait.AfterDuration())
 			}
 		}
@@ -112,14 +116,14 @@ func specTimeout(
 ) *gdttypes.Timeout {
 	if specTimeout != nil {
 		debug.Println(
-			ctx, t, "using timeout of %s (expected: %t)",
+			ctx, "using timeout of %s (expected: %t)",
 			specTimeout.After, specTimeout.Expected,
 		)
 		return specTimeout
 	}
 	if scenDefaults != nil && scenDefaults.Timeout != nil {
 		debug.Println(
-			ctx, t, "using timeout of %s (expected: %t) [scenario default]",
+			ctx, "using timeout of %s (expected: %t) [scenario default]",
 			scenDefaults.Timeout.After, scenDefaults.Timeout.Expected,
 		)
 		return scenDefaults.Timeout

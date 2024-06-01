@@ -223,7 +223,11 @@ func (s *fooSpec) UnmarshalYAML(node *yaml.Node) error {
 func (s *fooSpec) Eval(ctx context.Context, t *testing.T) *result.Result {
 	fails := []error{}
 	t.Run(s.Title(), func(t *testing.T) {
-		debug.Printf(ctx, t, "in %s Foo=%s", s.Title(), s.Foo)
+		ctx = gdtcontext.PushTrace(ctx, s.Title())
+		defer func() {
+			ctx = gdtcontext.PopTrace(ctx)
+		}()
+		debug.Println(ctx, "in %s Foo=%s", s.Title(), s.Foo)
 		// This is just a silly test to demonstrate how to write Eval() methods
 		// for plugin Spec specialization classes.
 		if s.Name == "bar" && s.Foo != "bar" {

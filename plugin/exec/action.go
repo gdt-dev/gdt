@@ -56,7 +56,7 @@ func (a *Action) Do(
 		args = []string{"-c", a.Exec}
 	}
 
-	debug.Println(ctx, t, "exec: %s %s", target, args)
+	debug.Println(ctx, "exec: %s %s", target, args)
 
 	var cmd *exec.Cmd
 	cmd = exec.CommandContext(ctx, target, args...)
@@ -80,13 +80,13 @@ func (a *Action) Do(
 	if outbuf != nil {
 		outbuf.ReadFrom(outpipe)
 		if outbuf.Len() > 0 {
-			debug.Println(ctx, t, "exec: stdout: %s", outbuf.String())
+			debug.Println(ctx, "exec: stdout: %s", outbuf.String())
 		}
 	}
 	if errbuf != nil {
 		errbuf.ReadFrom(errpipe)
 		if errbuf.Len() > 0 {
-			debug.Println(ctx, t, "exec: stderr: %s", errbuf.String())
+			debug.Println(ctx, "exec: stderr: %s", errbuf.String())
 		}
 	}
 

@@ -47,10 +47,6 @@ type pipeAssertions struct {
 	name string
 	// failures contains the set of error messages for failed assertions.
 	failures []error
-	// terminal indicates there was a failure in evaluating the assertions that
-	// should be considered a terminal condition (and therefore the test action
-	// should not be retried).
-	terminal bool
 }
 
 // Fail appends a supplied error to the set of failed assertions
@@ -64,15 +60,6 @@ func (a *pipeAssertions) Failures() []error {
 		return []error{}
 	}
 	return a.failures
-}
-
-// Terminal returns a bool indicating the assertions failed in a way that is
-// not retryable.
-func (a *pipeAssertions) Terminal() bool {
-	if a == nil {
-		return false
-	}
-	return a.terminal
 }
 
 // OK checks all the assertions in the pipeAssertions against the supplied pipe
@@ -130,10 +117,6 @@ func (a *pipeAssertions) OK(ctx context.Context) bool {
 type assertions struct {
 	// failures contains the set of error messages for failed assertions
 	failures []error
-	// terminal indicates there was a failure in evaluating the assertions that
-	// should be considered a terminal condition (and therefore the test action
-	// should not be retried).
-	terminal bool
 	// expExitCode contains the expected exit code
 	expExitCode int
 	// exitCode is the exit code we got from the execution
@@ -155,15 +138,6 @@ func (a *assertions) Failures() []error {
 		return []error{}
 	}
 	return a.failures
-}
-
-// Terminal returns a bool indicating the assertions failed in a way that is
-// not retryable.
-func (a *assertions) Terminal() bool {
-	if a == nil {
-		return false
-	}
-	return a.terminal
 }
 
 // OK checks all the assertions against the supplied arguments and returns true

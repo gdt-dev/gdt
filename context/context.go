@@ -16,6 +16,7 @@ type ContextKey string
 
 var (
 	debugKey    = ContextKey("gdt.debug")
+	traceKey    = ContextKey("gdt.trace")
 	pluginsKey  = ContextKey("gdt.plugins")
 	fixturesKey = ContextKey("gdt.fixtures")
 	priorRunKey = ContextKey("gdt.run.prior")
@@ -41,11 +42,11 @@ type ContextModifier func(context.Context) context.Context
 //		   require.Nil(err)
 //
 //		   ctx := gdtcontext.New(gdtcontext.WithDebug())
-//	    s, err := scenario.FromReader(
-//	        f,
-//	        scenario.WithPath(fp),
-//	        scenario.WithContext(ctx),
-//	    )
+//	       s, err := scenario.FromReader(
+//	          f,
+//	          scenario.WithPath(fp),
+//	          scenario.WithContext(ctx),
+//	       )
 //		   require.Nil(err)
 //		   require.NotNil(s)
 //
@@ -152,6 +153,29 @@ func StorePriorRun(
 	existing := PriorRun(ctx)
 	merged := lo.Assign(existing, data)
 	return context.WithValue(ctx, priorRunKey, merged)
+}
+
+// PushTrace pushes a debug/trace name onto the debug/trace stack. It is used
+// by plugins to track where in the processing of a test or assertion the
+// plugin is and gets output at the start of a debug.Printf/Println message.
+func PushTrace(
+	ctx context.Context,
+	name string,
+) context.Context {
+	stack := TraceStack(ctx)
+	stack = append(stack, name)
+	return context.WithValue(ctx, traceKey, stack)
+}
+
+// PopTrace pops the last name off the debug/trace stack. It is used by plugins
+// to track where in the processing of a test or assertion the plugin is and
+// gets output at the start of a debug.Printf/Println message.
+func PopTrace(
+	ctx context.Context,
+) context.Context {
+	stack := TraceStack(ctx)
+	stack = stack[:len(stack)-1]
+	return context.WithValue(ctx, traceKey, stack)
 }
 
 // New returns a new Context
