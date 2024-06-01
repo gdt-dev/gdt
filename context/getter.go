@@ -7,19 +7,46 @@ package context
 import (
 	"context"
 	"io"
+	"strings"
 
 	gdttypes "github.com/gdt-dev/gdt/types"
 )
 
+const (
+	traceDelimiter = "/"
+)
+
+// Trace gets a context's trace name stack joined together with
+func Trace(ctx context.Context) string {
+	if ctx == nil {
+		return ""
+	}
+	if v := ctx.Value(traceKey); v != nil {
+		return strings.Join(v.([]string), traceDelimiter)
+	}
+	return ""
+}
+
+// TraceStack gets a context's trace name stack
+func TraceStack(ctx context.Context) []string {
+	if ctx == nil {
+		return []string{}
+	}
+	if v := ctx.Value(traceKey); v != nil {
+		return v.([]string)
+	}
+	return []string{}
+}
+
 // Debug gets a context's Debug writer
 func Debug(ctx context.Context) []io.Writer {
 	if ctx == nil {
-		return nil
+		return []io.Writer{}
 	}
 	if v := ctx.Value(debugKey); v != nil {
 		return v.([]io.Writer)
 	}
-	return nil
+	return []io.Writer{}
 }
 
 // Plugins gets a context's Plugins
