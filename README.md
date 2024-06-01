@@ -2,7 +2,7 @@
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/gdt-dev/gdt.svg)](https://pkg.go.dev/github.com/gdt-dev/gdt)
 [![Go Report Card](https://goreportcard.com/badge/github.com/gdt-dev/gdt)](https://goreportcard.com/report/github.com/gdt-dev/gdt)
-[![Build Status](https://github.com/gdt-dev/gdt/actions/workflows/gate-tests.yml/badge.svg?branch=main)](https://github.com/gdt-dev/gdt/actions)
+[![Build Status](https://github.com/gdt-dev/gdt/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/gdt-dev/gdt/actions)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
 
 <div style="float: left">
