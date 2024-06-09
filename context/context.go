@@ -7,6 +7,7 @@ package context
 import (
 	"context"
 	"io"
+	"os"
 
 	gdttypes "github.com/gdt-dev/gdt/types"
 	"github.com/samber/lo"
@@ -100,18 +101,15 @@ func WithFixtures(fixtures map[string]gdttypes.Fixture) ContextModifier {
 // SetDebug sets gdt's debug logging to the supplied `io.Writer`.
 //
 // The `writers` parameters is optional. If no `io.Writer` objects are
-// supplied, gdt will output debug messages using the `testing.T.Log[f]()`
-// function. This means that you will only get these debug messages if you call
-// the `go test` tool with the `-v` option (either as `go test -v` or with `go
-// test -v=test2json`.
+// supplied, gdt will output debug messages to stdout.
 func SetDebug(
 	ctx context.Context,
 	writers ...io.Writer,
 ) context.Context {
 	if len(writers) == 0 {
-		// This simply triggers a call to t.Logf() when WithDebug() is
-		// called with no parameters...
-		writers = []io.Writer{io.Discard}
+		// This triggers writes to stdout when WithDebug() is called with no
+		// parameters...
+		writers = []io.Writer{os.Stdout}
 	}
 	return context.WithValue(ctx, debugKey, writers)
 }
