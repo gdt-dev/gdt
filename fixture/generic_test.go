@@ -5,6 +5,7 @@
 package fixture_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/gdt-dev/gdt/fixture"
@@ -35,7 +36,7 @@ func TestStarter(t *testing.T) {
 
 	started := false
 
-	starter := func() {
+	starter := func(_ context.Context) {
 		started = true
 	}
 
@@ -45,7 +46,7 @@ func TestStarter(t *testing.T) {
 
 	assert.False(started)
 
-	f.Start()
+	f.Start(context.TODO())
 
 	assert.True(started)
 }
@@ -55,7 +56,7 @@ func TestStopper(t *testing.T) {
 
 	stopped := false
 
-	stopper := func() {
+	stopper := func(_ context.Context) {
 		stopped = true
 	}
 
@@ -65,7 +66,7 @@ func TestStopper(t *testing.T) {
 
 	assert.False(stopped)
 
-	f.Stop()
+	f.Stop(context.TODO())
 
 	assert.True(stopped)
 }

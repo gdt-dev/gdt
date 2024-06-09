@@ -5,6 +5,7 @@
 package json
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"io/ioutil"
@@ -18,9 +19,9 @@ type jsonFixture struct {
 	data interface{}
 }
 
-func (f *jsonFixture) Start() {}
+func (f *jsonFixture) Start(_ context.Context) {}
 
-func (f *jsonFixture) Stop() {}
+func (f *jsonFixture) Stop(_ context.Context) {}
 
 // HasState returns true if the supplied JSONPath expression results in a found
 // value in the fixture's data
