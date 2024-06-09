@@ -5,6 +5,7 @@
 package fixture
 
 import (
+	"context"
 	"strings"
 
 	gdttypes "github.com/gdt-dev/gdt/types"
@@ -12,22 +13,22 @@ import (
 
 // genericFixture adapts functions and state dicts into the Fixture type
 type genericFixture struct {
-	starter func()
-	stopper func()
+	starter func(context.Context)
+	stopper func(context.Context)
 	state   map[string]interface{}
 }
 
 // Start sets up any resources the fixture uses
-func (f *genericFixture) Start() {
+func (f *genericFixture) Start(ctx context.Context) {
 	if f.starter != nil {
-		f.starter()
+		f.starter(ctx)
 	}
 }
 
 // Stop cleans up any resources the fixture uses
-func (f *genericFixture) Stop() {
+func (f *genericFixture) Stop(ctx context.Context) {
 	if f.stopper != nil {
-		f.stopper()
+		f.stopper(ctx)
 	}
 }
 
@@ -54,14 +55,14 @@ func (f *genericFixture) State(key string) interface{} {
 type genericFixtureModifier func(s *genericFixture)
 
 // WithStarter allows a starter functor to be adapted into a fixture
-func WithStarter(starter func()) genericFixtureModifier {
+func WithStarter(starter func(context.Context)) genericFixtureModifier {
 	return func(f *genericFixture) {
 		f.starter = starter
 	}
 }
 
 // WithStopper allows a stopper functor to be adapted into a fixture
-func WithStopper(stopper func()) genericFixtureModifier {
+func WithStopper(stopper func(context.Context)) genericFixtureModifier {
 	return func(f *genericFixture) {
 		f.stopper = stopper
 	}
