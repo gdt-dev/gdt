@@ -30,9 +30,13 @@ type ContextModifier func(context.Context) context.Context
 // zero or more `io.Writer` objects to the function.
 //
 // If no `io.Writer` objects are supplied, gdt will output debug messages using
-// the `testing.T.Log[f]()` function. This means that you will only get these
-// debug messages if you call the `go test` tool with the `-v` option (either
-// as `go test -v` or with `go test -v=test2json`.
+// the `fmt.Printf` function. The `fmt.Printf` function is *unbuffered* however
+// unless you call `go test` with the `-v` argument, `go test` swallows output
+// to stdout and does not display it unless a test fails.
+//
+// This means that you will only get these debug messages if you call the `go
+// test` tool with the `-v` option (either as `go test -v` or with `go test
+// -v=test2json`.
 //
 // ```go
 //
@@ -76,9 +80,8 @@ type ContextModifier func(context.Context) context.Context
 func WithDebug(writers ...io.Writer) ContextModifier {
 	return func(ctx context.Context) context.Context {
 		if len(writers) == 0 {
-			// This simply triggers a call to t.Logf() when WithDebug() is
-			// called with no parameters...
-			writers = []io.Writer{io.Discard}
+			// Write to stdout when WithDebug() is called with no parameters
+			writers = []io.Writer{os.Stdout}
 		}
 		return context.WithValue(ctx, debugKey, writers)
 	}
