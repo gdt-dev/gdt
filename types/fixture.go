@@ -9,7 +9,7 @@ import "context"
 // A Fixture allows state to be passed from setups
 type Fixture interface {
 	// Start sets up the fixture
-	Start(context.Context)
+	Start(context.Context) error
 	// Stop tears down the fixture, cleaning up any owned resources
 	Stop(context.Context)
 	// HasState returns true if the fixture contains some state with the given

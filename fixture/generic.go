@@ -13,16 +13,17 @@ import (
 
 // genericFixture adapts functions and state dicts into the Fixture type
 type genericFixture struct {
-	starter func(context.Context)
+	starter func(context.Context) error
 	stopper func(context.Context)
 	state   map[string]interface{}
 }
 
 // Start sets up any resources the fixture uses
-func (f *genericFixture) Start(ctx context.Context) {
+func (f *genericFixture) Start(ctx context.Context) error {
 	if f.starter != nil {
-		f.starter(ctx)
+		return f.starter(ctx)
 	}
+	return nil
 }
 
 // Stop cleans up any resources the fixture uses
@@ -55,7 +56,7 @@ func (f *genericFixture) State(key string) interface{} {
 type genericFixtureModifier func(s *genericFixture)
 
 // WithStarter allows a starter functor to be adapted into a fixture
-func WithStarter(starter func(context.Context)) genericFixtureModifier {
+func WithStarter(starter func(context.Context) error) genericFixtureModifier {
 	return func(f *genericFixture) {
 		f.starter = starter
 	}

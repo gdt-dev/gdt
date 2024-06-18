@@ -19,7 +19,7 @@ type jsonFixture struct {
 	data interface{}
 }
 
-func (f *jsonFixture) Start(_ context.Context) {}
+func (f *jsonFixture) Start(_ context.Context) error { return nil }
 
 func (f *jsonFixture) Stop(_ context.Context) {}
 

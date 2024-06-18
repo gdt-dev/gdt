@@ -32,7 +32,9 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 			if !found {
 				return gdterrors.RequiredFixtureMissing(fname)
 			}
-			fix.Start(ctx)
+			if err := fix.Start(ctx); err != nil {
+				return err
+			}
 			defer fix.Stop(ctx)
 		}
 	}

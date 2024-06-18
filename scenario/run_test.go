@@ -67,6 +67,26 @@ func TestMissingFixtures(t *testing.T) {
 	assert.ErrorIs(err, gdterrors.RuntimeError)
 }
 
+func TestFixtureStartError(t *testing.T) {
+	require := require.New(t)
+	assert := assert.New(t)
+
+	fp := filepath.Join("testdata", "fixture-start-error.yaml")
+	f, err := os.Open(fp)
+	require.Nil(err)
+
+	s, err := scenario.FromReader(f, scenario.WithPath(fp))
+	require.Nil(err)
+	require.NotNil(s)
+
+	ctx := gdtcontext.New()
+	ctx = gdtcontext.RegisterFixture(ctx, "start-error", errStarterFixture)
+
+	err = s.Run(ctx, t)
+	assert.NotNil(err)
+	assert.ErrorContains(err, "error starting fixture!")
+}
+
 func TestDebugFlushing(t *testing.T) {
 	require := require.New(t)
 
