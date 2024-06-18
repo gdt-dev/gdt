@@ -36,8 +36,9 @@ func TestStarter(t *testing.T) {
 
 	started := false
 
-	starter := func(_ context.Context) {
+	starter := func(_ context.Context) error {
 		started = true
+		return nil
 	}
 
 	f := fixture.New(

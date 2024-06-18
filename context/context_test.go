@@ -16,7 +16,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func fooStart(_ context.Context) {}
+func fooStart(_ context.Context) error { return nil }
 
 type fooDefaults struct {
 	Foo string `yaml:"foo"`
