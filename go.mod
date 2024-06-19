@@ -4,6 +4,7 @@ go 1.21
 
 require (
 	github.com/PaesslerAG/jsonpath v0.1.1
+	github.com/cenkalti/backoff v2.2.1+incompatible
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/google/uuid v1.3.0
 	github.com/samber/lo v1.38.1

@@ -8,7 +8,10 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"flag"
+	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"testing"
@@ -17,6 +20,8 @@ import (
 	"github.com/gdt-dev/gdt/scenario"
 	"github.com/stretchr/testify/require"
 )
+
+var failFlag = flag.Bool("fail", false, "run tests expected to fail")
 
 func TestNoExitCodeSimpleCommand(t *testing.T) {
 	require := require.New(t)
@@ -157,7 +162,10 @@ func TestContainsNoneOf(t *testing.T) {
 	require.Nil(err)
 }
 
-func TestSleepTimeout(t *testing.T) {
+func TestFailExecSleepTimeout(t *testing.T) {
+	if !*failFlag {
+		t.Skip("skipping without -fail flag")
+	}
 	require := require.New(t)
 
 	fp := filepath.Join("testdata", "sleep-timeout.yaml")
@@ -174,6 +182,22 @@ func TestSleepTimeout(t *testing.T) {
 	ctx := context.TODO()
 	err = s.Run(ctx, t)
 	require.Nil(err)
+}
+
+func TestExecSleepTimeout(t *testing.T) {
+	require := require.New(t)
+	target := os.Args[0]
+	failArgs := []string{
+		"-test.v",
+		"-test.run=FailExecSleepTimeout",
+		"-fail",
+	}
+	outerr, err := exec.Command(target, failArgs...).CombinedOutput()
+
+	// The test should have failed...
+	require.NotNil(err)
+	debugout := fmt.Sprintf("%s", outerr)
+	require.Contains(debugout, "assertion failed: timeout exceeded")
 }
 
 func TestDebugWriter(t *testing.T) {
@@ -230,7 +254,10 @@ func TestWait(t *testing.T) {
 	require.Contains(debugout, "wait: 20ms after")
 }
 
-func TestTimeoutCascade(t *testing.T) {
+func TestFailExecTimeoutCascade(t *testing.T) {
+	if !*failFlag {
+		t.Skip("skipping without -fail flag")
+	}
 	require := require.New(t)
 
 	fp := filepath.Join("testdata", "timeout-cascade.yaml")
@@ -244,47 +271,32 @@ func TestTimeoutCascade(t *testing.T) {
 	require.Nil(err)
 	require.NotNil(s)
 
-	var b bytes.Buffer
-	w := bufio.NewWriter(&b)
-	ctx := gdtcontext.New(gdtcontext.WithDebug(w))
+	ctx := gdtcontext.New(gdtcontext.WithDebug())
 	err = s.Run(ctx, t)
-	require.Nil(err)
-	require.False(t.Failed())
-	w.Flush()
-	require.NotEqual(b.Len(), 0)
-	debugout := b.String()
+}
+
+func TestExecTimeoutCascade(t *testing.T) {
+	require := require.New(t)
+	target := os.Args[0]
+	failArgs := []string{
+		"-test.v",
+		"-test.run=FailExecTimeoutCascade",
+		"-fail",
+	}
+	outerr, err := exec.Command(target, failArgs...).CombinedOutput()
+
+	// The test should have failed...
+	require.NotNil(err)
+
+	debugout := fmt.Sprintf("%s", outerr)
 	require.Contains(debugout, "using timeout of 500ms (expected: false) [scenario default]")
 	require.Contains(debugout, "using timeout of 20ms (expected: true)")
 }
 
-// Unfortunately there's not really any good way of testing things like this
-// except by manually causing an assertion to fail in the test case and
-// checking to see if the `on.fail` action was taken and debug output emitted
-// to the console.
-//
-// When I change the `testdata/on-fail-exec.yaml` file to have a failed
-// assertion by changing `assert.out.is` to "dat" instead of "cat", I get the
-// correct behaviour:
-//
-// === RUN   TestOnFail
-// === RUN   TestOnFail/on-fail-exec
-//
-//	action.go:59: exec: echo [cat]
-//	eval.go:35: assertion failed: not equal: expected dat but got cat
-//	action.go:59: exec: echo [bad kitty]
-//	eval.go:46: on.fail.exec: stdout: bad kitty
-//
-// === NAME  TestOnFail
-//
-//	eval_test.go:256:
-//	    	Error Trace:	/home/jaypipes/src/github.com/gdt-dev/gdt/plugin/exec/eval_test.go:256
-//	    	Error:      	Should be false
-//	    	Test:       	TestOnFail
-//
-// --- FAIL: TestOnFail (0.00s)
-//
-//	--- FAIL: TestOnFail/on-fail-exec (0.00s)
-func TestOnFail(t *testing.T) {
+func TestFailExecOnFail(t *testing.T) {
+	if !*failFlag {
+		t.Skip("skipping without -fail flag")
+	}
 	require := require.New(t)
 
 	fp := filepath.Join("testdata", "on-fail-exec.yaml")
@@ -301,5 +313,22 @@ func TestOnFail(t *testing.T) {
 	ctx := gdtcontext.New(gdtcontext.WithDebug())
 	err = s.Run(ctx, t)
 	require.Nil(err)
-	require.False(t.Failed())
+}
+
+func TestExecOnFail(t *testing.T) {
+	require := require.New(t)
+	target := os.Args[0]
+	failArgs := []string{
+		"-test.v",
+		"-test.run=FailExecOnFail",
+		"-fail",
+	}
+	outerr, err := exec.Command(target, failArgs...).CombinedOutput()
+
+	// The test should have failed...
+	require.NotNil(err)
+
+	debugout := fmt.Sprintf("%s", outerr)
+	require.Contains(debugout, "assertion failed: not equal: expected dat but got cat")
+	require.Contains(debugout, "echo [bad kitty]")
 }

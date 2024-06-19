@@ -1,0 +1,6 @@
+name: bad-retry-attempts
+description: a scenario with an invalid retry attempts
+tests:
+  - foo: baz
+    retry:
+      attempts: -1

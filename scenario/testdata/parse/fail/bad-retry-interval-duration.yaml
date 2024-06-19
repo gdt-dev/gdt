@@ -1,0 +1,6 @@
+name: bad-retry-interval-duration
+description: a scenario with an invalid duration string in a spec retry interval
+tests:
+  - foo: baz
+    retry:
+      interval: notaduration

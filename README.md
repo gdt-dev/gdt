@@ -11,16 +11,16 @@
 
 `gdt` is a testing library that allows test authors to cleanly describe tests
 in a YAML file. `gdt` reads YAML files that describe a test's assertions and
-then builds a set of Golang structures that the standard Golang
+then builds a set of Go structures that the standard Go
 [`testing`](https://golang.org/pkg/testing/) package and standard `go test`
 tool can execute.
 
 ## Introduction
 
-Writing functional tests in Golang can be overly verbose and tedious. When the
-code that tests some part of an application is verbose or tedious, then it
-becomes difficult to read the tests and quickly understand the assertions the
-test is making.
+Writing functional tests in Go can be overly verbose and tedious. When the code
+that tests some part of an application is verbose or tedious, then it becomes
+difficult to read the tests and quickly understand the assertions the test is
+making.
 
 The more difficult it is to understand the test assertions or the test setups
 and assumptions, the greater the chance that the test improperly validates the
@@ -34,7 +34,7 @@ describe a functional test's **assumptions** and **assertions** in a
 declarative format.
 
 Separating the *description* of a test's assumptions (setup) and assertions
-from the Golang code that actually performs the test assertions leads to tests
+from the Go code that actually performs the test assertions leads to tests
 that are easier to read and understand. This allows developers to spend *more
 time writing code* and less time copy/pasting boilerplate test code. Due to the
 easier test comprehension, `gdt` also encourages writing greater quality and
@@ -138,9 +138,9 @@ var _ = Describe("Books API Types", func() {
 ```
 
 
-This is perfectly fine for simple unit tests of Golang code. However, once the
-tests begin to call multiple APIs or packages, the Ginkgo Golang tests start to
-get cumbersome. Consider the following example of *functionally* testing the
+This is perfectly fine for simple unit tests of Go code. However, once the
+tests begin to call multiple APIs or packages, the Ginkgo Go tests start to get
+cumbersome. Consider the following example of *functionally* testing the
 failure modes for a simple HTTP REST API endpoint
 ([`failure_test.go`](https://github.com/gdt-dev/gdt-examples/blob/main/http/api/failure_test.go)):
 
@@ -256,7 +256,7 @@ var _ = Describe("Books API - GET /books failures", func() {
 ```
 
 The above test code obscures what is being tested by cluttering the test
-assertions with the Golang closures and accessor code. Compare the above with
+assertions with the Go closures and accessor code. Compare the above with
 how `gdt` allows the test author to describe the same assertions
 ([`failures.yaml`](https://github.com/gdt-dev/gdt-examples/blob/main/http/tests/api/failures.yaml)):
 
@@ -284,7 +284,7 @@ No more closures and boilerplate function code getting in the way of expressing
 the assertions, which should be the focus of the test.
 
 The more intricate the assertions being verified by the test, generally the
-more verbose and cumbersome the Golang test code tends to become. First and
+more verbose and cumbersome the Go test code tends to become. First and
 foremost, tests should be *readable*. If they are not readable, then the test's
 assertions are not *understandable*. And tests that cannot easily be understood
 are often the source of bit rot and technical debt. Worse, tests that aren't
@@ -300,7 +300,7 @@ Consider a Ginkgo test case that checks the following behaviour:
 * The newly-created book's ID field is a valid UUID
 * The newly-created book's publisher has an address containing a known state code
 
-A typical implementation of a Ginkgo Golang test might look like this
+A typical implementation of a Ginkgo test might look like this
 ([`create_then_get_test.go`](https://github.com/gdt-dev/gdt-examples/blob/main/http/api/create_then_get_test.go)):
 
 ```go
@@ -423,8 +423,7 @@ All `gdt` scenarios have the following fields:
   missing or empty, the filename is used as the name
 * `description`: (optional) string with longer description of the test file
   contents
-* `defaults`: (optional) is a map, keyed by a plugin name, of default options
-  and configuration values for that plugin.
+* `defaults`: (optional) is a map of default options and configuration values
 * `fixtures`: (optional) list of strings indicating named fixtures that will be
   started before any of the tests in the file are run
 * `skip-if`: (optional) list of [`Spec`][basespec] specializations that will be
@@ -433,26 +432,29 @@ All `gdt` scenarios have the following fields:
 * `tests`: list of [`Spec`][basespec] specializations that represent the
   runnable test units in the test scenario.
 
-[basespec]: https://github.com/gdt-dev/gdt/blob/2791e11105fd3c36d1f11a7d111e089be7cdc84c/types/spec.go#L27-L44
+[basespec]: https://github.com/gdt-dev/gdt/blob/ecee17249e1fa10147cf9191be0358923da44094/types/spec.go#L30
 
 The scenario's `tests` field is the most important and the [`Spec`][basespec]
 objects that it contains are the meat of a test scenario.
 
-## `gdt` test spec structure
+### `gdt` test spec structure
 
 A spec represents a single *action* that is taken and zero or more
 *assertions* that represent what you expect to see resulting from that action.
 
-Each spec is a specialized class of the base [`Spec`][basespec] that deals with
-a particular type of test. For example, there is a `Spec` class called `exec`
-that allows you to execute arbitrary commands and assert expected result codes
-and output. There is a `Spec` class called `http` that allows you to call an
-HTTP URL and assert that the response looks like what you expect. Depending on
-how you define your test units, `gdt` will parse the YAML definition into one
-of these specialized `Spec` classes.
+`gdt` plugins each define a specialized subclass of the base [`Spec`][basespec]
+that contains fields that are specific to that type of test.
 
-The base `Spec` class has the following fields (and thus all `Spec` specialized
-classes inherit these fields):
+For example, there is an [`exec`][exec-plugin] plugin that allows you to
+execute arbitrary commands and assert expected result codes and output. There
+is an [`http`][http-plugin] that allows you to call an HTTP URL and assert that
+the response looks like what you expect. There is a [`kube`][kube-plugin]
+plugin that allows you to interact with a Kubernetes API, etc.
+
+`gdt` examines the YAML file that defines your test scenario and uses these
+plugins to parse individual test specs.
+
+All test specs have the following fields:
 
 * `name`: (optional) string describing the test unit.
 * `description`: (optional) string with longer description of the test unit.
@@ -462,24 +464,49 @@ classes inherit these fields):
   complete within.
 * `timeout.expected`: a bool indicating that the test unit is expected to not
   complete before `timeout.after`. This is really only useful in unit testing.
+* `retry`: (optional) an object containing retry configurationu for the test
+  unit. Some plugins will automatically attempt to retry the test action when
+  an assertion fails. This field allows you to control this retry behaviour for
+  each individual test.
+* `retry.interval`: (optional) a string duration of time that the test plugin
+  will retry the test action in the event assertions fail. The default interval
+  for retries is plugin-dependent.
+* `retry.attempts`: (optional) an integer indicating the number of times that a
+  plugin will retry the test action in the event assertions fail. The default
+  number of attempts for retries is plugin-dependent.
+* `retry.exponential`: (optional) a boolean indicating an exponential backoff
+  should be applied to the retry interval. The default is is plugin-dependent.
 * `wait` (optional) an object containing [wait information][wait] for the test
   unit.
 * `wait.before`: a string duration of time that gdt should wait before
   executing the test unit's action.
 * `wait.after`: a string duration of time that gdt should wait after executing
   the test unit's action.
+* `on`: (optional) an object describing actions to take upon certain
+  conditions.
+* `on.fail`: (optional) an object describing an action to take when any
+  assertion fails for the test action.
+* `on.fail.exec`: a string with the exact command to execute upon test
+  assertion failure. You may execute more than one command but must include the
+  `on.fail.shell` field to indicate that the command should be run in a shell.
+* `on.fail.shell`: (optional) a string with the specific shell to use in executing the
+  command to run upon test assertion failure. If empty (the default), no shell
+  is used to execute the command and instead the operating system's `exec` family
+  of calls is used.
 
+[exec-plugin]: https://github.com/gdt-dev/gdt/tree/ecee17249e1fa10147cf9191be0358923da44094/plugin/exec
+[http-plugin]: https://github.com/gdt-dev/http
+[kube-plugin]: https://github.com/gdt-dev/kube
 [timeout]: https://github.com/gdt-dev/gdt/blob/2791e11105fd3c36d1f11a7d111e089be7cdc84c/types/timeout.go#L11-L22
 [wait]: https://github.com/gdt-dev/gdt/blob/2791e11105fd3c36d1f11a7d111e089be7cdc84c/types/wait.go#L11-L25
 
-### `exec` test spec structure
+#### `exec` test spec structure
 
-An exec spec is a specialization of the base [`Spec`][basespec] that allows
-test authors to execute arbitrary commands and assert that the command results
-in an expected result code or output.
+The `exec` plugin's test spec allows test authors to execute arbitrary commands and
+assert that the command results in an expected result code or output.
 
-The [exec `Spec`][execspec] class has the following fields (in addition to all
-the base `Spec` fields listed above):
+In addition to all the base `Spec` fields listed above, the `exec` plugin's
+test spec also contains these fields:
 
 * `exec`: a string with the exact command to execute. You may execute more than
   one command but must include the `shell` field to indicate that the command
@@ -514,17 +541,6 @@ the base `Spec` fields listed above):
   least one* must be present in `stderr`.
 * `assert.err.none`: (optional) a string or list of strings of which *none
   should be present* in `stderr`.
-* `on`: (optional) an object describing actions to take upon certain
-  conditions.
-* `on.fail`: (optional) an object describing an action to take when any
-  assertion fails for the test action.
-* `on.fail.exec`: a string with the exact command to execute upon test
-  assertion failure. You may execute more than one command but must include the
-  `on.fail.shell` field to indicate that the command should be run in a shell.
-* `on.fail.shell`: (optional) a string with the specific shell to use in executing the
-  command to run upon test assertion failure. If empty (the default), no shell
-  is used to execute the command and instead the operating system's `exec` family
-  of calls is used.
 
 [execspec]: https://github.com/gdt-dev/gdt/blob/2791e11105fd3c36d1f11a7d111e089be7cdc84c/exec/spec.go#L11-L34
 [pipeexpect]: https://github.com/gdt-dev/gdt/blob/2791e11105fd3c36d1f11a7d111e089be7cdc84c/exec/assertions.go#L15-L26
@@ -533,7 +549,7 @@ the base `Spec` fields listed above):
 
 `gdt` was inspired by [Gabbi](https://github.com/cdent/gabbi), the excellent
 Python declarative testing framework. `gdt` tries to bring the same clear,
-concise test definitions to the world of Golang functional testing.
+concise test definitions to the world of Go functional testing.
 
 The Go gopher logo, from which gdt's logo was derived, was created by Renee
 French.

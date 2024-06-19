@@ -131,6 +131,45 @@ func TestBadTimeoutDurationScenario(t *testing.T) {
 	assert.Nil(s)
 }
 
+func TestBadRetry(t *testing.T) {
+	assert := assert.New(t)
+	require := require.New(t)
+
+	fp := filepath.Join("testdata", "parse", "fail", "bad-retry.yaml")
+	f, err := os.Open(fp)
+	require.Nil(err)
+
+	s, err := scenario.FromReader(f, scenario.WithPath(fp))
+	assert.ErrorIs(err, errors.ErrExpectedMap)
+	assert.Nil(s)
+}
+
+func TestBadRetryAttempts(t *testing.T) {
+	assert := assert.New(t)
+	require := require.New(t)
+
+	fp := filepath.Join("testdata", "parse", "fail", "bad-retry-attempts.yaml")
+	f, err := os.Open(fp)
+	require.Nil(err)
+
+	s, err := scenario.FromReader(f, scenario.WithPath(fp))
+	assert.ErrorIs(err, errors.ErrInvalidRetryAttempts)
+	assert.Nil(s)
+}
+
+func TestBadRetryIntervalDuration(t *testing.T) {
+	assert := assert.New(t)
+	require := require.New(t)
+
+	fp := filepath.Join("testdata", "parse", "fail", "bad-retry-interval-duration.yaml")
+	f, err := os.Open(fp)
+	require.Nil(err)
+
+	s, err := scenario.FromReader(f, scenario.WithPath(fp))
+	assert.ErrorContains(err, "invalid duration")
+	assert.Nil(s)
+}
+
 func TestKnownSpec(t *testing.T) {
 	assert := assert.New(t)
 	require := require.New(t)

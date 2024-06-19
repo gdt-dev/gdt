@@ -1,0 +1,9 @@
+name: retry-test-override
+description: a scenario using a test spec override for a retry
+tests:
+  # The foo plugin fails if foo == bar but name != bar
+  - foo: bar
+    name: baz
+    retry:
+      attempts: 2
+      interval: .25s

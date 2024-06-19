@@ -83,6 +83,8 @@ func (s *Scenario) UnmarshalYAML(node *yaml.Node) error {
 			s.Defaults = defaults
 		}
 	}
+	// We store a lookup to the parsing plugin for each parsed test spec
+	evalPlugins := map[int]gdttypes.Plugin{}
 	for i := 0; i < len(node.Content); i += 2 {
 		keyNode := node.Content[i]
 		if keyNode.Kind != yaml.ScalarNode {
@@ -103,21 +105,24 @@ func (s *Scenario) UnmarshalYAML(node *yaml.Node) error {
 				}
 				base.Index = idx
 				base.Defaults = &defaults
-				specs := []gdttypes.Evaluable{}
+				pluginSpecs := map[gdttypes.Plugin][]gdttypes.Evaluable{}
 				for _, p := range plugins {
-					specs = append(specs, p.Specs()...)
+					pluginSpecs[p] = p.Specs()
 				}
-				for _, sp := range specs {
-					if err := testNode.Decode(sp); err != nil {
-						if errors.Is(err, gdterrors.ErrUnknownField) {
-							continue
+				for plugin, specs := range pluginSpecs {
+					for _, sp := range specs {
+						if err := testNode.Decode(sp); err != nil {
+							if errors.Is(err, gdterrors.ErrUnknownField) {
+								continue
+							}
+							return err
 						}
-						return err
+						sp.SetBase(base)
+						s.Tests = append(s.Tests, sp)
+						parsed = true
+						evalPlugins[idx] = plugin
+						break
 					}
-					sp.SetBase(base)
-					s.Tests = append(s.Tests, sp)
-					parsed = true
-					break
 				}
 				if !parsed {
 					return gdterrors.UnknownSpecAt(s.Path, valNode)
@@ -157,5 +162,6 @@ func (s *Scenario) UnmarshalYAML(node *yaml.Node) error {
 			}
 		}
 	}
+	s.evalPlugins = evalPlugins
 	return nil
 }

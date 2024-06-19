@@ -13,6 +13,9 @@ import (
 // Scenario is a generalized gdt test case file. It contains a set of Runnable
 // test units.
 type Scenario struct {
+	// evalPlugins stores the plugin that will evaluate the test spec at a
+	// particular index
+	evalPlugins map[int]gdttypes.Plugin
 	// Path is the filepath to the test case.
 	Path string `yaml:"-"`
 	// Name is the short name for the test case. If empty, defaults to the base

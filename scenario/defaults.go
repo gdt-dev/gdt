@@ -14,7 +14,9 @@ import (
 
 const (
 	// DefaultsKey is the key within the Defaults collection for
-	// scenario defaults.
+	// scenario defaults. Note that this isn't exposed in the YAML schema for a
+	// scenario. It's just used as a way of indicating to the scenario runner
+	// what was found in the scenario YAML's `defaults` top-level field.
 	DefaultsKey = "gdt.scenario"
 )
 
@@ -23,6 +25,9 @@ type Defaults struct {
 	// Timeout has fields that represent the default timeout behaviour and
 	// expectations to use for test specs in the scenario.
 	Timeout *gdttypes.Timeout `yaml:"timeout,omitempty"`
+	// Retry has fields that represent the default retry behaviour for test
+	// specs in the scenario.
+	Retry *gdttypes.Retry `yaml:"retry,omitempty"`
 }
 
 func (d *Defaults) UnmarshalYAML(node *yaml.Node) error {
@@ -52,6 +57,27 @@ func (d *Defaults) UnmarshalYAML(node *yaml.Node) error {
 				return err
 			}
 			d.Timeout = to
+		case "retry":
+			if valNode.Kind != yaml.MappingNode {
+				return errors.ExpectedMapAt(valNode)
+			}
+			var r *gdttypes.Retry
+			if err := valNode.Decode(&r); err != nil {
+				return errors.ExpectedRetryAt(valNode)
+			}
+			if r.Attempts != nil {
+				attempts := *r.Attempts
+				if attempts < 1 {
+					return errors.InvalidRetryAttempts(valNode, attempts)
+				}
+			}
+			if r.Interval != "" {
+				_, err := time.ParseDuration(r.Interval)
+				if err != nil {
+					return err
+				}
+			}
+			d.Retry = r
 		default:
 			continue
 		}

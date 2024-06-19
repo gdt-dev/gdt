@@ -21,6 +21,7 @@ var (
 		"description",
 		"timeout",
 		"wait",
+		"retry",
 	}
 )
 
@@ -41,6 +42,8 @@ type Spec struct {
 	Timeout *Timeout `yaml:"timeout,omitempty"`
 	// Wait contains the wait configuration for the Spec
 	Wait *Wait `yaml:"wait,omitempty"`
+	// Retry contains the retry configuration for the Spec
+	Retry *Retry `yaml:"retry,omitempty"`
 }
 
 // Title returns the Name of the scenario or the Path's file/base name if there
@@ -135,6 +138,27 @@ func (s *Spec) UnmarshalYAML(node *yaml.Node) error {
 				}
 			}
 			s.Wait = w
+		case "retry":
+			if valNode.Kind != yaml.MappingNode {
+				return errors.ExpectedMapAt(valNode)
+			}
+			var r *Retry
+			if err := valNode.Decode(&r); err != nil {
+				return errors.ExpectedRetryAt(valNode)
+			}
+			if r.Attempts != nil {
+				attempts := *r.Attempts
+				if attempts < 1 {
+					return errors.InvalidRetryAttempts(valNode, attempts)
+				}
+			}
+			if r.Interval != "" {
+				_, err := time.ParseDuration(r.Interval)
+				if err != nil {
+					return err
+				}
+			}
+			s.Retry = r
 		}
 	}
 	return nil

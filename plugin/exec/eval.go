@@ -31,9 +31,6 @@ func (s *Spec) Eval(ctx context.Context, t *testing.T) *result.Result {
 	}
 	a := newAssertions(s.Assert, ec, outbuf, errbuf)
 	if !a.OK(ctx) {
-		for _, fail := range a.Failures() {
-			t.Error(fail)
-		}
 		if s.On != nil {
 			if s.On.Fail != nil {
 				outbuf.Reset()
