@@ -1,0 +1,6 @@
+name: no-retry
+description: a scenario using a plugin with no retries
+tests:
+  # The foo plugin does not use retries
+  - foo: bar
+    name: bar

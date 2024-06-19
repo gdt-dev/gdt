@@ -238,6 +238,9 @@ func (s *fooSpec) Eval(ctx context.Context, t *testing.T) *result.Result {
 			fails = append(fails, fail)
 		}
 	})
+	for _, fail := range fails {
+		t.Error(fail)
+	}
 	return result.New(result.WithFailures(fails...))
 }
 

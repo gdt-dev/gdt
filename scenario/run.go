@@ -6,13 +6,17 @@ package scenario
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/cenkalti/backoff"
+
 	gdtcontext "github.com/gdt-dev/gdt/context"
 	"github.com/gdt-dev/gdt/debug"
 	gdterrors "github.com/gdt-dev/gdt/errors"
+	"github.com/gdt-dev/gdt/result"
 	gdttypes "github.com/gdt-dev/gdt/types"
 )
 
@@ -65,7 +69,11 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 		defer func() {
 			ctx = gdtcontext.PopTrace(ctx)
 		}()
-		for _, spec := range s.Tests {
+		for idx, spec := range s.Tests {
+			plugin := s.evalPlugins[idx]
+			pinfo := plugin.Info()
+			pretry := pinfo.Retry
+
 			// Create a brand new context that inherits the top-level context's
 			// cancel func. We want to set deadlines for each test spec and if
 			// we mutate the single supplied top-level context, then only the
@@ -80,17 +88,91 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 				time.Sleep(wait.BeforeDuration())
 			}
 
-			to := specTimeout(ctx, t, sb.Timeout, scDefaults)
+			to := getTimeout(ctx, sb.Timeout, scDefaults)
 			if to != nil {
 				var cancel context.CancelFunc
 				specCtx, cancel = context.WithTimeout(specCtx, to.Duration())
 				defer cancel()
 			}
-			res := spec.Eval(specCtx, t)
-			if res.HasRuntimeError() {
-				rterr = res.RuntimeError()
-				t.Fatal(rterr)
-				break
+
+			var res *result.Result
+			rt := getRetry(ctx, sb.Retry, scDefaults, pretry)
+			if rt == nil {
+				// Just evaluate the test spec once
+				res = spec.Eval(specCtx, t)
+				if res.HasRuntimeError() {
+					rterr = res.RuntimeError()
+					t.Fatal(rterr)
+				}
+				debug.Println(
+					ctx, "run: single-shot (no retries) ok: %v",
+					!res.Failed(),
+				)
+			} else {
+				// retry the action and test the assertions until they succeed,
+				// there is a terminal failure, or the timeout expires.
+				var bo backoff.BackOff
+
+				if rt.Exponential {
+					bo = backoff.WithContext(
+						backoff.NewExponentialBackOff(),
+						ctx,
+					)
+				} else {
+					interval := gdttypes.DefaultRetryConstantInterval
+					if rt.Interval != "" {
+						interval = rt.IntervalDuration()
+					}
+					bo = backoff.WithContext(
+						backoff.NewConstantBackOff(interval),
+						ctx,
+					)
+				}
+				ticker := backoff.NewTicker(bo)
+				maxAttempts := 0
+				if rt.Attempts != nil {
+					maxAttempts = *rt.Attempts
+				}
+				attempts := 1
+				start := time.Now().UTC()
+				success := false
+				for tick := range ticker.C {
+					if (maxAttempts > 0) && (attempts > maxAttempts) {
+						debug.Println(
+							ctx, "run: exceeded max attempts %d. stopping.",
+							maxAttempts,
+						)
+						ticker.Stop()
+						break
+					}
+					after := tick.Sub(start)
+
+					res = spec.Eval(specCtx, t)
+					if res.HasRuntimeError() {
+						rterr = res.RuntimeError()
+						t.Fatal(rterr)
+						break
+					}
+					success = !res.Failed()
+					debug.Println(
+						ctx, "run: attempt %d after %s ok: %v",
+						attempts, after, success,
+					)
+					if success {
+						ticker.Stop()
+						break
+					}
+					for _, f := range res.Failures() {
+						debug.Println(
+							ctx, "run: attempt %d after %s failure: %s",
+							attempts, after, f,
+						)
+					}
+					attempts++
+				}
+			}
+			for _, fail := range res.Failures() {
+				t.Error(fail)
 			}
 			// Results can have arbitrary run data stored in them and we
 			// save this prior run data in the top-level context (and pass
@@ -107,12 +189,11 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 	return rterr
 }
 
-// specTimeout returns the timeout value for the test spec. If the spec has a
+// getTimeout returns the timeout value for the test spec. If the spec has a
 // timeout override, we use that. Otherwise, we inspect the scenario's defaults
 // and, if present, use that timeout.
-func specTimeout(
+func getTimeout(
 	ctx context.Context,
-	t *testing.T,
 	specTimeout *gdttypes.Timeout,
 	scenDefaults *Defaults,
 ) *gdttypes.Timeout {
@@ -129,6 +210,57 @@ func specTimeout(
 			scenDefaults.Timeout.After, scenDefaults.Timeout.Expected,
 		)
 		return scenDefaults.Timeout
+	}
+	return nil
+}
+
+// getRetry returns the retry configuration for the test spec. If the spec has a
+// retry override, we use that. Otherwise, we inspect the scenario's defaults
+// and, if present, use that timeout. If the scenario's defaults do not
+// indicate a retry configuration, we ask the plugin if it has retry defaults
+// and use that.
+func getRetry(
+	ctx context.Context,
+	specRetry *gdttypes.Retry,
+	scenDefaults *Defaults,
+	pluginRetry *gdttypes.Retry,
+) *gdttypes.Retry {
+	if specRetry != nil {
+		msg := "using retry"
+		if specRetry.Attempts != nil {
+			msg += fmt.Sprintf(" (attempts: %d)", *specRetry.Attempts)
+		}
+		if specRetry.Interval != "" {
+			msg += fmt.Sprintf(" (interval: %s)", specRetry.Interval)
+		}
+		msg += fmt.Sprintf(" (exponential: %t)", specRetry.Exponential)
+		debug.Println(ctx, msg)
+		return specRetry
+	}
+	if scenDefaults != nil && scenDefaults.Retry != nil {
+		scenRetry := scenDefaults.Retry
+		msg := "using retry"
+		if scenRetry.Attempts != nil {
+			msg += fmt.Sprintf(" (attempts: %d)", *scenRetry.Attempts)
+		}
+		if scenRetry.Interval != "" {
+			msg += fmt.Sprintf(" (interval: %s)", scenRetry.Interval)
+		}
+		msg += fmt.Sprintf(" (exponential: %t) [scenario default]", scenRetry.Exponential)
+		debug.Println(ctx, msg)
+		return scenRetry
+	}
+	if pluginRetry != nil {
+		msg := "using retry"
+		if pluginRetry.Attempts != nil {
+			msg += fmt.Sprintf(" (attempts: %d)", *pluginRetry.Attempts)
+		}
+		if pluginRetry.Interval != "" {
+			msg += fmt.Sprintf(" (interval: %s)", pluginRetry.Interval)
+		}
+		msg += fmt.Sprintf(" (exponential: %t) [plugin default]", pluginRetry.Exponential)
+		debug.Println(ctx, msg)
+		return pluginRetry
 	}
 	return nil
 }

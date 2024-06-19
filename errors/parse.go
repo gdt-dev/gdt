@@ -53,13 +53,23 @@ var (
 	ErrExpectedScalarOrSequence = fmt.Errorf(
 		"%w: expected scalar or sequence of scalars field", ErrParse,
 	)
-	// ErrParseTimeout indicates that the timeout specification was not valid.
+	// ErrExpectedTimeout indicates that the timeout specification was not
+	// valid.
 	ErrExpectedTimeout = fmt.Errorf(
 		"%w: expected timeout specification", ErrParse,
 	)
-	// ErrParseWait indicates that the wait specification was not valid.
+	// ErrExpectedWait indicates that the wait specification was not valid.
 	ErrExpectedWait = fmt.Errorf(
 		"%w: expected wait specification", ErrParse,
+	)
+	// ErrExpectedRetry indicates that the retry specification was not valid.
+	ErrExpectedRetry = fmt.Errorf(
+		"%w: expected retry specification", ErrParse,
+	)
+	// ErrInvalidRetryAttempts indicates that the retry attempts was not
+	// positive.
+	ErrInvalidRetryAttempts = fmt.Errorf(
+		"%w: invalid retry attempts", ErrParse,
 	)
 	// ErrFileNotFound is returned when a file path does not exist for a
 	// create/apply/delete target.
@@ -155,6 +165,24 @@ func ExpectedWaitAt(node *yaml.Node) error {
 	return fmt.Errorf(
 		"%w at line %d, column %d",
 		ErrExpectedWait, node.Line, node.Column,
+	)
+}
+
+// ExpectedRetryAt returns an ErrExpectedRetry error annotated with the
+// line/column of the supplied YAML node.
+func ExpectedRetryAt(node *yaml.Node) error {
+	return fmt.Errorf(
+		"%w at line %d, column %d",
+		ErrExpectedRetry, node.Line, node.Column,
+	)
+}
+
+// InvalidRetryAttempts returns an ErrInvalidRetryAttempts error annotated with
+// the line/column of the supplied YAML node.
+func InvalidRetryAttempts(node *yaml.Node, attempts int) error {
+	return fmt.Errorf(
+		"%w of %d at line %d, column %d",
+		ErrInvalidRetryAttempts, attempts, node.Line, node.Column,
 	)
 }
 
