@@ -92,6 +92,18 @@ func TestUnknownSpec(t *testing.T) {
 	assert.Nil(s)
 }
 
+func TestTimeoutScalarOrMap(t *testing.T) {
+	assert := assert.New(t)
+	require := require.New(t)
+
+	fp := filepath.Join("testdata", "parse", "timeout-scalar-or-map.yaml")
+	f, err := os.Open(fp)
+	require.Nil(err)
+
+	_, err = scenario.FromReader(f, scenario.WithPath(fp))
+	assert.Nil(err)
+}
+
 func TestBadTimeout(t *testing.T) {
 	assert := assert.New(t)
 	require := require.New(t)
@@ -101,7 +113,7 @@ func TestBadTimeout(t *testing.T) {
 	require.Nil(err)
 
 	s, err := scenario.FromReader(f, scenario.WithPath(fp))
-	assert.ErrorIs(err, errors.ErrExpectedMap)
+	assert.ErrorIs(err, errors.ErrExpectedScalarOrMap)
 	assert.Nil(s)
 }
 

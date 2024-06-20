@@ -73,6 +73,7 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 			plugin := s.evalPlugins[idx]
 			pinfo := plugin.Info()
 			pretry := pinfo.Retry
+			ptimeout := pinfo.Timeout
 
 			// Create a brand new context that inherits the top-level context's
 			// cancel func. We want to set deadlines for each test spec and if
@@ -88,7 +89,7 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 				time.Sleep(wait.BeforeDuration())
 			}
 
-			to := getTimeout(ctx, sb.Timeout, scDefaults)
+			to := getTimeout(ctx, sb.Timeout, ptimeout, scDefaults)
 			if to != nil {
 				var cancel context.CancelFunc
 				specCtx, cancel = context.WithTimeout(specCtx, to.Duration())
@@ -191,25 +192,35 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 
 // getTimeout returns the timeout value for the test spec. If the spec has a
 // timeout override, we use that. Otherwise, we inspect the scenario's defaults
-// and, if present, use that timeout.
+// and, if present, use that timeout. If the scenario's defaults for not
+// indicate a timeout configuration, we ask the plugin if it has timeout
+// defaults and use that.
 func getTimeout(
 	ctx context.Context,
 	specTimeout *gdttypes.Timeout,
+	pluginTimeout *gdttypes.Timeout,
 	scenDefaults *Defaults,
 ) *gdttypes.Timeout {
 	if specTimeout != nil {
 		debug.Println(
-			ctx, "using timeout of %s (expected: %t)",
-			specTimeout.After, specTimeout.Expected,
+			ctx, "using timeout of %s",
+			specTimeout.After,
 		)
 		return specTimeout
 	}
 	if scenDefaults != nil && scenDefaults.Timeout != nil {
 		debug.Println(
-			ctx, "using timeout of %s (expected: %t) [scenario default]",
-			scenDefaults.Timeout.After, scenDefaults.Timeout.Expected,
+			ctx, "using timeout of %s [scenario default]",
+			scenDefaults.Timeout.After,
 		)
 		return scenDefaults.Timeout
+	}
+	if pluginTimeout != nil {
+		debug.Println(
+			ctx, "using timeout of %s [plugin default]",
+			pluginTimeout.After,
+		)
+		return pluginTimeout
 	}
 	return nil
 }

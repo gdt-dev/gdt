@@ -7,4 +7,3 @@ tests:
   - exec: sleep 5
     timeout:
       after: 50ms
-      expected: true

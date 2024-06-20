@@ -11,6 +11,15 @@ import (
 	gdttypes "github.com/gdt-dev/gdt/types"
 )
 
+var (
+	DefaultTimeout = "10s"
+)
+
+// OverrideDefaultTimeout is only used in testing...
+func OverrideDefaultTimeout(d string) {
+	DefaultTimeout = d
+}
+
 func init() {
 	gdtplugin.Register(Plugin())
 }
@@ -24,6 +33,9 @@ type plugin struct{}
 func (p *plugin) Info() gdttypes.PluginInfo {
 	return gdttypes.PluginInfo{
 		Name: pluginName,
+		Timeout: &gdttypes.Timeout{
+			After: DefaultTimeout,
+		},
 	}
 }
 

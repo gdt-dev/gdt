@@ -458,12 +458,8 @@ All test specs have the following fields:
 
 * `name`: (optional) string describing the test unit.
 * `description`: (optional) string with longer description of the test unit.
-* `timeout`: (optional) an object containing [timeout information][timeout] for the test
-  unit.
-* `timeout.after`: a string duration of time the test unit is expected to
+* `timeout`: (optional) a string duration of time the test unit is expected to
   complete within.
-* `timeout.expected`: a bool indicating that the test unit is expected to not
-  complete before `timeout.after`. This is really only useful in unit testing.
 * `retry`: (optional) an object containing retry configurationu for the test
   unit. Some plugins will automatically attempt to retry the test action when
   an assertion fails. This field allows you to control this retry behaviour for
@@ -497,7 +493,6 @@ All test specs have the following fields:
 [exec-plugin]: https://github.com/gdt-dev/gdt/tree/ecee17249e1fa10147cf9191be0358923da44094/plugin/exec
 [http-plugin]: https://github.com/gdt-dev/http
 [kube-plugin]: https://github.com/gdt-dev/kube
-[timeout]: https://github.com/gdt-dev/gdt/blob/2791e11105fd3c36d1f11a7d111e089be7cdc84c/types/timeout.go#L11-L22
 [wait]: https://github.com/gdt-dev/gdt/blob/2791e11105fd3c36d1f11a7d111e089be7cdc84c/types/wait.go#L11-L25
 
 #### `exec` test spec structure
