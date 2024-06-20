@@ -9,7 +9,6 @@ import (
 	"bytes"
 	"context"
 	"flag"
-	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -196,7 +195,7 @@ func TestExecSleepTimeout(t *testing.T) {
 
 	// The test should have failed...
 	require.NotNil(err)
-	debugout := fmt.Sprintf("%s", outerr)
+	debugout := string(outerr)
 	require.Contains(debugout, "assertion failed: timeout exceeded")
 }
 
@@ -273,6 +272,7 @@ func TestFailExecTimeoutCascade(t *testing.T) {
 
 	ctx := gdtcontext.New(gdtcontext.WithDebug())
 	err = s.Run(ctx, t)
+	require.Nil(err)
 }
 
 func TestExecTimeoutCascade(t *testing.T) {
@@ -288,7 +288,7 @@ func TestExecTimeoutCascade(t *testing.T) {
 	// The test should have failed...
 	require.NotNil(err)
 
-	debugout := fmt.Sprintf("%s", outerr)
+	debugout := string(outerr)
 	require.Contains(debugout, "using timeout of 500ms (expected: false) [scenario default]")
 	require.Contains(debugout, "using timeout of 20ms (expected: true)")
 }
@@ -328,7 +328,7 @@ func TestExecOnFail(t *testing.T) {
 	// The test should have failed...
 	require.NotNil(err)
 
-	debugout := fmt.Sprintf("%s", outerr)
+	debugout := string(outerr)
 	require.Contains(debugout, "assertion failed: not equal: expected dat but got cat")
 	require.Contains(debugout, "echo [bad kitty]")
 }

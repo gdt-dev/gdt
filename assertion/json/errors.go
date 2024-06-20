@@ -103,9 +103,8 @@ func JSONUnmarshalError(err error, node *yaml.Node) error {
 			"%w: %s at line %d, column %d",
 			ErrJSONUnmarshalError, err, node.Line, node.Column,
 		)
-	} else {
-		return fmt.Errorf("%w: %s", ErrJSONUnmarshalError, err)
 	}
+	return fmt.Errorf("%w: %s", ErrJSONUnmarshalError, err)
 }
 
 // JSONPathInvalid returns an ErrParse when a JSONPath expression could not be

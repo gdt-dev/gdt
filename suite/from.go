@@ -31,7 +31,7 @@ func FromDir(
 
 	if err := filepath.Walk(
 		dirPath,
-		func(path string, info os.FileInfo, err error) error {
+		func(path string, info os.FileInfo, _ error) error {
 			if info.IsDir() {
 				return nil
 			}

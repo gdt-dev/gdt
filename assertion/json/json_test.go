@@ -6,7 +6,7 @@ package json_test
 
 import (
 	"context"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -92,7 +92,7 @@ paths:
 }
 
 func content() []byte {
-	b, _ := ioutil.ReadFile(filepath.Join("testdata", "books.json"))
+	b, _ := os.ReadFile(filepath.Join("testdata", "books.json"))
 	return b
 }
 

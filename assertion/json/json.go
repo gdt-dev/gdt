@@ -104,7 +104,7 @@ func (e *Expect) UnmarshalYAML(node *yaml.Node) error {
 			if err := valNode.Decode(&paths); err != nil {
 				return err
 			}
-			for path, _ := range paths {
+			for path := range paths {
 				if len(path) == 0 || path[0] != '$' {
 					return JSONPathInvalidNoRoot(path, valNode)
 				}
@@ -121,7 +121,7 @@ func (e *Expect) UnmarshalYAML(node *yaml.Node) error {
 			if err := valNode.Decode(&pathFormats); err != nil {
 				return err
 			}
-			for pathFormat, _ := range pathFormats {
+			for pathFormat := range pathFormats {
 				if len(pathFormat) == 0 || pathFormat[0] != '$' {
 					return JSONPathInvalidNoRoot(pathFormat, valNode)
 				}
@@ -229,9 +229,9 @@ func (a *assertions) pathsOK() bool {
 			a.Fail(JSONPathNotFound(path, err))
 			return false
 		}
-		switch got.(type) {
+		switch got := got.(type) {
 		case string:
-			if expVal != got.(string) {
+			if expVal != got {
 				a.Fail(JSONPathNotEqual(path, expVal, got))
 				return false
 			}
@@ -241,7 +241,7 @@ func (a *assertions) pathsOK() bool {
 				a.Fail(JSONPathConversionError(path, expVal, got))
 				return false
 			}
-			if expValInt != got.(int) {
+			if expValInt != got {
 				a.Fail(JSONPathNotEqual(path, expVal, got))
 				return false
 			}
@@ -251,7 +251,7 @@ func (a *assertions) pathsOK() bool {
 				a.Fail(JSONPathConversionError(path, expVal, got))
 				return false
 			}
-			if expValFloat != got.(float64) {
+			if expValFloat != got {
 				a.Fail(JSONPathNotEqual(path, expVal, got))
 				return false
 			}
@@ -261,7 +261,7 @@ func (a *assertions) pathsOK() bool {
 				a.Fail(JSONPathConversionError(path, expVal, got))
 				return false
 			}
-			if expValBool != got.(bool) {
+			if expValBool != got {
 				a.Fail(JSONPathNotEqual(path, expVal, got))
 				return false
 			}

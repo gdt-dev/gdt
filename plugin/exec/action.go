@@ -58,8 +58,7 @@ func (a *Action) Do(
 
 	debug.Println(ctx, "exec: %s %s", target, args)
 
-	var cmd *exec.Cmd
-	cmd = exec.CommandContext(ctx, target, args...)
+	cmd := exec.CommandContext(ctx, target, args...)
 
 	outpipe, err := cmd.StdoutPipe()
 	if err != nil {
@@ -78,13 +77,17 @@ func (a *Action) Do(
 		return err
 	}
 	if outbuf != nil {
-		outbuf.ReadFrom(outpipe)
+		if _, err = outbuf.ReadFrom(outpipe); err != nil {
+			debug.Println(ctx, "exec: error reading from stdout: %s", err)
+		}
 		if outbuf.Len() > 0 {
 			debug.Println(ctx, "exec: stdout: %s", outbuf.String())
 		}
 	}
 	if errbuf != nil {
-		errbuf.ReadFrom(errpipe)
+		if _, err = errbuf.ReadFrom(errpipe); err != nil {
+			debug.Println(ctx, "exec: error reading from stderr: %s", err)
+		}
 		if errbuf.Len() > 0 {
 			debug.Println(ctx, "exec: stderr: %s", errbuf.String())
 		}

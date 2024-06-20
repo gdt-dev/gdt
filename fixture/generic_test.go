@@ -47,7 +47,7 @@ func TestStarter(t *testing.T) {
 
 	assert.False(started)
 
-	f.Start(context.TODO())
+	_ = f.Start(context.TODO())
 
 	assert.True(started)
 }
