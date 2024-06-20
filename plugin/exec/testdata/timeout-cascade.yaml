@@ -10,4 +10,3 @@ tests:
     exec: sleep .25
     timeout:
       after: 20ms
-      expected: true

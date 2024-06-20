@@ -15,6 +15,9 @@ type PluginInfo struct {
 	Aliases []string
 	// Description describes what types of tests the plugin can handle.
 	Description string
+	// Timeout is a Timeout that should be used by default for test specs of
+	// this plugin.
+	Timeout *Timeout
 	// Retry is a Retry that should be used by default for test specs of this
 	// plugin.
 	Retry *Retry

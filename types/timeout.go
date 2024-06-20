@@ -16,9 +16,6 @@ type Timeout struct {
 	// Specify a duration using Go's time duration string.
 	// See https://pkg.go.dev/time#ParseDuration
 	After string `yaml:"after,omitempty"`
-	// Expected indicates whether the timeout is expected to be exceeded. This
-	// is mostly useful for unit testing of the timeout functionality itself.
-	Expected bool `yaml:"expected,omitempty"`
 }
 
 // Duration returns the time duration of the Timeout

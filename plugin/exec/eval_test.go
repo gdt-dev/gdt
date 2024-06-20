@@ -16,9 +16,14 @@ import (
 	"testing"
 
 	gdtcontext "github.com/gdt-dev/gdt/context"
+	execplugin "github.com/gdt-dev/gdt/plugin/exec"
 	"github.com/gdt-dev/gdt/scenario"
 	"github.com/stretchr/testify/require"
 )
+
+func init() {
+	execplugin.OverrideDefaultTimeout("0.5s")
+}
 
 var failFlag = flag.Bool("fail", false, "run tests expected to fail")
 
@@ -161,6 +166,45 @@ func TestContainsNoneOf(t *testing.T) {
 	require.Nil(err)
 }
 
+func TestFailExecTimeoutPluginDefault(t *testing.T) {
+	if !*failFlag {
+		t.Skip("skipping without -fail flag")
+	}
+	require := require.New(t)
+
+	fp := filepath.Join("testdata", "timeout-plugin-default.yaml")
+	f, err := os.Open(fp)
+	require.Nil(err)
+
+	s, err := scenario.FromReader(
+		f,
+		scenario.WithPath(fp),
+	)
+	require.Nil(err)
+	require.NotNil(s)
+
+	ctx := gdtcontext.New(gdtcontext.WithDebug())
+	err = s.Run(ctx, t)
+	require.Nil(err)
+}
+
+func TestExecTimeoutPluginDefault(t *testing.T) {
+	require := require.New(t)
+	target := os.Args[0]
+	failArgs := []string{
+		"-test.v",
+		"-test.run=FailExecTimeoutPluginDefault",
+		"-fail",
+	}
+	outerr, err := exec.Command(target, failArgs...).CombinedOutput()
+
+	// The test should have failed...
+	require.NotNil(err)
+	debugout := string(outerr)
+	require.Contains(debugout, "using timeout of 0.5s [plugin default]")
+	require.Contains(debugout, "assertion failed: timeout exceeded")
+}
+
 func TestFailExecSleepTimeout(t *testing.T) {
 	if !*failFlag {
 		t.Skip("skipping without -fail flag")
@@ -289,8 +333,8 @@ func TestExecTimeoutCascade(t *testing.T) {
 	require.NotNil(err)
 
 	debugout := string(outerr)
-	require.Contains(debugout, "using timeout of 500ms (expected: false) [scenario default]")
-	require.Contains(debugout, "using timeout of 20ms (expected: true)")
+	require.Contains(debugout, "using timeout of 500ms [scenario default]")
+	require.Contains(debugout, "using timeout of 20ms")
 }
 
 func TestFailExecOnFail(t *testing.T) {
