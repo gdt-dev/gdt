@@ -9,7 +9,6 @@ import (
 	"bytes"
 	"context"
 	"flag"
-	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -35,7 +34,8 @@ func TestRun(t *testing.T) {
 	require.Nil(err)
 	require.NotNil(s)
 
-	s.Run(context.TODO(), t)
+	err = s.Run(context.TODO(), t)
+	require.Nil(err)
 }
 
 func TestPriorRun(t *testing.T) {
@@ -172,7 +172,7 @@ func TestRetryTestOverride(t *testing.T) {
 	// The test should have failed...
 	require.NotNil(err)
 
-	debugout := fmt.Sprintf("%s", outerr)
+	debugout := string(outerr)
 	require.Contains(debugout, "[gdt] [retry-test-override] run: exceeded max attempts 2. stopping.")
 }
 

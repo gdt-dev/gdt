@@ -6,7 +6,6 @@ package scenario
 
 import (
 	"io"
-	"io/ioutil"
 
 	"gopkg.in/yaml.v3"
 
@@ -20,7 +19,7 @@ func FromReader(
 	r io.Reader,
 	mods ...ScenarioModifier,
 ) (*Scenario, error) {
-	contents, err := ioutil.ReadAll(r)
+	contents, err := io.ReadAll(r)
 	if err != nil {
 		return nil, err
 	}

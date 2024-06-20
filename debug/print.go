@@ -31,6 +31,7 @@ func Printf(
 	}
 	msg := fmt.Sprintf(format, args...)
 	for _, w := range writers {
+		//nolint:errcheck
 		w.Write([]byte(msg))
 	}
 }
@@ -57,6 +58,7 @@ func Println(
 	}
 	msg := fmt.Sprintf(format, args...)
 	for _, w := range writers {
+		//nolint:errcheck
 		w.Write([]byte(msg))
 	}
 }

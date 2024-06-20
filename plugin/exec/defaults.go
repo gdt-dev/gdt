@@ -8,7 +8,6 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/gdt-dev/gdt/errors"
-	gdttypes "github.com/gdt-dev/gdt/types"
 )
 
 type execDefaults struct{}
@@ -46,16 +45,4 @@ func (d *Defaults) UnmarshalYAML(node *yaml.Node) error {
 		}
 	}
 	return nil
-}
-
-// fromBaseDefaults returns an exec plugin-specific Defaults from a Spec
-func fromBaseDefaults(base *gdttypes.Defaults) *Defaults {
-	if base == nil {
-		return nil
-	}
-	d := base.For(pluginName)
-	if d == nil {
-		return nil
-	}
-	return d.(*Defaults)
 }

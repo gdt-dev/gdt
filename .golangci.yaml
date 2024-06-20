@@ -1,0 +1,6 @@
+linters-settings:
+  staticcheck:
+    checks:
+      - all
+      - '-ST1000' # ignore at least one file in package should have comment
+      - '-EXC0003' # ignore the stuttered name error

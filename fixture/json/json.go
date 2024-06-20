@@ -8,7 +8,6 @@ import (
 	"context"
 	"encoding/json"
 	"io"
-	"io/ioutil"
 	"strconv"
 
 	"github.com/PaesslerAG/jsonpath"
@@ -49,11 +48,11 @@ func (f *jsonFixture) State(path string) interface{} {
 	if err != nil {
 		return nil
 	}
-	switch got.(type) {
+	switch got := got.(type) {
 	case string:
-		return got.(string)
+		return got
 	case float64:
-		return strconv.FormatFloat(got.(float64), 'f', 0, 64)
+		return strconv.FormatFloat(got, 'f', 0, 64)
 	default:
 		return nil
 	}
@@ -64,17 +63,16 @@ func (f *jsonFixture) State(path string) interface{} {
 func New(data interface{}) (gdttypes.Fixture, error) {
 	var err error
 	var b []byte
-	switch data.(type) {
+	switch data := data.(type) {
 	case io.Reader:
-		r := data.(io.Reader)
-		b, err = ioutil.ReadAll(r)
+		b, err = io.ReadAll(data)
 		if err != nil {
 			return nil, err
 		}
 	case []byte:
-		b = data.([]byte)
+		b = data
 	case string:
-		b = []byte(data.(string))
+		b = []byte(data)
 	}
 	f := jsonFixture{
 		data: interface{}(nil),
