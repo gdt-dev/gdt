@@ -4,13 +4,6 @@
 
 package result
 
-import (
-	"errors"
-	"fmt"
-
-	gdterrors "github.com/gdt-dev/gdt/errors"
-)
-
 // Result is returned from a `Evaluable.Eval` execution. It serves two
 // purposes:
 //
@@ -23,9 +16,6 @@ import (
 // returned in the Result and the `Scenario.Run` method injects that
 // information into the context that is supplied to the next Spec's `Run`.
 type Result struct {
-	// err is any error that was returned from the Evaluable's execution. This
-	// is guaranteed to be a `gdterrors.RuntimeError`.
-	err error
 	// failures is the collection of error messages from assertion failures
 	// that occurred during Eval(). These are *not* `gdterrors.RuntimeError`.
 	failures []error
@@ -34,17 +24,6 @@ type Result struct {
 	// the `gdtcontext.PriorRunData()` function. Plugins are responsible for
 	// clearing and setting any used prior run data.
 	data map[string]interface{}
-}
-
-// HasRuntimeError returns true if the Eval() returned a runtime error, false
-// otherwise.
-func (r *Result) HasRuntimeError() bool {
-	return r.err != nil
-}
-
-// RuntimeError returns the runtime error
-func (r *Result) RuntimeError() error {
-	return r.err
 }
 
 // HasData returns true if any of the run data has been set, false otherwise.
@@ -85,19 +64,6 @@ func (r *Result) SetFailures(failures ...error) {
 }
 
 type ResultModifier func(*Result)
-
-// WithRuntimeError modifies the Result with the supplied error
-func WithRuntimeError(err error) ResultModifier {
-	if !errors.Is(err, gdterrors.RuntimeError) {
-		msg := fmt.Sprintf("expected %s to be a gdterrors.RuntimeError", err)
-		// panic here because a plugin author incorrectly implemented their
-		// plugin Spec's Eval() method...
-		panic(msg)
-	}
-	return func(r *Result) {
-		r.err = err
-	}
-}
 
 // WithData modifies the Result with the supplied run data key and value
 func WithData(key string, val interface{}) ResultModifier {

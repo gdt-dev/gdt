@@ -8,7 +8,6 @@ import (
 	"bytes"
 	"context"
 	"os/exec"
-	"testing"
 
 	gdtcontext "github.com/gdt-dev/gdt/context"
 	"github.com/gdt-dev/gdt/debug"
@@ -38,7 +37,6 @@ type Action struct {
 // respectively.
 func (a *Action) Do(
 	ctx context.Context,
-	t *testing.T,
 	outbuf *bytes.Buffer,
 	errbuf *bytes.Buffer,
 	exitcode *int,

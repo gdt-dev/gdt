@@ -8,7 +8,6 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"testing"
 
 	gdtcontext "github.com/gdt-dev/gdt/context"
 	"github.com/gdt-dev/gdt/debug"
@@ -18,7 +17,6 @@ import (
 	"github.com/gdt-dev/gdt/result"
 	gdttypes "github.com/gdt-dev/gdt/types"
 	"github.com/samber/lo"
-	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v3"
 )
 
@@ -84,12 +82,8 @@ func (s *failSpec) Base() *gdttypes.Spec {
 	return &s.Spec
 }
 
-func (s *failSpec) Eval(context.Context, *testing.T) *result.Result {
-	return result.New(
-		result.WithRuntimeError(
-			fmt.Errorf("%w: Indy, bad dates!", gdterrors.RuntimeError),
-		),
-	)
+func (s *failSpec) Eval(context.Context) (*result.Result, error) {
+	return nil, fmt.Errorf("%w: Indy, bad dates!", gdterrors.RuntimeError)
 }
 
 func (s *failSpec) UnmarshalYAML(node *yaml.Node) error {
@@ -220,28 +214,19 @@ func (s *fooSpec) UnmarshalYAML(node *yaml.Node) error {
 	return nil
 }
 
-func (s *fooSpec) Eval(ctx context.Context, t *testing.T) *result.Result {
+func (s *fooSpec) Eval(ctx context.Context) (*result.Result, error) {
 	fails := []error{}
-	t.Run(s.Title(), func(t *testing.T) {
-		ctx = gdtcontext.PushTrace(ctx, s.Title())
-		defer func() {
-			ctx = gdtcontext.PopTrace(ctx)
-		}()
-		debug.Println(ctx, "in %s Foo=%s", s.Title(), s.Foo)
-		// This is just a silly test to demonstrate how to write Eval() methods
-		// for plugin Spec specialization classes.
-		if s.Name == "bar" && s.Foo != "bar" {
-			fail := fmt.Errorf("expected s.Foo = 'bar', got %s", s.Foo)
-			fails = append(fails, fail)
-		} else if s.Name != "bar" && s.Foo != "baz" {
-			fail := fmt.Errorf("expected s.Foo = 'baz', got %s", s.Foo)
-			fails = append(fails, fail)
-		}
-	})
-	for _, fail := range fails {
-		t.Error(fail)
+	debug.Println(ctx, "in %s Foo=%s", s.Title(), s.Foo)
+	// This is just a silly test to demonstrate how to write Eval() methods
+	// for plugin Spec specialization classes.
+	if s.Name == "bar" && s.Foo != "bar" {
+		fail := fmt.Errorf("expected s.Foo = 'bar', got %s", s.Foo)
+		fails = append(fails, fail)
+	} else if s.Name != "bar" && s.Foo != "baz" {
+		fail := fmt.Errorf("expected s.Foo = 'baz', got %s", s.Foo)
+		fails = append(fails, fail)
 	}
-	return result.New(result.WithFailures(fails...))
+	return result.New(result.WithFailures(fails...)), nil
 }
 
 type fooPlugin struct{}
@@ -281,8 +266,8 @@ func (s *barSpec) Base() *gdttypes.Spec {
 	return &s.Spec
 }
 
-func (s *barSpec) Eval(context.Context, *testing.T) *result.Result {
-	return result.New()
+func (s *barSpec) Eval(context.Context) (*result.Result, error) {
+	return result.New(), nil
 }
 
 func (s *barSpec) UnmarshalYAML(node *yaml.Node) error {
@@ -390,21 +375,28 @@ func (s *priorRunSpec) UnmarshalYAML(node *yaml.Node) error {
 	return nil
 }
 
-func (s *priorRunSpec) Eval(ctx context.Context, t *testing.T) *result.Result {
-	t.Run(s.Title(), func(t *testing.T) {
-		assert := assert.New(t)
-		// Here we test that the prior run data that we save at the end of each
-		// Run() is showing up properly in the next Run()'s context.
-		prData := gdtcontext.PriorRun(ctx)
-		if s.Index == 0 {
-			assert.Empty(prData)
-		} else {
-			assert.Contains(prData, priorRunDataKey)
-			assert.IsType(prData[priorRunDataKey], "")
-			assert.Equal(s.Prior, prData[priorRunDataKey])
+func (s *priorRunSpec) Eval(ctx context.Context) (*result.Result, error) {
+	// Here we test that the prior run data that we save at the end of each
+	// Run() is showing up properly in the next Run()'s context.
+	fails := []error{}
+	prData := gdtcontext.PriorRun(ctx)
+	if s.Index == 0 {
+		if len(prData) != 0 {
+			fails = append(fails, fmt.Errorf("expected prData to be empty"))
 		}
-	})
-	return result.New(result.WithData(priorRunDataKey, s.State))
+	} else {
+		data, ok := prData[priorRunDataKey]
+		if !ok {
+			fails = append(fails, fmt.Errorf("expected priorRunDataKey in priorRun map"))
+		}
+		if s.Prior != data {
+			fails = append(fails, fmt.Errorf("expected priorRunData == data"))
+		}
+	}
+	return result.New(
+		result.WithFailures(fails...),
+		result.WithData(priorRunDataKey, s.State),
+	), nil
 }
 
 type priorRunPlugin struct{}

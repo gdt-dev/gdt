@@ -6,7 +6,6 @@ package types
 
 import (
 	"context"
-	"testing"
 
 	"github.com/gdt-dev/gdt/result"
 )
@@ -16,7 +15,10 @@ type Evaluable interface {
 	// Eval performs an action and evaluates the results of that action,
 	// returning a Result that informs the Scenario about what failed or
 	// succeeded about the Evaluable's conditions.
-	Eval(context.Context, *testing.T) *result.Result
+	//
+	// Errors returned by Eval() are **RuntimeErrors**, not failures in
+	// assertions.
+	Eval(context.Context) (*result.Result, error)
 	// SetBase sets the Evaluable's base Spec
 	SetBase(Spec)
 	// Base returns the Evaluable's base Spec

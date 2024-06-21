@@ -7,6 +7,7 @@ package scenario
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -52,9 +53,9 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 	// collection, evaluate those first and if any failed, skip the scenario's
 	// tests.
 	for _, skipIf := range s.SkipIf {
-		res := skipIf.Eval(ctx, t)
-		if res.HasRuntimeError() {
-			return res.RuntimeError()
+		res, err := skipIf.Eval(ctx)
+		if err != nil {
+			return err
 		}
 		if len(res.Failures()) == 0 {
 			t.Skipf(
@@ -70,10 +71,18 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 			ctx = gdtcontext.PopTrace(ctx)
 		}()
 		for idx, spec := range s.Tests {
+			sb := spec.Base()
+			wait := sb.Wait
+			if wait != nil && wait.Before != "" {
+				debug.Println(ctx, "wait: %s before", wait.Before)
+				time.Sleep(wait.BeforeDuration())
+			}
 			plugin := s.evalPlugins[idx]
 			pinfo := plugin.Info()
 			pretry := pinfo.Retry
 			ptimeout := pinfo.Timeout
+
+			rt := getRetry(ctx, sb.Retry, scDefaults, pretry)
 
 			// Create a brand new context that inherits the top-level context's
 			// cancel func. We want to set deadlines for each test spec and if
@@ -82,13 +91,6 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 			specCtx, specCancel := context.WithCancel(ctx)
 			defer specCancel()
 
-			sb := spec.Base()
-			wait := sb.Wait
-			if wait != nil && wait.Before != "" {
-				debug.Println(ctx, "wait: %s before", wait.Before)
-				time.Sleep(wait.BeforeDuration())
-			}
-
 			to := getTimeout(ctx, sb.Timeout, ptimeout, scDefaults)
 			if to != nil {
 				var cancel context.CancelFunc
@@ -96,84 +98,13 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 				defer cancel()
 			}
 
-			var res *result.Result
-			rt := getRetry(ctx, sb.Retry, scDefaults, pretry)
-			if rt == nil {
-				// Just evaluate the test spec once
-				res = spec.Eval(specCtx, t)
-				if res.HasRuntimeError() {
-					rterr = res.RuntimeError()
-					t.Fatal(rterr)
-				}
-				debug.Println(
-					ctx, "run: single-shot (no retries) ok: %v",
-					!res.Failed(),
-				)
-			} else {
-				// retry the action and test the assertions until they succeed,
-				// there is a terminal failure, or the timeout expires.
-				var bo backoff.BackOff
-
-				if rt.Exponential {
-					bo = backoff.WithContext(
-						backoff.NewExponentialBackOff(),
-						ctx,
-					)
-				} else {
-					interval := gdttypes.DefaultRetryConstantInterval
-					if rt.Interval != "" {
-						interval = rt.IntervalDuration()
-					}
-					bo = backoff.WithContext(
-						backoff.NewConstantBackOff(interval),
-						ctx,
-					)
-				}
-				ticker := backoff.NewTicker(bo)
-				maxAttempts := 0
-				if rt.Attempts != nil {
-					maxAttempts = *rt.Attempts
-				}
-				attempts := 1
-				start := time.Now().UTC()
-				success := false
-				for tick := range ticker.C {
-					if (maxAttempts > 0) && (attempts > maxAttempts) {
-						debug.Println(
-							ctx, "run: exceeded max attempts %d. stopping.",
-							maxAttempts,
-						)
-						ticker.Stop()
-						break
-					}
-					after := tick.Sub(start)
-
-					res = spec.Eval(specCtx, t)
-					if res.HasRuntimeError() {
-						rterr = res.RuntimeError()
-						t.Fatal(rterr)
-						break
-					}
-					success = !res.Failed()
-					debug.Println(
-						ctx, "run: attempt %d after %s ok: %v",
-						attempts, after, success,
-					)
-					if success {
-						ticker.Stop()
-						break
-					}
-					for _, f := range res.Failures() {
-						debug.Println(
-							ctx, "run: attempt %d after %s failure: %s",
-							attempts, after, f,
-						)
-					}
-					attempts++
-				}
+			res, rterr := s.runSpec(specCtx, rt, to, idx, spec)
+			if rterr != nil {
+				break
 			}
-			for _, fail := range res.Failures() {
-				t.Error(fail)
+			if wait != nil && wait.After != "" {
+				debug.Println(ctx, "wait: %s after", wait.After)
+				time.Sleep(wait.AfterDuration())
 			}
 			// Results can have arbitrary run data stored in them and we
 			// save this prior run data in the top-level context (and pass
@@ -181,13 +112,106 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 			if res.HasData() {
 				ctx = gdtcontext.StorePriorRun(ctx, res.Data())
 			}
-			if wait != nil && wait.After != "" {
-				debug.Println(ctx, "wait: %s after", wait.After)
-				time.Sleep(wait.AfterDuration())
+			for _, fail := range res.Failures() {
+				t.Error(fail)
 			}
 		}
 	})
 	return rterr
+}
+
+// runSpec executes an individual test spec
+func (s *Scenario) runSpec(
+	ctx context.Context,
+	retry *gdttypes.Retry,
+	timeout *gdttypes.Timeout,
+	idx int,
+	spec gdttypes.Evaluable,
+) (*result.Result, error) {
+	sb := spec.Base()
+	specTraceMsg := strconv.Itoa(idx)
+	if sb.Name != "" {
+		specTraceMsg += ":" + sb.Name
+	}
+	ctx = gdtcontext.PushTrace(ctx, specTraceMsg)
+	defer func() {
+		ctx = gdtcontext.PopTrace(ctx)
+	}()
+	if retry == nil {
+		// Just evaluate the test spec once
+		res, err := spec.Eval(ctx)
+		if err != nil {
+			return nil, err
+		}
+		debug.Println(
+			ctx, "run: single-shot (no retries) ok: %v",
+			!res.Failed(),
+		)
+		return res, nil
+	}
+
+	// retry the action and test the assertions until they succeed,
+	// there is a terminal failure, or the timeout expires.
+	var bo backoff.BackOff
+	var res *result.Result
+	var err error
+
+	if retry.Exponential {
+		bo = backoff.WithContext(
+			backoff.NewExponentialBackOff(),
+			ctx,
+		)
+	} else {
+		interval := gdttypes.DefaultRetryConstantInterval
+		if retry.Interval != "" {
+			interval = retry.IntervalDuration()
+		}
+		bo = backoff.WithContext(
+			backoff.NewConstantBackOff(interval),
+			ctx,
+		)
+	}
+	ticker := backoff.NewTicker(bo)
+	maxAttempts := 0
+	if retry.Attempts != nil {
+		maxAttempts = *retry.Attempts
+	}
+	attempts := 1
+	start := time.Now().UTC()
+	success := false
+	for tick := range ticker.C {
+		if (maxAttempts > 0) && (attempts > maxAttempts) {
+			debug.Println(
+				ctx, "run: exceeded max attempts %d. stopping.",
+				maxAttempts,
+			)
+			ticker.Stop()
+			break
+		}
+		after := tick.Sub(start)
+
+		res, err = spec.Eval(ctx)
+		if err != nil {
+			return nil, err
+		}
+		success = !res.Failed()
+		debug.Println(
+			ctx, "run: attempt %d after %s ok: %v",
+			attempts, after, success,
+		)
+		if success {
+			ticker.Stop()
+			break
+		}
+		for _, f := range res.Failures() {
+			debug.Println(
+				ctx, "run: attempt %d after %s failure: %s",
+				attempts, after, f,
+			)
+		}
+		attempts++
+	}
+	return res, nil
 }
 
 // getTimeout returns the timeout value for the test spec. If the spec has a

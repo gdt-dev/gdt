@@ -43,8 +43,8 @@ func (s *fooSpec) UnmarshalYAML(node *yaml.Node) error {
 	return nil
 }
 
-func (s *fooSpec) Eval(ctx context.Context, t *testing.T) *result.Result {
-	return nil
+func (s *fooSpec) Eval(ctx context.Context) (*result.Result, error) {
+	return nil, nil
 }
 
 type fooPlugin struct{}
