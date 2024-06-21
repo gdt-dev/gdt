@@ -540,6 +540,108 @@ test spec also contains these fields:
 [execspec]: https://github.com/gdt-dev/gdt/blob/2791e11105fd3c36d1f11a7d111e089be7cdc84c/exec/spec.go#L11-L34
 [pipeexpect]: https://github.com/gdt-dev/gdt/blob/2791e11105fd3c36d1f11a7d111e089be7cdc84c/exec/assertions.go#L15-L26
 
+### Timeouts and retrying assertions
+
+When evaluating assertions for a test spec, `gdt` inspects the test's
+`timeout` value to determine how long to retry the `get` call and recheck
+the assertions.
+
+If a test's `timeout` is empty, `gdt` inspects the scenario's
+`defaults.timeout` value. If both of those values are empty, `gdt` will look
+for any default `timeout` value that the plugin uses.
+
+If you're interested in seeing the individual results of `gdt`'s
+assertion-checks for a single `get` call, you can use the `gdt.WithDebug()`
+function, like this test function demonstrates:
+
+file: `testdata/matches.yaml`:
+
+```yaml
+name: matches
+description: create a deployment and check the matches condition succeeds
+fixtures:
+  - kind
+tests:
+  - name: create-deployment
+    kube:
+      create: testdata/manifests/nginx-deployment.yaml
+  - name: deployment-exists
+    kube:
+      get: deployments/nginx
+    assert:
+      matches:
+        spec:
+          replicas: 2
+          template:
+            metadata:
+              labels:
+                app: nginx
+        status:
+          readyReplicas: 2
+  - name: delete-deployment
+    kube:
+      delete: deployments/nginx
+```
+
+file: `matches_test.go`
+
+```go
+import (
+    "github.com/gdt-dev/gdt"
+    _ "github.com/gdt-dev/kube"
+    kindfix "github.com/gdt-dev/kube/fixture/kind"
+)
+
+func TestMatches(t *testing.T) {
+	fp := filepath.Join("testdata", "matches.yaml")
+
+	kfix := kindfix.New()
+
+	s, err := gdt.From(fp)
+
+	ctx := gdt.NewContext(gdt.WithDebug())
+	ctx = gdt.RegisterFixture(ctx, "kind", kfix)
+	s.Run(ctx, t)
+}
+```
+
+Here's what running `go test -v matches_test.go` would look like:
+
+```
+$ go test -v matches_test.go
+=== RUN   TestMatches
+=== RUN   TestMatches/matches
+=== RUN   TestMatches/matches/create-deployment
+=== RUN   TestMatches/matches/deployment-exists
+deployment-exists (try 1 after 1.303µs) ok: false, terminal: false
+deployment-exists (try 1 after 1.303µs) failure: assertion failed: match field not equal: $.status.readyReplicas not present in subject
+deployment-exists (try 2 after 595.62786ms) ok: false, terminal: false
+deployment-exists (try 2 after 595.62786ms) failure: assertion failed: match field not equal: $.status.readyReplicas not present in subject
+deployment-exists (try 3 after 1.020003807s) ok: false, terminal: false
+deployment-exists (try 3 after 1.020003807s) failure: assertion failed: match field not equal: $.status.readyReplicas not present in subject
+deployment-exists (try 4 after 1.760006109s) ok: false, terminal: false
+deployment-exists (try 4 after 1.760006109s) failure: assertion failed: match field not equal: $.status.readyReplicas had different values. expected 2 but found 1
+deployment-exists (try 5 after 2.772416449s) ok: true, terminal: false
+=== RUN   TestMatches/matches/delete-deployment
+--- PASS: TestMatches (3.32s)
+    --- PASS: TestMatches/matches (3.30s)
+        --- PASS: TestMatches/matches/create-deployment (0.01s)
+        --- PASS: TestMatches/matches/deployment-exists (2.78s)
+        --- PASS: TestMatches/matches/delete-deployment (0.02s)
+PASS
+ok  	command-line-arguments	3.683s
+```
+
+You can see from the debug output above that `gdt` created the Deployment and
+then did a `kube.get` for the `deployments/nginx` Deployment. Initially
+(attempt 1), the `assert.matches` assertion failed because the
+`status.readyReplicas` field was not present in the returned resource. `gdt`
+retried the `kube.get` call 4 more times (attempts 2-5), with attempts 2 and 3
+failed the existence check for the `status.readyReplicas` field and attempt 4
+failing the *value* check for the `status.readyReplicas` field being `1`
+instead of the expected `2`. Finally, when the Deployment was completely rolled
+out, attempt 5 succeeded in all the `assert.matches` assertions.
+
 ## Contributing and acknowledgements
 
 `gdt` was inspired by [Gabbi](https://github.com/cdent/gabbi), the excellent

@@ -36,8 +36,8 @@ func (s *fooSpec) Base() *gdttypes.Spec {
 	return &s.Spec
 }
 
-func (s *fooSpec) Eval(context.Context, *testing.T) *result.Result {
-	return nil
+func (s *fooSpec) Eval(context.Context) (*result.Result, error) {
+	return nil, nil
 }
 
 func (s *fooSpec) UnmarshalYAML(node *yaml.Node) error {
