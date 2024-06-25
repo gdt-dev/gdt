@@ -7,7 +7,7 @@ package scenario
 import (
 	gopath "path"
 
-	gdttypes "github.com/gdt-dev/gdt/types"
+	"github.com/gdt-dev/gdt/api"
 )
 
 // Scenario is a generalized gdt test case file. It contains a set of Runnable
@@ -15,7 +15,7 @@ import (
 type Scenario struct {
 	// evalPlugins stores the plugin that will evaluate the test spec at a
 	// particular index
-	evalPlugins map[int]gdttypes.Plugin
+	evalPlugins map[int]api.Plugin
 	// Path is the filepath to the test case.
 	Path string `yaml:"-"`
 	// Name is the short name for the test case. If empty, defaults to the base
@@ -72,10 +72,10 @@ type Scenario struct {
 	//
 	// With the above, if an 'nginx' deployment exists already, the scenario
 	// will skip all the tests.
-	SkipIf []gdttypes.Evaluable `yaml:"skip-if,omitempty"`
+	SkipIf []api.Evaluable `yaml:"skip-if,omitempty"`
 	// Tests is the collection of test units in this test case. These will be
 	// the fully parsed and materialized plugin Spec structs.
-	Tests []gdttypes.Evaluable `yaml:"tests,omitempty"`
+	Tests []api.Evaluable `yaml:"tests,omitempty"`
 }
 
 // Title returns the Name of the scenario or the Path's file/base name if there

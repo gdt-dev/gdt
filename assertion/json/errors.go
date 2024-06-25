@@ -7,7 +7,7 @@ package json
 import (
 	"fmt"
 
-	gdterrors "github.com/gdt-dev/gdt/errors"
+	"github.com/gdt-dev/gdt/api"
 	"gopkg.in/yaml.v3"
 )
 
@@ -15,7 +15,7 @@ var (
 	// ErrJSONPathInvalid returns an ErrParse when a JSONPath expression could
 	// not be parsed.
 	ErrJSONPathInvalid = fmt.Errorf(
-		"%w: JSONPath invalid", gdterrors.ErrParse,
+		"%w: JSONPath invalid", api.ErrParse,
 	)
 	// ErrJSONPathInvalidNoRoot returns an ErrParse when a JSONPath expression
 	// does not start with '$'
@@ -24,56 +24,56 @@ var (
 	)
 	// ErrJSONUnmarshalError is returned when JSON content cannot be decoded
 	ErrJSONUnmarshalError = fmt.Errorf(
-		"%w: failed to unmarshal JSON", gdterrors.ErrFailure,
+		"%w: failed to unmarshal JSON", api.ErrFailure,
 	)
 	// ErrJSONPathNotFound returns an ErrFailure when a JSONPath expression
 	// could not evaluate to a found element.
 	ErrJSONPathNotFound = fmt.Errorf(
-		"%w: failed to find element at JSONPath", gdterrors.ErrFailure,
+		"%w: failed to find element at JSONPath", api.ErrFailure,
 	)
 	// ErrJSONPathConversionError returns an ErrFailure when a JSONPath
 	// expression evaluated to a found element but could not be converted to a
 	// string.
 	ErrJSONPathConversionError = fmt.Errorf(
-		"%w: JSONPath value could not be compared", gdterrors.ErrFailure,
+		"%w: JSONPath value could not be compared", api.ErrFailure,
 	)
 	// ErrJSONPathNotEqual returns an ErrFailure when a JSONPath
 	// expression evaluated to a found element but the value did not match an
 	// expected string.
 	ErrJSONPathNotEqual = fmt.Errorf(
-		"%w: JSONPath values not equal", gdterrors.ErrFailure,
+		"%w: JSONPath values not equal", api.ErrFailure,
 	)
 	// ErrJSONSchemaValidateError returns an ErrFailure when a JSONSchema could
 	// not be parsed.
 	ErrJSONSchemaValidateError = fmt.Errorf(
-		"%w: failed to parse JSONSchema", gdterrors.ErrFailure,
+		"%w: failed to parse JSONSchema", api.ErrFailure,
 	)
 	// ErrJSONSchemaInvalid returns an ErrFailure when some content could not
 	// be validated with a JSONSchema.
 	ErrJSONSchemaInvalid = fmt.Errorf(
-		"%w: JSON content did not adhere to JSONSchema", gdterrors.ErrFailure,
+		"%w: JSON content did not adhere to JSONSchema", api.ErrFailure,
 	)
 	// ErrJSONFormatError returns an ErrFailure when a JSONFormat expression
 	// could not evaluate to a found element.
 	ErrJSONFormatError = fmt.Errorf(
-		"%w: failed to determine JSON format", gdterrors.ErrFailure,
+		"%w: failed to determine JSON format", api.ErrFailure,
 	)
 	// ErrJSONFormatNotEqual returns an ErrFailure when a an element at a
 	// JSONPath was not in the expected format.
 	ErrJSONFormatNotEqual = fmt.Errorf(
-		"%w: JSON format not equal", gdterrors.ErrFailure,
+		"%w: JSON format not equal", api.ErrFailure,
 	)
 	// ErrJSONSchemaFileNotFound indicates a specified JSONSchema file could
 	// not be found.
 	ErrJSONSchemaFileNotFound = fmt.Errorf(
 		"%w: unable to find JSONSchema file",
-		gdterrors.ErrParse,
+		api.ErrParse,
 	)
 	// ErrUnsupportedJSONSchemaReference indicates that a specified JSONSchema
 	// file is referenced as an HTTP(S) URL instead of a file URI.
 	ErrUnsupportedJSONSchemaReference = fmt.Errorf(
 		"%w: unsupported JSONSchema reference",
-		gdterrors.ErrParse,
+		api.ErrParse,
 	)
 )
 

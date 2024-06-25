@@ -2,7 +2,7 @@
 //
 // See the COPYING file in the root project directory for full text.
 
-package result
+package api
 
 // Result is returned from a `Evaluable.Eval` execution. It serves two
 // purposes:
@@ -80,8 +80,8 @@ func WithFailures(failures ...error) ResultModifier {
 	}
 }
 
-// New returns a new Result
-func New(mods ...ResultModifier) *Result {
+// NewResult returns a new Result
+func NewResult(mods ...ResultModifier) *Result {
 	r := &Result{}
 	for _, mod := range mods {
 		mod(r)

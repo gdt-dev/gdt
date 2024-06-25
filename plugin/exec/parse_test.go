@@ -9,10 +9,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/gdt-dev/gdt/errors"
+	"github.com/gdt-dev/gdt/api"
 	gdtexec "github.com/gdt-dev/gdt/plugin/exec"
 	"github.com/gdt-dev/gdt/scenario"
-	gdttypes "github.com/gdt-dev/gdt/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -31,7 +30,7 @@ func TestUnknownShell(t *testing.T) {
 	)
 	assert.NotNil(err)
 	assert.ErrorIs(err, gdtexec.ErrUnknownShell)
-	assert.ErrorIs(err, errors.ErrParse)
+	assert.ErrorIs(err, api.ErrParse)
 	assert.Nil(s)
 }
 
@@ -51,11 +50,11 @@ func TestSimpleCommand(t *testing.T) {
 	assert.NotNil(s)
 
 	assert.IsType(&scenario.Scenario{}, s)
-	expTests := []gdttypes.Evaluable{
+	expTests := []api.Evaluable{
 		&gdtexec.Spec{
-			Spec: gdttypes.Spec{
+			Spec: api.Spec{
 				Index:    0,
-				Defaults: &gdttypes.Defaults{},
+				Defaults: &api.Defaults{},
 			},
 			Action: gdtexec.Action{
 				Exec: "ls",

@@ -2,12 +2,10 @@
 //
 // See the COPYING file in the root project directory for full text.
 
-package types
+package api
 
 import (
 	"context"
-
-	"github.com/gdt-dev/gdt/result"
 )
 
 // Evaluable represents individual test units in a Scenario
@@ -18,7 +16,7 @@ type Evaluable interface {
 	//
 	// Errors returned by Eval() are **RuntimeErrors**, not failures in
 	// assertions.
-	Eval(context.Context) (*result.Result, error)
+	Eval(context.Context) (*Result, error)
 	// SetBase sets the Evaluable's base Spec
 	SetBase(Spec)
 	// Base returns the Evaluable's base Spec

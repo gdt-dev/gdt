@@ -7,9 +7,9 @@ package scenario
 import (
 	"time"
 
-	"github.com/gdt-dev/gdt/errors"
-	gdttypes "github.com/gdt-dev/gdt/types"
 	"gopkg.in/yaml.v3"
+
+	"github.com/gdt-dev/gdt/api"
 )
 
 const (
@@ -24,33 +24,33 @@ const (
 type Defaults struct {
 	// Timeout has fields that represent the default timeout behaviour and
 	// expectations to use for test specs in the scenario.
-	Timeout *gdttypes.Timeout `yaml:"timeout,omitempty"`
+	Timeout *api.Timeout `yaml:"timeout,omitempty"`
 	// Retry has fields that represent the default retry behaviour for test
 	// specs in the scenario.
-	Retry *gdttypes.Retry `yaml:"retry,omitempty"`
+	Retry *api.Retry `yaml:"retry,omitempty"`
 }
 
 func (d *Defaults) UnmarshalYAML(node *yaml.Node) error {
 	if node.Kind != yaml.MappingNode {
-		return errors.ExpectedMapAt(node)
+		return api.ExpectedMapAt(node)
 	}
 	// maps/structs are stored in a top-level Node.Content field which is a
 	// concatenated slice of Node pointers in pairs of key/values.
 	for i := 0; i < len(node.Content); i += 2 {
 		keyNode := node.Content[i]
 		if keyNode.Kind != yaml.ScalarNode {
-			return errors.ExpectedScalarAt(keyNode)
+			return api.ExpectedScalarAt(keyNode)
 		}
 		key := keyNode.Value
 		valNode := node.Content[i+1]
 		switch key {
 		case "timeout":
 			if valNode.Kind != yaml.MappingNode {
-				return errors.ExpectedMapAt(valNode)
+				return api.ExpectedMapAt(valNode)
 			}
-			var to *gdttypes.Timeout
+			var to *api.Timeout
 			if err := valNode.Decode(&to); err != nil {
-				return errors.ExpectedTimeoutAt(valNode)
+				return api.ExpectedTimeoutAt(valNode)
 			}
 			_, err := time.ParseDuration(to.After)
 			if err != nil {
@@ -59,16 +59,16 @@ func (d *Defaults) UnmarshalYAML(node *yaml.Node) error {
 			d.Timeout = to
 		case "retry":
 			if valNode.Kind != yaml.MappingNode {
-				return errors.ExpectedMapAt(valNode)
+				return api.ExpectedMapAt(valNode)
 			}
-			var r *gdttypes.Retry
+			var r *api.Retry
 			if err := valNode.Decode(&r); err != nil {
-				return errors.ExpectedRetryAt(valNode)
+				return api.ExpectedRetryAt(valNode)
 			}
 			if r.Attempts != nil {
 				attempts := *r.Attempts
 				if attempts < 1 {
-					return errors.InvalidRetryAttempts(valNode, attempts)
+					return api.InvalidRetryAttempts(valNode, attempts)
 				}
 			}
 			if r.Interval != "" {

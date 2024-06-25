@@ -8,8 +8,8 @@ import (
 	"io"
 	"os"
 
+	"github.com/gdt-dev/gdt/api"
 	gdtcontext "github.com/gdt-dev/gdt/context"
-	gdterrors "github.com/gdt-dev/gdt/errors"
 	jsonfix "github.com/gdt-dev/gdt/fixture/json"
 	"github.com/gdt-dev/gdt/plugin"
 	_ "github.com/gdt-dev/gdt/plugin/exec"
@@ -85,7 +85,7 @@ var (
 	// with `go test -v=test2json`.
 	SetDebug = gdtcontext.SetDebug
 	// NewJSONFixture takes a string, some bytes or an io.Reader and returns a
-	// new gdttypes.Fixture that can have its state queried via JSONPath
+	// new api.Fixture that can have its state queried via JSONPath
 	NewJSONFixture = jsonfix.New
 )
 
@@ -124,6 +124,6 @@ func From(source interface{}) (*suite.Suite, error) {
 		}
 		return suite.FromScenario(s), nil
 	default:
-		return nil, gdterrors.UnknownSourceType(source)
+		return nil, api.UnknownSourceType(source)
 	}
 }

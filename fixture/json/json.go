@@ -11,7 +11,8 @@ import (
 	"strconv"
 
 	"github.com/PaesslerAG/jsonpath"
-	gdttypes "github.com/gdt-dev/gdt/types"
+
+	"github.com/gdt-dev/gdt/api"
 )
 
 type jsonFixture struct {
@@ -59,8 +60,8 @@ func (f *jsonFixture) State(path string) interface{} {
 }
 
 // New takes a string, some bytes or an io.Reader and returns a new
-// gdttypes.Fixture that can have its state queried via JSONPath
-func New(data interface{}) (gdttypes.Fixture, error) {
+// api.Fixture that can have its state queried via JSONPath
+func New(data interface{}) (api.Fixture, error) {
 	var err error
 	var b []byte
 	switch data := data.(type) {

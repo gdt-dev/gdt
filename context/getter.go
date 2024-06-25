@@ -9,7 +9,7 @@ import (
 	"io"
 	"strings"
 
-	gdttypes "github.com/gdt-dev/gdt/types"
+	"github.com/gdt-dev/gdt/api"
 )
 
 const (
@@ -50,25 +50,25 @@ func Debug(ctx context.Context) []io.Writer {
 }
 
 // Plugins gets a context's Plugins
-func Plugins(ctx context.Context) []gdttypes.Plugin {
+func Plugins(ctx context.Context) []api.Plugin {
 	if ctx == nil {
-		return []gdttypes.Plugin{}
+		return []api.Plugin{}
 	}
 	if v := ctx.Value(pluginsKey); v != nil {
-		return v.([]gdttypes.Plugin)
+		return v.([]api.Plugin)
 	}
-	return []gdttypes.Plugin{}
+	return []api.Plugin{}
 }
 
 // Fixtures gets a context's Fixtures
-func Fixtures(ctx context.Context) map[string]gdttypes.Fixture {
+func Fixtures(ctx context.Context) map[string]api.Fixture {
 	if ctx == nil {
-		return map[string]gdttypes.Fixture{}
+		return map[string]api.Fixture{}
 	}
 	if v := ctx.Value(fixturesKey); v != nil {
-		return v.(map[string]gdttypes.Fixture)
+		return v.(map[string]api.Fixture)
 	}
-	return map[string]gdttypes.Fixture{}
+	return map[string]api.Fixture{}
 }
 
 // PriorRun gets a context's prior run data

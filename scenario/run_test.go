@@ -14,8 +14,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/gdt-dev/gdt/api"
 	gdtcontext "github.com/gdt-dev/gdt/context"
-	gdterrors "github.com/gdt-dev/gdt/errors"
 	"github.com/gdt-dev/gdt/scenario"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -68,8 +68,8 @@ func TestMissingFixtures(t *testing.T) {
 	// Pass a context with no fixtures registered...
 	err = s.Run(context.TODO(), t)
 	assert.NotNil(err)
-	assert.ErrorIs(err, gdterrors.ErrRequiredFixture)
-	assert.ErrorIs(err, gdterrors.RuntimeError)
+	assert.ErrorIs(err, api.ErrRequiredFixture)
+	assert.ErrorIs(err, api.RuntimeError)
 }
 
 func TestFixtureStartError(t *testing.T) {

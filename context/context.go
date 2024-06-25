@@ -9,8 +9,9 @@ import (
 	"io"
 	"os"
 
-	gdttypes "github.com/gdt-dev/gdt/types"
 	"github.com/samber/lo"
+
+	"github.com/gdt-dev/gdt/api"
 )
 
 type ContextKey string
@@ -88,14 +89,14 @@ func WithDebug(writers ...io.Writer) ContextModifier {
 }
 
 // WithPlugins sets a context's Plugins
-func WithPlugins(plugins []gdttypes.Plugin) ContextModifier {
+func WithPlugins(plugins []api.Plugin) ContextModifier {
 	return func(ctx context.Context) context.Context {
 		return context.WithValue(ctx, pluginsKey, plugins)
 	}
 }
 
 // WithFixtures sets a context's Fixtures
-func WithFixtures(fixtures map[string]gdttypes.Fixture) ContextModifier {
+func WithFixtures(fixtures map[string]api.Fixture) ContextModifier {
 	return func(ctx context.Context) context.Context {
 		return context.WithValue(ctx, fixturesKey, fixtures)
 	}
@@ -121,7 +122,7 @@ func SetDebug(
 func RegisterFixture(
 	ctx context.Context,
 	name string,
-	f gdttypes.Fixture,
+	f api.Fixture,
 ) context.Context {
 	fixtures := Fixtures(ctx)
 	fixtures[name] = f
@@ -131,7 +132,7 @@ func RegisterFixture(
 // RegisterPlugin registers a plugin with the context
 func RegisterPlugin(
 	ctx context.Context,
-	p gdttypes.Plugin,
+	p api.Plugin,
 ) context.Context {
 	plugins := Plugins(ctx)
 	for _, plug := range plugins {

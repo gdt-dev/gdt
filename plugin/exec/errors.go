@@ -9,18 +9,18 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	gdterrors "github.com/gdt-dev/gdt/errors"
+	"github.com/gdt-dev/gdt/api"
 )
 
 var (
 	// ErrExecEmpty indicates that the user specified an empty "exec"
 	// field
 	ErrExecEmpty = fmt.Errorf(
-		"%w: expected non-empty exec field", gdterrors.ErrParse,
+		"%w: expected non-empty exec field", api.ErrParse,
 	)
 	// ErrExecInvalid indicates that the user specified an invalid "exec" field
 	ErrExecInvalid = fmt.Errorf(
-		"%w: invalid exec field", gdterrors.ErrParse,
+		"%w: invalid exec field", api.ErrParse,
 	)
 )
 
@@ -44,5 +44,5 @@ func ExecInvalidShellParse(err error, node *yaml.Node) error {
 
 // ExecRuntimeError returns a RuntimeError with an error from the Exec() call.
 func ExecRuntimeError(err error) error {
-	return fmt.Errorf("%w: %s", gdterrors.RuntimeError, err)
+	return fmt.Errorf("%w: %s", api.RuntimeError, err)
 }

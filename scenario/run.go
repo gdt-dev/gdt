@@ -14,15 +14,13 @@ import (
 
 	"github.com/cenkalti/backoff"
 
+	"github.com/gdt-dev/gdt/api"
 	gdtcontext "github.com/gdt-dev/gdt/context"
 	"github.com/gdt-dev/gdt/debug"
-	gdterrors "github.com/gdt-dev/gdt/errors"
-	"github.com/gdt-dev/gdt/result"
-	gdttypes "github.com/gdt-dev/gdt/types"
 )
 
 // Run executes the scenario. The error that is returned will always be derived
-// from `gdterrors.RuntimeError` and represents an *unrecoverable* error.
+// from `api.RuntimeError` and represents an *unrecoverable* error.
 //
 // Test assertion failures are *not* considered errors. The Scenario.Run()
 // method controls whether `testing.T.Fail()` or `testing.T.Skip()` is called
@@ -35,7 +33,7 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 			lookup := strings.ToLower(fname)
 			fix, found := fixtures[lookup]
 			if !found {
-				return gdterrors.RequiredFixtureMissing(fname)
+				return api.RequiredFixtureMissing(fname)
 			}
 			if err := fix.Start(ctx); err != nil {
 				return err
@@ -120,11 +118,11 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 // runSpec executes an individual test spec
 func (s *Scenario) runSpec(
 	ctx context.Context,
-	retry *gdttypes.Retry,
-	timeout *gdttypes.Timeout,
+	retry *api.Retry,
+	timeout *api.Timeout,
 	idx int,
-	spec gdttypes.Evaluable,
-) (*result.Result, error) {
+	spec api.Evaluable,
+) (*api.Result, error) {
 	sb := spec.Base()
 	specTraceMsg := strconv.Itoa(idx)
 	if sb.Name != "" {
@@ -134,7 +132,7 @@ func (s *Scenario) runSpec(
 	defer func() {
 		ctx = gdtcontext.PopTrace(ctx)
 	}()
-	if retry == nil || retry == gdttypes.NoRetry {
+	if retry == nil || retry == api.NoRetry {
 		// Just evaluate the test spec once
 		res, err := spec.Eval(ctx)
 		if err != nil {
@@ -150,7 +148,7 @@ func (s *Scenario) runSpec(
 	// retry the action and test the assertions until they succeed,
 	// there is a terminal failure, or the timeout expires.
 	var bo backoff.BackOff
-	var res *result.Result
+	var res *api.Result
 	var err error
 
 	if retry.Exponential {
@@ -159,7 +157,7 @@ func (s *Scenario) runSpec(
 			ctx,
 		)
 	} else {
-		interval := gdttypes.DefaultRetryConstantInterval
+		interval := api.DefaultRetryConstantInterval
 		if retry.Interval != "" {
 			interval = retry.IntervalDuration()
 		}
@@ -221,9 +219,9 @@ func (s *Scenario) runSpec(
 func getTimeout(
 	ctx context.Context,
 	scenDefaults *Defaults,
-	plugin gdttypes.Plugin,
-	eval gdttypes.Evaluable,
-) *gdttypes.Timeout {
+	plugin api.Plugin,
+	eval api.Evaluable,
+) *api.Timeout {
 	evalTimeout := eval.Timeout()
 	if evalTimeout != nil {
 		debug.Println(
@@ -274,12 +272,12 @@ func getTimeout(
 func getRetry(
 	ctx context.Context,
 	scenDefaults *Defaults,
-	plugin gdttypes.Plugin,
-	eval gdttypes.Evaluable,
-) *gdttypes.Retry {
+	plugin api.Plugin,
+	eval api.Evaluable,
+) *api.Retry {
 	evalRetry := eval.Retry()
 	if evalRetry != nil {
-		if evalRetry == gdttypes.NoRetry {
+		if evalRetry == api.NoRetry {
 			return evalRetry
 		}
 		msg := "using retry"
@@ -297,7 +295,7 @@ func getRetry(
 	sb := eval.Base()
 	baseRetry := sb.Retry
 	if baseRetry != nil {
-		if baseRetry == gdttypes.NoRetry {
+		if baseRetry == api.NoRetry {
 			return baseRetry
 		}
 		msg := "using retry"
@@ -314,7 +312,7 @@ func getRetry(
 
 	if scenDefaults != nil && scenDefaults.Retry != nil {
 		scenRetry := scenDefaults.Retry
-		if scenRetry == gdttypes.NoRetry {
+		if scenRetry == api.NoRetry {
 			return scenRetry
 		}
 		msg := "using retry"
@@ -333,7 +331,7 @@ func getRetry(
 	pluginRetry := pluginInfo.Retry
 
 	if pluginRetry != nil {
-		if pluginRetry == gdttypes.NoRetry {
+		if pluginRetry == api.NoRetry {
 			return pluginRetry
 		}
 		msg := "using retry"

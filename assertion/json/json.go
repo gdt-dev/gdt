@@ -18,8 +18,7 @@ import (
 	gjs "github.com/xeipuuv/gojsonschema"
 	"gopkg.in/yaml.v3"
 
-	gdterrors "github.com/gdt-dev/gdt/errors"
-	gdttypes "github.com/gdt-dev/gdt/types"
+	"github.com/gdt-dev/gdt/api"
 )
 
 var (
@@ -47,21 +46,21 @@ type Expect struct {
 // contained in the Expect are valid.
 func (e *Expect) UnmarshalYAML(node *yaml.Node) error {
 	if node.Kind != yaml.MappingNode {
-		return gdterrors.ExpectedMapAt(node)
+		return api.ExpectedMapAt(node)
 	}
 	// maps/structs are stored in a top-level Node.Content field which is a
 	// concatenated slice of Node pointers in pairs of key/values.
 	for i := 0; i < len(node.Content); i += 2 {
 		keyNode := node.Content[i]
 		if keyNode.Kind != yaml.ScalarNode {
-			return gdterrors.ExpectedScalarAt(keyNode)
+			return api.ExpectedScalarAt(keyNode)
 		}
 		key := keyNode.Value
 		valNode := node.Content[i+1]
 		switch key {
 		case "len":
 			if valNode.Kind != yaml.ScalarNode {
-				return gdterrors.ExpectedScalarAt(valNode)
+				return api.ExpectedScalarAt(valNode)
 			}
 			var v *int
 			if err := valNode.Decode(&v); err != nil {
@@ -70,7 +69,7 @@ func (e *Expect) UnmarshalYAML(node *yaml.Node) error {
 			e.Len = v
 		case "schema":
 			if valNode.Kind != yaml.ScalarNode {
-				return gdterrors.ExpectedScalarAt(valNode)
+				return api.ExpectedScalarAt(valNode)
 			}
 			// Ensure any JSONSchema URL specified in exponse.json.schema exists
 			schemaURL := valNode.Value
@@ -98,7 +97,7 @@ func (e *Expect) UnmarshalYAML(node *yaml.Node) error {
 			}
 		case "paths":
 			if valNode.Kind != yaml.MappingNode {
-				return gdterrors.ExpectedMapAt(valNode)
+				return api.ExpectedMapAt(valNode)
 			}
 			paths := map[string]string{}
 			if err := valNode.Decode(&paths); err != nil {
@@ -115,7 +114,7 @@ func (e *Expect) UnmarshalYAML(node *yaml.Node) error {
 			e.Paths = paths
 		case "path_formats", "path-formats":
 			if valNode.Kind != yaml.MappingNode {
-				return gdterrors.ExpectedMapAt(valNode)
+				return api.ExpectedMapAt(valNode)
 			}
 			pathFormats := map[string]string{}
 			if err := valNode.Decode(&pathFormats); err != nil {
@@ -135,12 +134,12 @@ func (e *Expect) UnmarshalYAML(node *yaml.Node) error {
 	return nil
 }
 
-// New returns a `gdttypes.Assertions` that asserts various conditions about
+// New returns a `api.Assertions` that asserts various conditions about
 // JSON content
 func New(
 	exp *Expect,
 	content []byte,
-) gdttypes.Assertions {
+) api.Assertions {
 	return &assertions{
 		failures: []error{},
 		exp:      exp,
@@ -149,7 +148,7 @@ func New(
 }
 
 // assertions represents one or more assertions about JSON data responses and
-// implements the gdttypes.Assertions interface
+// implements the api.Assertions interface
 type assertions struct {
 	// failures contains the set of error messages for failed assertions
 	failures []error
@@ -200,7 +199,7 @@ func (a *assertions) lenOK() bool {
 		exp := *a.exp.Len
 		got := len(a.content)
 		if exp != got {
-			a.Fail(gdterrors.NotEqualLength(exp, got))
+			a.Fail(api.NotEqualLength(exp, got))
 			return false
 		}
 	}

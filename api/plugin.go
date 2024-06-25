@@ -2,7 +2,7 @@
 //
 // See the COPYING file in the root project directory for full text.
 
-package types
+package api
 
 import "gopkg.in/yaml.v3"
 

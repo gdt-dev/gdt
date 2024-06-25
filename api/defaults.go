@@ -2,7 +2,7 @@
 //
 // See the COPYING file in the root project directory for full text.
 
-package types
+package api
 
 // Defaults are a collection of default configuration values
 type Defaults map[string]interface{}

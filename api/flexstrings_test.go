@@ -2,24 +2,23 @@
 //
 // See the COPYING file in the root project directory for full text.
 
-package types_test
+package api_test
 
 import (
 	"testing"
 
-	gdterrors "github.com/gdt-dev/gdt/errors"
-	gdttypes "github.com/gdt-dev/gdt/types"
+	"github.com/gdt-dev/gdt/api"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 )
 
 type foo struct {
-	Foo gdttypes.FlexStrings `yaml:"foo"`
+	Foo api.FlexStrings `yaml:"foo"`
 }
 
 type foop struct {
-	Foo *gdttypes.FlexStrings `yaml:"foo"`
+	Foo *api.FlexStrings `yaml:"foo"`
 }
 
 func TestFlexStringsError(t *testing.T) {
@@ -31,7 +30,7 @@ func TestFlexStringsError(t *testing.T) {
 	err := yaml.Unmarshal(contents, &f)
 
 	require.NotNil(err)
-	assert.ErrorIs(err, gdterrors.ErrExpectedScalarOrSequence)
+	assert.ErrorIs(err, api.ErrExpectedScalarOrSequence)
 }
 
 func TestFlexStrings(t *testing.T) {

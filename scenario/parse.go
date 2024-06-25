@@ -9,19 +9,18 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	gdterrors "github.com/gdt-dev/gdt/errors"
+	"github.com/gdt-dev/gdt/api"
 	"github.com/gdt-dev/gdt/plugin"
-	gdttypes "github.com/gdt-dev/gdt/types"
 )
 
 // UnmarshalYAML is a custom unmarshaler that asks plugins for their known spec
 // types and attempts to unmarshal test spec contents into those types.
 func (s *Scenario) UnmarshalYAML(node *yaml.Node) error {
 	if node.Kind != yaml.MappingNode {
-		return gdterrors.ExpectedMapAt(node)
+		return api.ExpectedMapAt(node)
 	}
 	plugins := plugin.Registered()
-	defaults := gdttypes.Defaults{}
+	defaults := api.Defaults{}
 	// maps/structs are stored in a top-level Node.Content field which is a
 	// concatenated slice of Node pointers in pairs of key/values.
 	//
@@ -32,38 +31,38 @@ func (s *Scenario) UnmarshalYAML(node *yaml.Node) error {
 	for i := 0; i < len(node.Content); i += 2 {
 		keyNode := node.Content[i]
 		if keyNode.Kind != yaml.ScalarNode {
-			return gdterrors.ExpectedScalarAt(keyNode)
+			return api.ExpectedScalarAt(keyNode)
 		}
 		key := keyNode.Value
 		valNode := node.Content[i+1]
 		switch key {
 		case "name":
 			if valNode.Kind != yaml.ScalarNode {
-				return gdterrors.ExpectedScalarAt(valNode)
+				return api.ExpectedScalarAt(valNode)
 			}
 			s.Name = valNode.Value
 		case "description":
 			if valNode.Kind != yaml.ScalarNode {
-				return gdterrors.ExpectedScalarAt(valNode)
+				return api.ExpectedScalarAt(valNode)
 			}
 			s.Description = valNode.Value
 		case "fixtures":
 			if valNode.Kind != yaml.SequenceNode {
-				return gdterrors.ExpectedSequenceAt(valNode)
+				return api.ExpectedSequenceAt(valNode)
 			}
 			var fixtures []string
 			if err := valNode.Decode(&fixtures); err != nil {
-				return gdterrors.ExpectedSequenceAt(valNode)
+				return api.ExpectedSequenceAt(valNode)
 			}
 			s.Fixtures = fixtures
 		case "defaults":
 			if valNode.Kind != yaml.MappingNode {
-				return gdterrors.ExpectedMapAt(valNode)
+				return api.ExpectedMapAt(valNode)
 			}
 			// Each plugin can have its own set of default configuration values
 			// under an outer map field keyed to the name of the plugin.
 			// Plugins return a Defaults prototype from
-			// `gdttypes.Plugin.Defaults()` that understands how to parse a
+			// `api.Plugin.Defaults()` that understands how to parse a
 			// `yaml.Node` that represents the top-level defaults object in the
 			// scenario.
 			for _, p := range plugins {
@@ -84,35 +83,35 @@ func (s *Scenario) UnmarshalYAML(node *yaml.Node) error {
 		}
 	}
 	// We store a lookup to the parsing plugin for each parsed test spec
-	evalPlugins := map[int]gdttypes.Plugin{}
+	evalPlugins := map[int]api.Plugin{}
 	for i := 0; i < len(node.Content); i += 2 {
 		keyNode := node.Content[i]
 		if keyNode.Kind != yaml.ScalarNode {
-			return gdterrors.ExpectedScalarAt(keyNode)
+			return api.ExpectedScalarAt(keyNode)
 		}
 		key := keyNode.Value
 		valNode := node.Content[i+1]
 		switch key {
 		case "tests":
 			if valNode.Kind != yaml.SequenceNode {
-				return gdterrors.ExpectedSequenceAt(valNode)
+				return api.ExpectedSequenceAt(valNode)
 			}
 			for idx, testNode := range valNode.Content {
 				parsed := false
-				base := gdttypes.Spec{}
+				base := api.Spec{}
 				if err := testNode.Decode(&base); err != nil {
 					return err
 				}
 				base.Index = idx
 				base.Defaults = &defaults
-				pluginSpecs := map[gdttypes.Plugin][]gdttypes.Evaluable{}
+				pluginSpecs := map[api.Plugin][]api.Evaluable{}
 				for _, p := range plugins {
 					pluginSpecs[p] = p.Specs()
 				}
 				for plugin, specs := range pluginSpecs {
 					for _, sp := range specs {
 						if err := testNode.Decode(sp); err != nil {
-							if errors.Is(err, gdterrors.ErrUnknownField) {
+							if errors.Is(err, api.ErrUnknownField) {
 								continue
 							}
 							return err
@@ -125,28 +124,28 @@ func (s *Scenario) UnmarshalYAML(node *yaml.Node) error {
 					}
 				}
 				if !parsed {
-					return gdterrors.UnknownSpecAt(s.Path, valNode)
+					return api.UnknownSpecAt(s.Path, valNode)
 				}
 			}
 		case "skip-if":
 			if valNode.Kind != yaml.SequenceNode {
-				return gdterrors.ExpectedSequenceAt(valNode)
+				return api.ExpectedSequenceAt(valNode)
 			}
 			for idx, testNode := range valNode.Content {
 				parsed := false
-				base := gdttypes.Spec{}
+				base := api.Spec{}
 				if err := testNode.Decode(&base); err != nil {
 					return err
 				}
 				base.Index = idx
 				base.Defaults = &defaults
-				specs := []gdttypes.Evaluable{}
+				specs := []api.Evaluable{}
 				for _, p := range plugins {
 					specs = append(specs, p.Specs()...)
 				}
 				for _, sp := range specs {
 					if err := testNode.Decode(sp); err != nil {
-						if errors.Is(err, gdterrors.ErrUnknownField) {
+						if errors.Is(err, api.ErrUnknownField) {
 							continue
 						}
 						return err
@@ -157,7 +156,7 @@ func (s *Scenario) UnmarshalYAML(node *yaml.Node) error {
 					break
 				}
 				if !parsed {
-					return gdterrors.UnknownSpecAt(s.Path, valNode)
+					return api.UnknownSpecAt(s.Path, valNode)
 				}
 			}
 		}
