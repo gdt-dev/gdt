@@ -26,3 +26,11 @@ func (s *Spec) SetBase(b gdttypes.Spec) {
 func (s *Spec) Base() *gdttypes.Spec {
 	return &s.Spec
 }
+
+func (s *Spec) Retry() *gdttypes.Retry {
+	return nil
+}
+
+func (s *Spec) Timeout() *gdttypes.Timeout {
+	return nil
+}

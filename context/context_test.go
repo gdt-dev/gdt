@@ -39,6 +39,14 @@ func (s *fooSpec) Base() *gdttypes.Spec {
 	return &s.Spec
 }
 
+func (s *fooSpec) Retry() *gdttypes.Retry {
+	return nil
+}
+
+func (s *fooSpec) Timeout() *gdttypes.Timeout {
+	return nil
+}
+
 func (s *fooSpec) UnmarshalYAML(node *yaml.Node) error {
 	return nil
 }
