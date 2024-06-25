@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"github.com/gdt-dev/gdt"
-	gdterrors "github.com/gdt-dev/gdt/errors"
+	"github.com/gdt-dev/gdt/api"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -24,7 +24,7 @@ func TestFromUnknownSourceType(t *testing.T) {
 	require.NotNil(err)
 	require.Nil(s)
 
-	assert.ErrorIs(err, gdterrors.ErrUnknownSourceType)
+	assert.ErrorIs(err, api.ErrUnknownSourceType)
 }
 
 func TestFromFileNotFound(t *testing.T) {

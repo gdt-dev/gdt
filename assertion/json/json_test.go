@@ -10,8 +10,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/gdt-dev/gdt/api"
 	gdtjson "github.com/gdt-dev/gdt/assertion/json"
-	gdterrors "github.com/gdt-dev/gdt/errors"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 )
@@ -61,7 +61,7 @@ paths: notamap
 `)
 	err = yaml.Unmarshal(content, &exp)
 	require.NotNil(err)
-	require.ErrorIs(err, gdterrors.ErrExpectedMap)
+	require.ErrorIs(err, api.ErrExpectedMap)
 
 	content = []byte(`
 len: 1
@@ -116,7 +116,7 @@ func TestLength(t *testing.T) {
 	require.False(a.OK(ctx))
 	failures := a.Failures()
 	require.Len(failures, 1)
-	require.ErrorIs(failures[0], gdterrors.ErrNotEqual)
+	require.ErrorIs(failures[0], api.ErrNotEqual)
 }
 
 func TestJSONUnmarshalError(t *testing.T) {

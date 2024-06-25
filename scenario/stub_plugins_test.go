@@ -9,13 +9,11 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/gdt-dev/gdt/api"
+	gdtapi "github.com/gdt-dev/gdt/api"
 	gdtcontext "github.com/gdt-dev/gdt/context"
 	"github.com/gdt-dev/gdt/debug"
-	"github.com/gdt-dev/gdt/errors"
-	gdterrors "github.com/gdt-dev/gdt/errors"
 	"github.com/gdt-dev/gdt/plugin"
-	"github.com/gdt-dev/gdt/result"
-	gdttypes "github.com/gdt-dev/gdt/types"
 	"github.com/samber/lo"
 	"gopkg.in/yaml.v3"
 )
@@ -37,28 +35,28 @@ type failDefaults struct {
 
 func (d *failDefaults) UnmarshalYAML(node *yaml.Node) error {
 	if node.Kind != yaml.MappingNode {
-		return errors.ExpectedMapAt(node)
+		return api.ExpectedMapAt(node)
 	}
 	// maps/structs are stored in a top-level Node.Content field which is a
 	// concatenated slice of Node pointers in pairs of key/values.
 	for i := 0; i < len(node.Content); i += 2 {
 		keyNode := node.Content[i]
 		if keyNode.Kind != yaml.ScalarNode {
-			return errors.ExpectedScalarAt(keyNode)
+			return api.ExpectedScalarAt(keyNode)
 		}
 		key := keyNode.Value
 		valNode := node.Content[i+1]
 		switch key {
 		case "fail":
 			if valNode.Kind != yaml.MappingNode {
-				return errors.ExpectedMapAt(valNode)
+				return api.ExpectedMapAt(valNode)
 			}
 			inner := failInnerDefaults{}
 			if err := valNode.Decode(&inner); err != nil {
 				return err
 			}
 			d.failInnerDefaults = inner
-			// This is just for testing errors when parsing defaults...
+			// This is just for testing api when parsing defaults...
 			if d.Fail {
 				return fmt.Errorf("defaults parsing failed")
 			}
@@ -70,57 +68,57 @@ func (d *failDefaults) UnmarshalYAML(node *yaml.Node) error {
 }
 
 type failSpec struct {
-	gdttypes.Spec
+	api.Spec
 	Fail bool `yaml:"fail"`
 }
 
-func (s *failSpec) SetBase(b gdttypes.Spec) {
+func (s *failSpec) SetBase(b api.Spec) {
 	s.Spec = b
 }
 
-func (s *failSpec) Base() *gdttypes.Spec {
+func (s *failSpec) Base() *api.Spec {
 	return &s.Spec
 }
 
-func (s *failSpec) Retry() *gdttypes.Retry {
+func (s *failSpec) Retry() *api.Retry {
 	return nil
 }
 
-func (s *failSpec) Timeout() *gdttypes.Timeout {
+func (s *failSpec) Timeout() *api.Timeout {
 	return nil
 }
 
-func (s *failSpec) Eval(context.Context) (*result.Result, error) {
-	return nil, fmt.Errorf("%w: Indy, bad dates!", gdterrors.RuntimeError)
+func (s *failSpec) Eval(context.Context) (*api.Result, error) {
+	return nil, fmt.Errorf("%w: Indy, bad dates!", gdtapi.RuntimeError)
 }
 
 func (s *failSpec) UnmarshalYAML(node *yaml.Node) error {
 	if node.Kind != yaml.MappingNode {
-		return errors.ExpectedMapAt(node)
+		return api.ExpectedMapAt(node)
 	}
 	// maps/structs are stored in a top-level Node.Content field which is a
 	// concatenated slice of Node pointers in pairs of key/values.
 	for i := 0; i < len(node.Content); i += 2 {
 		keyNode := node.Content[i]
 		if keyNode.Kind != yaml.ScalarNode {
-			return errors.ExpectedScalarAt(keyNode)
+			return api.ExpectedScalarAt(keyNode)
 		}
 		key := keyNode.Value
 		valNode := node.Content[i+1]
 		switch key {
 		case "fail":
 			if valNode.Kind != yaml.ScalarNode {
-				return errors.ExpectedScalarAt(valNode)
+				return api.ExpectedScalarAt(valNode)
 			}
 			s.Fail, _ = strconv.ParseBool(valNode.Value)
 			if s.Fail {
 				return fmt.Errorf("Indy, bad parse!")
 			}
 		default:
-			if lo.Contains(gdttypes.BaseSpecFields, key) {
+			if lo.Contains(api.BaseSpecFields, key) {
 				continue
 			}
-			return errors.UnknownFieldAt(key, keyNode)
+			return api.UnknownFieldAt(key, keyNode)
 		}
 	}
 	return nil
@@ -128,8 +126,8 @@ func (s *failSpec) UnmarshalYAML(node *yaml.Node) error {
 
 type failingPlugin struct{}
 
-func (p *failingPlugin) Info() gdttypes.PluginInfo {
-	return gdttypes.PluginInfo{
+func (p *failingPlugin) Info() api.PluginInfo {
+	return api.PluginInfo{
 		Name: "fail",
 	}
 }
@@ -138,8 +136,8 @@ func (p *failingPlugin) Defaults() yaml.Unmarshaler {
 	return &failDefaults{}
 }
 
-func (p *failingPlugin) Specs() []gdttypes.Evaluable {
-	return []gdttypes.Evaluable{&failSpec{}}
+func (p *failingPlugin) Specs() []api.Evaluable {
+	return []api.Evaluable{&failSpec{}}
 }
 
 type fooInnerDefaults struct {
@@ -152,21 +150,21 @@ type fooDefaults struct {
 
 func (d *fooDefaults) UnmarshalYAML(node *yaml.Node) error {
 	if node.Kind != yaml.MappingNode {
-		return errors.ExpectedMapAt(node)
+		return api.ExpectedMapAt(node)
 	}
 	// maps/structs are stored in a top-level Node.Content field which is a
 	// concatenated slice of Node pointers in pairs of key/values.
 	for i := 0; i < len(node.Content); i += 2 {
 		keyNode := node.Content[i]
 		if keyNode.Kind != yaml.ScalarNode {
-			return errors.ExpectedScalarAt(keyNode)
+			return api.ExpectedScalarAt(keyNode)
 		}
 		key := keyNode.Value
 		valNode := node.Content[i+1]
 		switch key {
 		case "foo":
 			if valNode.Kind != yaml.MappingNode {
-				return errors.ExpectedMapAt(valNode)
+				return api.ExpectedMapAt(valNode)
 			}
 			inner := fooInnerDefaults{}
 			if err := valNode.Decode(&inner); err != nil {
@@ -181,56 +179,56 @@ func (d *fooDefaults) UnmarshalYAML(node *yaml.Node) error {
 }
 
 type fooSpec struct {
-	gdttypes.Spec
+	api.Spec
 	Foo string `yaml:"foo"`
 }
 
-func (s *fooSpec) SetBase(b gdttypes.Spec) {
+func (s *fooSpec) SetBase(b api.Spec) {
 	s.Spec = b
 }
 
-func (s *fooSpec) Base() *gdttypes.Spec {
+func (s *fooSpec) Base() *api.Spec {
 	return &s.Spec
 }
 
-func (s *fooSpec) Retry() *gdttypes.Retry {
+func (s *fooSpec) Retry() *api.Retry {
 	return nil
 }
 
-func (s *fooSpec) Timeout() *gdttypes.Timeout {
+func (s *fooSpec) Timeout() *api.Timeout {
 	return nil
 }
 
 func (s *fooSpec) UnmarshalYAML(node *yaml.Node) error {
 	if node.Kind != yaml.MappingNode {
-		return errors.ExpectedMapAt(node)
+		return api.ExpectedMapAt(node)
 	}
 	// maps/structs are stored in a top-level Node.Content field which is a
 	// concatenated slice of Node pointers in pairs of key/values.
 	for i := 0; i < len(node.Content); i += 2 {
 		keyNode := node.Content[i]
 		if keyNode.Kind != yaml.ScalarNode {
-			return errors.ExpectedScalarAt(keyNode)
+			return api.ExpectedScalarAt(keyNode)
 		}
 		key := keyNode.Value
 		valNode := node.Content[i+1]
 		switch key {
 		case "foo":
 			if valNode.Kind != yaml.ScalarNode {
-				return errors.ExpectedScalarAt(valNode)
+				return api.ExpectedScalarAt(valNode)
 			}
 			s.Foo = valNode.Value
 		default:
-			if lo.Contains(gdttypes.BaseSpecFields, key) {
+			if lo.Contains(api.BaseSpecFields, key) {
 				continue
 			}
-			return errors.UnknownFieldAt(key, keyNode)
+			return api.UnknownFieldAt(key, keyNode)
 		}
 	}
 	return nil
 }
 
-func (s *fooSpec) Eval(ctx context.Context) (*result.Result, error) {
+func (s *fooSpec) Eval(ctx context.Context) (*api.Result, error) {
 	fails := []error{}
 	debug.Println(ctx, "in %s Foo=%s", s.Title(), s.Foo)
 	// This is just a silly test to demonstrate how to write Eval() methods
@@ -242,13 +240,13 @@ func (s *fooSpec) Eval(ctx context.Context) (*result.Result, error) {
 		fail := fmt.Errorf("expected s.Foo = 'baz', got %s", s.Foo)
 		fails = append(fails, fail)
 	}
-	return result.New(result.WithFailures(fails...)), nil
+	return api.NewResult(api.WithFailures(fails...)), nil
 }
 
 type fooPlugin struct{}
 
-func (p *fooPlugin) Info() gdttypes.PluginInfo {
-	return gdttypes.PluginInfo{
+func (p *fooPlugin) Info() api.PluginInfo {
+	return api.PluginInfo{
 		Name: "foo",
 	}
 }
@@ -257,8 +255,8 @@ func (p *fooPlugin) Defaults() yaml.Unmarshaler {
 	return &fooDefaults{}
 }
 
-func (p *fooPlugin) Specs() []gdttypes.Evaluable {
-	return []gdttypes.Evaluable{&fooSpec{}}
+func (p *fooPlugin) Specs() []api.Evaluable {
+	return []api.Evaluable{&fooSpec{}}
 }
 
 type barDefaults struct {
@@ -270,58 +268,58 @@ func (d *barDefaults) UnmarshalYAML(node *yaml.Node) error {
 }
 
 type barSpec struct {
-	gdttypes.Spec
+	api.Spec
 	Bar int `yaml:"bar"`
 }
 
-func (s *barSpec) SetBase(b gdttypes.Spec) {
+func (s *barSpec) SetBase(b api.Spec) {
 	s.Spec = b
 }
 
-func (s *barSpec) Base() *gdttypes.Spec {
+func (s *barSpec) Base() *api.Spec {
 	return &s.Spec
 }
 
-func (s *barSpec) Retry() *gdttypes.Retry {
-	return gdttypes.NoRetry
+func (s *barSpec) Retry() *api.Retry {
+	return api.NoRetry
 }
 
-func (s *barSpec) Timeout() *gdttypes.Timeout {
+func (s *barSpec) Timeout() *api.Timeout {
 	return nil
 }
 
-func (s *barSpec) Eval(context.Context) (*result.Result, error) {
-	return result.New(), nil
+func (s *barSpec) Eval(context.Context) (*api.Result, error) {
+	return api.NewResult(), nil
 }
 
 func (s *barSpec) UnmarshalYAML(node *yaml.Node) error {
 	if node.Kind != yaml.MappingNode {
-		return errors.ExpectedMapAt(node)
+		return api.ExpectedMapAt(node)
 	}
 	// maps/structs are stored in a top-level Node.Content field which is a
 	// concatenated slice of Node pointers in pairs of key/values.
 	for i := 0; i < len(node.Content); i += 2 {
 		keyNode := node.Content[i]
 		if keyNode.Kind != yaml.ScalarNode {
-			return errors.ExpectedScalarAt(keyNode)
+			return api.ExpectedScalarAt(keyNode)
 		}
 		key := keyNode.Value
 		valNode := node.Content[i+1]
 		switch key {
 		case "bar":
 			if valNode.Kind != yaml.ScalarNode {
-				return errors.ExpectedScalarAt(valNode)
+				return api.ExpectedScalarAt(valNode)
 			}
 			if v, err := strconv.Atoi(valNode.Value); err != nil {
-				return errors.ExpectedIntAt(valNode)
+				return api.ExpectedIntAt(valNode)
 			} else {
 				s.Bar = v
 			}
 		default:
-			if lo.Contains(gdttypes.BaseSpecFields, key) {
+			if lo.Contains(api.BaseSpecFields, key) {
 				continue
 			}
-			return errors.UnknownFieldAt(key, keyNode)
+			return api.UnknownFieldAt(key, keyNode)
 		}
 	}
 	return nil
@@ -329,8 +327,8 @@ func (s *barSpec) UnmarshalYAML(node *yaml.Node) error {
 
 type barPlugin struct{}
 
-func (p *barPlugin) Info() gdttypes.PluginInfo {
-	return gdttypes.PluginInfo{
+func (p *barPlugin) Info() api.PluginInfo {
+	return api.PluginInfo{
 		Name: "bar",
 	}
 }
@@ -339,8 +337,8 @@ func (p *barPlugin) Defaults() yaml.Unmarshaler {
 	return &barDefaults{}
 }
 
-func (p *barPlugin) Specs() []gdttypes.Evaluable {
-	return []gdttypes.Evaluable{&barSpec{}}
+func (p *barPlugin) Specs() []api.Evaluable {
+	return []api.Evaluable{&barSpec{}}
 }
 
 const priorRunDataKey = "priorrun"
@@ -352,62 +350,62 @@ func (d *priorRunDefaults) UnmarshalYAML(node *yaml.Node) error {
 }
 
 type priorRunSpec struct {
-	gdttypes.Spec
+	api.Spec
 	State string `yaml:"state"`
 	Prior string `yaml:"prior"`
 }
 
-func (s *priorRunSpec) SetBase(b gdttypes.Spec) {
+func (s *priorRunSpec) SetBase(b api.Spec) {
 	s.Spec = b
 }
 
-func (s *priorRunSpec) Base() *gdttypes.Spec {
+func (s *priorRunSpec) Base() *api.Spec {
 	return &s.Spec
 }
 
-func (s *priorRunSpec) Retry() *gdttypes.Retry {
+func (s *priorRunSpec) Retry() *api.Retry {
 	return nil
 }
 
-func (s *priorRunSpec) Timeout() *gdttypes.Timeout {
+func (s *priorRunSpec) Timeout() *api.Timeout {
 	return nil
 }
 
 func (s *priorRunSpec) UnmarshalYAML(node *yaml.Node) error {
 	if node.Kind != yaml.MappingNode {
-		return errors.ExpectedMapAt(node)
+		return api.ExpectedMapAt(node)
 	}
 	// maps/structs are stored in a top-level Node.Content field which is a
 	// concatenated slice of Node pointers in pairs of key/values.
 	for i := 0; i < len(node.Content); i += 2 {
 		keyNode := node.Content[i]
 		if keyNode.Kind != yaml.ScalarNode {
-			return errors.ExpectedScalarAt(keyNode)
+			return api.ExpectedScalarAt(keyNode)
 		}
 		key := keyNode.Value
 		valNode := node.Content[i+1]
 		switch key {
 		case "state":
 			if valNode.Kind != yaml.ScalarNode {
-				return errors.ExpectedScalarAt(valNode)
+				return api.ExpectedScalarAt(valNode)
 			}
 			s.State = valNode.Value
 		case "prior":
 			if valNode.Kind != yaml.ScalarNode {
-				return errors.ExpectedScalarAt(valNode)
+				return api.ExpectedScalarAt(valNode)
 			}
 			s.Prior = valNode.Value
 		default:
-			if lo.Contains(gdttypes.BaseSpecFields, key) {
+			if lo.Contains(api.BaseSpecFields, key) {
 				continue
 			}
-			return errors.UnknownFieldAt(key, keyNode)
+			return api.UnknownFieldAt(key, keyNode)
 		}
 	}
 	return nil
 }
 
-func (s *priorRunSpec) Eval(ctx context.Context) (*result.Result, error) {
+func (s *priorRunSpec) Eval(ctx context.Context) (*api.Result, error) {
 	// Here we test that the prior run data that we save at the end of each
 	// Run() is showing up properly in the next Run()'s context.
 	fails := []error{}
@@ -425,16 +423,16 @@ func (s *priorRunSpec) Eval(ctx context.Context) (*result.Result, error) {
 			fails = append(fails, fmt.Errorf("expected priorRunData == data"))
 		}
 	}
-	return result.New(
-		result.WithFailures(fails...),
-		result.WithData(priorRunDataKey, s.State),
+	return api.NewResult(
+		api.WithFailures(fails...),
+		api.WithData(priorRunDataKey, s.State),
 	), nil
 }
 
 type priorRunPlugin struct{}
 
-func (p *priorRunPlugin) Info() gdttypes.PluginInfo {
-	return gdttypes.PluginInfo{
+func (p *priorRunPlugin) Info() api.PluginInfo {
+	return api.PluginInfo{
 		Name: "priorRun",
 	}
 }
@@ -443,6 +441,6 @@ func (p *priorRunPlugin) Defaults() yaml.Unmarshaler {
 	return &priorRunDefaults{}
 }
 
-func (p *priorRunPlugin) Specs() []gdttypes.Evaluable {
-	return []gdttypes.Evaluable{&priorRunSpec{}}
+func (p *priorRunPlugin) Specs() []api.Evaluable {
+	return []api.Evaluable{&priorRunSpec{}}
 }

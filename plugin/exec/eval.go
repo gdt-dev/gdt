@@ -8,9 +8,8 @@ import (
 	"bytes"
 	"context"
 
+	"github.com/gdt-dev/gdt/api"
 	"github.com/gdt-dev/gdt/debug"
-	gdterrors "github.com/gdt-dev/gdt/errors"
-	"github.com/gdt-dev/gdt/result"
 )
 
 // Eval performs an action and evaluates the results of that action, returning
@@ -20,15 +19,15 @@ import (
 // Errors returned by Eval() are **RuntimeErrors**, not failures in assertions.
 func (s *Spec) Eval(
 	ctx context.Context,
-) (*result.Result, error) {
+) (*api.Result, error) {
 	outbuf := &bytes.Buffer{}
 	errbuf := &bytes.Buffer{}
 
 	var ec int
 
 	if err := s.Do(ctx, outbuf, errbuf, &ec); err != nil {
-		if err == gdterrors.ErrTimeoutExceeded {
-			return result.New(result.WithFailures(gdterrors.ErrTimeoutExceeded)), nil
+		if err == api.ErrTimeoutExceeded {
+			return api.NewResult(api.WithFailures(api.ErrTimeoutExceeded)), nil
 		}
 		return nil, ExecRuntimeError(err)
 	}
@@ -45,5 +44,5 @@ func (s *Spec) Eval(
 			}
 		}
 	}
-	return result.New(result.WithFailures(a.Failures()...)), nil
+	return api.NewResult(api.WithFailures(a.Failures()...)), nil
 }

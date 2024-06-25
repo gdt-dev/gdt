@@ -9,9 +9,9 @@ import (
 	"context"
 	"os/exec"
 
+	"github.com/gdt-dev/gdt/api"
 	gdtcontext "github.com/gdt-dev/gdt/context"
 	"github.com/gdt-dev/gdt/debug"
-	gdterrors "github.com/gdt-dev/gdt/errors"
 	"github.com/google/shlex"
 )
 
@@ -69,7 +69,7 @@ func (a *Action) Do(
 
 	err = cmd.Start()
 	if gdtcontext.TimedOut(ctx, err) {
-		return gdterrors.ErrTimeoutExceeded
+		return api.ErrTimeoutExceeded
 	}
 	if err != nil {
 		return err
@@ -93,7 +93,7 @@ func (a *Action) Do(
 
 	err = cmd.Wait()
 	if gdtcontext.TimedOut(ctx, err) {
-		return gdterrors.ErrTimeoutExceeded
+		return api.ErrTimeoutExceeded
 	}
 	if err != nil && exitcode != nil {
 		eerr, _ := err.(*exec.ExitError)

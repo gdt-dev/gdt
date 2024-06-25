@@ -2,14 +2,13 @@
 //
 // See the COPYING file in the root project directory for full text.
 
-package types
+package api
 
 import (
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/gdt-dev/gdt/errors"
 	"gopkg.in/yaml.v3"
 )
 
@@ -82,26 +81,26 @@ func slugify(s string) string {
 // the associated struct field from that value node.
 func (s *Spec) UnmarshalYAML(node *yaml.Node) error {
 	if node.Kind != yaml.MappingNode {
-		return errors.ExpectedMapAt(node)
+		return ExpectedMapAt(node)
 	}
 	// maps/structs are stored in a top-level Node.Content field which is a
 	// concatenated slice of Node pointers in pairs of key/values.
 	for i := 0; i < len(node.Content); i += 2 {
 		keyNode := node.Content[i]
 		if keyNode.Kind != yaml.ScalarNode {
-			return errors.ExpectedScalarAt(keyNode)
+			return ExpectedScalarAt(keyNode)
 		}
 		key := keyNode.Value
 		valNode := node.Content[i+1]
 		switch key {
 		case "name":
 			if valNode.Kind != yaml.ScalarNode {
-				return errors.ExpectedScalarAt(valNode)
+				return ExpectedScalarAt(valNode)
 			}
 			s.Name = valNode.Value
 		case "description":
 			if valNode.Kind != yaml.ScalarNode {
-				return errors.ExpectedScalarAt(valNode)
+				return ExpectedScalarAt(valNode)
 			}
 			s.Description = valNode.Value
 		case "timeout":
@@ -110,7 +109,7 @@ func (s *Spec) UnmarshalYAML(node *yaml.Node) error {
 			case yaml.MappingNode:
 				// We support the old-style timeout:after
 				if err := valNode.Decode(&to); err != nil {
-					return errors.ExpectedTimeoutAt(valNode)
+					return ExpectedTimeoutAt(valNode)
 				}
 			case yaml.ScalarNode:
 				// We also support a straight string duration
@@ -118,7 +117,7 @@ func (s *Spec) UnmarshalYAML(node *yaml.Node) error {
 					After: valNode.Value,
 				}
 			default:
-				return errors.ExpectedScalarOrMapAt(valNode)
+				return ExpectedScalarOrMapAt(valNode)
 			}
 			_, err := time.ParseDuration(to.After)
 			if err != nil {
@@ -127,11 +126,11 @@ func (s *Spec) UnmarshalYAML(node *yaml.Node) error {
 			s.Timeout = to
 		case "wait":
 			if valNode.Kind != yaml.MappingNode {
-				return errors.ExpectedMapAt(valNode)
+				return ExpectedMapAt(valNode)
 			}
 			var w *Wait
 			if err := valNode.Decode(&w); err != nil {
-				return errors.ExpectedWaitAt(valNode)
+				return ExpectedWaitAt(valNode)
 			}
 			if w.Before != "" {
 				_, err := time.ParseDuration(w.Before)
@@ -148,16 +147,16 @@ func (s *Spec) UnmarshalYAML(node *yaml.Node) error {
 			s.Wait = w
 		case "retry":
 			if valNode.Kind != yaml.MappingNode {
-				return errors.ExpectedMapAt(valNode)
+				return ExpectedMapAt(valNode)
 			}
 			var r *Retry
 			if err := valNode.Decode(&r); err != nil {
-				return errors.ExpectedRetryAt(valNode)
+				return ExpectedRetryAt(valNode)
 			}
 			if r.Attempts != nil {
 				attempts := *r.Attempts
 				if attempts < 1 {
-					return errors.InvalidRetryAttempts(valNode, attempts)
+					return InvalidRetryAttempts(valNode, attempts)
 				}
 			}
 			if r.Interval != "" {

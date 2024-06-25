@@ -9,7 +9,7 @@ import (
 	"errors"
 	"strings"
 
-	gdterrors "github.com/gdt-dev/gdt/errors"
+	"github.com/gdt-dev/gdt/api"
 )
 
 // TimedOut evaluates a context and an arbitrary other error and returns true
@@ -25,7 +25,7 @@ func TimedOut(
 		return errors.Is(cerr, context.DeadlineExceeded)
 	}
 	if err != nil {
-		if errors.Is(err, gdterrors.ErrTimeoutExceeded) {
+		if errors.Is(err, api.ErrTimeoutExceeded) {
 			return true
 		}
 		return strings.Contains(err.Error(), "signal: killed")

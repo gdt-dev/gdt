@@ -8,7 +8,7 @@ import (
 	"context"
 	"strings"
 
-	gdttypes "github.com/gdt-dev/gdt/types"
+	"github.com/gdt-dev/gdt/api"
 )
 
 // genericFixture adapts functions and state dicts into the Fixture type
@@ -77,7 +77,7 @@ func WithState(state map[string]interface{}) genericFixtureModifier {
 }
 
 // New returns a new generic Fixture
-func New(mods ...genericFixtureModifier) gdttypes.Fixture {
+func New(mods ...genericFixtureModifier) api.Fixture {
 	f := &genericFixture{}
 	for _, mod := range mods {
 		mod(f)

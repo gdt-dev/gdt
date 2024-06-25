@@ -9,8 +9,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/gdt-dev/gdt/errors"
-	gdttypes "github.com/gdt-dev/gdt/types"
+	"github.com/gdt-dev/gdt/api"
 )
 
 // Expect contains the assertions about an Exec Spec's actions
@@ -29,13 +28,13 @@ type Expect struct {
 type PipeExpect struct {
 	// ContainsAll is one or more strings that *all* must be present in the
 	// contents of the pipe
-	ContainsAll *gdttypes.FlexStrings `yaml:"contains,omitempty"`
+	ContainsAll *api.FlexStrings `yaml:"contains,omitempty"`
 	// ContainsNone is one or more strings, *none of which* should be present in
 	// the contents of the pipe
-	ContainsNone *gdttypes.FlexStrings `yaml:"contains-none-of,omitempty"`
+	ContainsNone *api.FlexStrings `yaml:"contains-none-of,omitempty"`
 	// ContainsOneOf is one or more strings of which *at least one* must be
 	// present in the contents of the pipe
-	ContainsAny *gdttypes.FlexStrings `yaml:"contains-one-of,omitempty"`
+	ContainsAny *api.FlexStrings `yaml:"contains-one-of,omitempty"`
 }
 
 // pipeAssertions contains assertions about the contents of a pipe
@@ -54,7 +53,7 @@ func (a *pipeAssertions) Fail(err error) {
 	a.failures = append(a.failures, err)
 }
 
-// Failures returns a slice of errors for all failed assertions
+// Failures returns a slice of api for all failed assertions
 func (a *pipeAssertions) Failures() []error {
 	if a == nil {
 		return []error{}
@@ -77,13 +76,13 @@ func (a *pipeAssertions) OK(ctx context.Context) bool {
 		vals := a.ContainsAll.Values()
 		if len(vals) == 1 {
 			if !strings.Contains(contents, vals[0]) {
-				a.Fail(errors.NotEqual(vals[0], contents))
+				a.Fail(api.NotEqual(vals[0], contents))
 				res = false
 			}
 		} else {
 			for _, find := range vals {
 				if !strings.Contains(contents, find) {
-					a.Fail(errors.NotIn(find, a.name))
+					a.Fail(api.NotIn(find, a.name))
 					res = false
 				}
 			}
@@ -98,14 +97,14 @@ func (a *pipeAssertions) OK(ctx context.Context) bool {
 			}
 		}
 		if !found {
-			a.Fail(errors.NoneIn(a.ContainsAny.Values(), a.name))
+			a.Fail(api.NoneIn(a.ContainsAny.Values(), a.name))
 			res = false
 		}
 	}
 	if a.ContainsNone != nil {
 		for _, find := range a.ContainsNone.Values() {
 			if strings.Contains(contents, find) {
-				a.Fail(errors.In(find, a.name))
+				a.Fail(api.In(find, a.name))
 				res = false
 			}
 		}
@@ -132,7 +131,7 @@ func (a *assertions) Fail(err error) {
 	a.failures = append(a.failures, err)
 }
 
-// Failures returns a slice of errors for all failed assertions
+// Failures returns a slice of api for all failed assertions
 func (a *assertions) Failures() []error {
 	if a == nil {
 		return []error{}
@@ -145,7 +144,7 @@ func (a *assertions) Failures() []error {
 func (a *assertions) OK(ctx context.Context) bool {
 	res := true
 	if a.expExitCode != a.exitCode {
-		a.Fail(errors.NotEqual(a.expExitCode, a.exitCode))
+		a.Fail(api.NotEqual(a.expExitCode, a.exitCode))
 		res = false
 	}
 	if !a.expOutPipe.OK(ctx) {
@@ -166,7 +165,7 @@ func newAssertions(
 	exitCode int,
 	outPipe *bytes.Buffer,
 	errPipe *bytes.Buffer,
-) gdttypes.Assertions {
+) api.Assertions {
 	a := &assertions{
 		failures:    []error{},
 		expExitCode: exitCode,

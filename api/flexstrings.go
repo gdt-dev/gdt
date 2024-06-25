@@ -2,12 +2,10 @@
 //
 // See the COPYING file in the root project directory for full text.
 
-package types
+package api
 
 import (
 	"gopkg.in/yaml.v3"
-
-	gdterrors "github.com/gdt-dev/gdt/errors"
 )
 
 // FlexStrings is a struct used to parse an interface{} that can be either a
@@ -25,7 +23,7 @@ func (f *FlexStrings) Values() []string {
 // FlexStrings can be either a string or a slice of strings.
 func (f *FlexStrings) UnmarshalYAML(node *yaml.Node) error {
 	if node.Kind != yaml.ScalarNode && node.Kind != yaml.SequenceNode {
-		return gdterrors.ExpectedScalarOrSequenceAt(node)
+		return ExpectedScalarOrSequenceAt(node)
 	}
 	var single string
 	if err := node.Decode(&single); err == nil {
@@ -37,5 +35,5 @@ func (f *FlexStrings) UnmarshalYAML(node *yaml.Node) error {
 		f.values = many
 		return nil
 	}
-	return gdterrors.ExpectedScalarOrSequenceAt(node)
+	return ExpectedScalarOrSequenceAt(node)
 }

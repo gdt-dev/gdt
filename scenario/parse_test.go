@@ -9,9 +9,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/gdt-dev/gdt/errors"
+	"github.com/gdt-dev/gdt/api"
 	"github.com/gdt-dev/gdt/scenario"
-	gdttypes "github.com/gdt-dev/gdt/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -113,7 +112,7 @@ func TestBadTimeout(t *testing.T) {
 	require.Nil(err)
 
 	s, err := scenario.FromReader(f, scenario.WithPath(fp))
-	assert.ErrorIs(err, errors.ErrExpectedScalarOrMap)
+	assert.ErrorIs(err, api.ErrExpectedScalarOrMap)
 	assert.Nil(s)
 }
 
@@ -152,7 +151,7 @@ func TestBadRetry(t *testing.T) {
 	require.Nil(err)
 
 	s, err := scenario.FromReader(f, scenario.WithPath(fp))
-	assert.ErrorIs(err, errors.ErrExpectedMap)
+	assert.ErrorIs(err, api.ErrExpectedMap)
 	assert.Nil(s)
 }
 
@@ -165,7 +164,7 @@ func TestBadRetryAttempts(t *testing.T) {
 	require.Nil(err)
 
 	s, err := scenario.FromReader(f, scenario.WithPath(fp))
-	assert.ErrorIs(err, errors.ErrInvalidRetryAttempts)
+	assert.ErrorIs(err, api.ErrInvalidRetryAttempts)
 	assert.Nil(s)
 }
 
@@ -212,7 +211,7 @@ func TestKnownSpec(t *testing.T) {
 		},
 		s.Defaults,
 	)
-	expSpecDefaults := &gdttypes.Defaults{
+	expSpecDefaults := &api.Defaults{
 		"foo": &fooDefaults{
 			fooInnerDefaults{
 				Bar: "barconfig",
@@ -223,9 +222,9 @@ func TestKnownSpec(t *testing.T) {
 		"priorRun":           &priorRunDefaults{},
 		scenario.DefaultsKey: &scenario.Defaults{},
 	}
-	expTests := []gdttypes.Evaluable{
+	expTests := []api.Evaluable{
 		&fooSpec{
-			Spec: gdttypes.Spec{
+			Spec: api.Spec{
 				Index:    0,
 				Name:     "bar",
 				Defaults: expSpecDefaults,
@@ -233,7 +232,7 @@ func TestKnownSpec(t *testing.T) {
 			Foo: "bar",
 		},
 		&fooSpec{
-			Spec: gdttypes.Spec{
+			Spec: api.Spec{
 				Index:       1,
 				Description: "Bazzy Bizzy",
 				Defaults:    expSpecDefaults,
@@ -259,18 +258,18 @@ func TestMultipleSpec(t *testing.T) {
 	assert.IsType(&scenario.Scenario{}, s)
 	assert.Equal("foo-bar", s.Name)
 	assert.Equal(filepath.Join("testdata", "foo-bar.yaml"), s.Path)
-	expTests := []gdttypes.Evaluable{
+	expTests := []api.Evaluable{
 		&fooSpec{
-			Spec: gdttypes.Spec{
+			Spec: api.Spec{
 				Index:    0,
-				Defaults: &gdttypes.Defaults{},
+				Defaults: &api.Defaults{},
 			},
 			Foo: "bar",
 		},
 		&barSpec{
-			Spec: gdttypes.Spec{
+			Spec: api.Spec{
 				Index:    1,
-				Defaults: &gdttypes.Defaults{},
+				Defaults: &api.Defaults{},
 			},
 			Bar: 42,
 		},
@@ -312,7 +311,7 @@ func TestEnvExpansion(t *testing.T) {
 		},
 		s.Defaults,
 	)
-	expSpecDefaults := &gdttypes.Defaults{
+	expSpecDefaults := &api.Defaults{
 		"foo": &fooDefaults{
 			fooInnerDefaults{
 				Bar: "barconfig",
@@ -323,9 +322,9 @@ func TestEnvExpansion(t *testing.T) {
 		"priorRun":           &priorRunDefaults{},
 		scenario.DefaultsKey: &scenario.Defaults{},
 	}
-	expTests := []gdttypes.Evaluable{
+	expTests := []api.Evaluable{
 		&fooSpec{
-			Spec: gdttypes.Spec{
+			Spec: api.Spec{
 				Index:    0,
 				Name:     "$NOT_EXPANDED",
 				Defaults: expSpecDefaults,
@@ -333,7 +332,7 @@ func TestEnvExpansion(t *testing.T) {
 			Foo: "bar",
 		},
 		&fooSpec{
-			Spec: gdttypes.Spec{
+			Spec: api.Spec{
 				Index:       1,
 				Description: "Bazzy Bizzy",
 				Defaults:    expSpecDefaults,
@@ -367,37 +366,37 @@ func TestScenarioDefaults(t *testing.T) {
 			"fail":     &failDefaults{failInnerDefaults{}},
 			"priorRun": &priorRunDefaults{},
 			scenario.DefaultsKey: &scenario.Defaults{
-				Timeout: &gdttypes.Timeout{
+				Timeout: &api.Timeout{
 					After: "2s",
 				},
 			},
 		},
 		s.Defaults,
 	)
-	expSpecDefaults := &gdttypes.Defaults{
+	expSpecDefaults := &api.Defaults{
 		"foo":      &fooDefaults{},
 		"bar":      &barDefaults{},
 		"fail":     &failDefaults{failInnerDefaults{}},
 		"priorRun": &priorRunDefaults{},
 		scenario.DefaultsKey: &scenario.Defaults{
-			Timeout: &gdttypes.Timeout{
+			Timeout: &api.Timeout{
 				After: "2s",
 			},
 		},
 	}
-	expTests := []gdttypes.Evaluable{
+	expTests := []api.Evaluable{
 		&fooSpec{
-			Spec: gdttypes.Spec{
+			Spec: api.Spec{
 				Index:    0,
 				Defaults: expSpecDefaults,
-				Timeout: &gdttypes.Timeout{
+				Timeout: &api.Timeout{
 					After: "1s",
 				},
 			},
 			Foo: "baz",
 		},
 		&fooSpec{
-			Spec: gdttypes.Spec{
+			Spec: api.Spec{
 				Index:    1,
 				Defaults: expSpecDefaults,
 			},

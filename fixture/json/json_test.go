@@ -8,8 +8,8 @@ import (
 	"bytes"
 	"testing"
 
+	"github.com/gdt-dev/gdt/api"
 	jsonfix "github.com/gdt-dev/gdt/fixture/json"
-	gdttypes "github.com/gdt-dev/gdt/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -23,7 +23,7 @@ func TestNewFromString(t *testing.T) {
 
 	require.Nil(err)
 	require.NotNil(f)
-	require.Implements((*gdttypes.Fixture)(nil), f)
+	require.Implements((*api.Fixture)(nil), f)
 
 	assert.True(f.HasState("$.book.year"))
 	assert.Equal("1957", f.State("$.book.year"))
@@ -40,7 +40,7 @@ func TestNewFromBytes(t *testing.T) {
 
 	require.Nil(err)
 	require.NotNil(f)
-	require.Implements((*gdttypes.Fixture)(nil), f)
+	require.Implements((*api.Fixture)(nil), f)
 
 	assert.True(f.HasState("$.book.year"))
 	assert.Equal("1957", f.State("$.book.year"))
@@ -58,7 +58,7 @@ func TestNewFromReader(t *testing.T) {
 
 	require.Nil(err)
 	require.NotNil(f)
-	require.Implements((*gdttypes.Fixture)(nil), f)
+	require.Implements((*api.Fixture)(nil), f)
 
 	assert.True(f.HasState("$.book.year"))
 	assert.Equal("1957", f.State("$.book.year"))

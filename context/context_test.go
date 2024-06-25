@@ -8,10 +8,9 @@ import (
 	"context"
 	"testing"
 
+	"github.com/gdt-dev/gdt/api"
 	gdtcontext "github.com/gdt-dev/gdt/context"
 	"github.com/gdt-dev/gdt/fixture"
-	"github.com/gdt-dev/gdt/result"
-	gdttypes "github.com/gdt-dev/gdt/types"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v3"
 )
@@ -27,23 +26,23 @@ func (d *fooDefaults) UnmarshalYAML(node *yaml.Node) error {
 }
 
 type fooSpec struct {
-	gdttypes.Spec
+	api.Spec
 	Foo string `yaml:"foo"`
 }
 
-func (s *fooSpec) SetBase(b gdttypes.Spec) {
+func (s *fooSpec) SetBase(b api.Spec) {
 	s.Spec = b
 }
 
-func (s *fooSpec) Base() *gdttypes.Spec {
+func (s *fooSpec) Base() *api.Spec {
 	return &s.Spec
 }
 
-func (s *fooSpec) Retry() *gdttypes.Retry {
+func (s *fooSpec) Retry() *api.Retry {
 	return nil
 }
 
-func (s *fooSpec) Timeout() *gdttypes.Timeout {
+func (s *fooSpec) Timeout() *api.Timeout {
 	return nil
 }
 
@@ -51,14 +50,14 @@ func (s *fooSpec) UnmarshalYAML(node *yaml.Node) error {
 	return nil
 }
 
-func (s *fooSpec) Eval(ctx context.Context) (*result.Result, error) {
+func (s *fooSpec) Eval(ctx context.Context) (*api.Result, error) {
 	return nil, nil
 }
 
 type fooPlugin struct{}
 
-func (p *fooPlugin) Info() gdttypes.PluginInfo {
-	return gdttypes.PluginInfo{
+func (p *fooPlugin) Info() api.PluginInfo {
+	return api.PluginInfo{
 		Name: "foo",
 	}
 }
@@ -67,8 +66,8 @@ func (p *fooPlugin) Defaults() yaml.Unmarshaler {
 	return &fooDefaults{}
 }
 
-func (p *fooPlugin) Specs() []gdttypes.Evaluable {
-	return []gdttypes.Evaluable{&fooSpec{}}
+func (p *fooPlugin) Specs() []api.Evaluable {
+	return []api.Evaluable{&fooSpec{}}
 }
 
 func TestContext(t *testing.T) {

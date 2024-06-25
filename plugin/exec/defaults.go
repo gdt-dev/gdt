@@ -7,7 +7,7 @@ package exec
 import (
 	"gopkg.in/yaml.v3"
 
-	"github.com/gdt-dev/gdt/errors"
+	"github.com/gdt-dev/gdt/api"
 )
 
 type execDefaults struct{}
@@ -19,21 +19,21 @@ type Defaults struct {
 
 func (d *Defaults) UnmarshalYAML(node *yaml.Node) error {
 	if node.Kind != yaml.MappingNode {
-		return errors.ExpectedMapAt(node)
+		return api.ExpectedMapAt(node)
 	}
 	// maps/structs are stored in a top-level Node.Content field which is a
 	// concatenated slice of Node pointers in pairs of key/values.
 	for i := 0; i < len(node.Content); i += 2 {
 		keyNode := node.Content[i]
 		if keyNode.Kind != yaml.ScalarNode {
-			return errors.ExpectedScalarAt(keyNode)
+			return api.ExpectedScalarAt(keyNode)
 		}
 		key := keyNode.Value
 		valNode := node.Content[i+1]
 		switch key {
 		case "exec":
 			if valNode.Kind != yaml.MappingNode {
-				return errors.ExpectedMapAt(valNode)
+				return api.ExpectedMapAt(valNode)
 			}
 			ed := execDefaults{}
 			if err := valNode.Decode(&ed); err != nil {
