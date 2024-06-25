@@ -19,6 +19,12 @@ const (
 	DefaultRetryConstantInterval = 3 * time.Second
 )
 
+var (
+	// NoRetry indicates that there should not be any retry attempts. It is
+	// passed from a plugin to indicate a Spec should not be retried.
+	NoRetry = &Retry{}
+)
+
 // Retry contains information about the number of attempts and interval
 // duration with which a Plugin should re-run a Spec's action if the Spec's
 // assertions fail.

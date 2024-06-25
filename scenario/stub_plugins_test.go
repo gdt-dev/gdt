@@ -82,6 +82,14 @@ func (s *failSpec) Base() *gdttypes.Spec {
 	return &s.Spec
 }
 
+func (s *failSpec) Retry() *gdttypes.Retry {
+	return nil
+}
+
+func (s *failSpec) Timeout() *gdttypes.Timeout {
+	return nil
+}
+
 func (s *failSpec) Eval(context.Context) (*result.Result, error) {
 	return nil, fmt.Errorf("%w: Indy, bad dates!", gdterrors.RuntimeError)
 }
@@ -185,6 +193,14 @@ func (s *fooSpec) Base() *gdttypes.Spec {
 	return &s.Spec
 }
 
+func (s *fooSpec) Retry() *gdttypes.Retry {
+	return nil
+}
+
+func (s *fooSpec) Timeout() *gdttypes.Timeout {
+	return nil
+}
+
 func (s *fooSpec) UnmarshalYAML(node *yaml.Node) error {
 	if node.Kind != yaml.MappingNode {
 		return errors.ExpectedMapAt(node)
@@ -266,6 +282,14 @@ func (s *barSpec) Base() *gdttypes.Spec {
 	return &s.Spec
 }
 
+func (s *barSpec) Retry() *gdttypes.Retry {
+	return gdttypes.NoRetry
+}
+
+func (s *barSpec) Timeout() *gdttypes.Timeout {
+	return nil
+}
+
 func (s *barSpec) Eval(context.Context) (*result.Result, error) {
 	return result.New(), nil
 }
@@ -339,6 +363,14 @@ func (s *priorRunSpec) SetBase(b gdttypes.Spec) {
 
 func (s *priorRunSpec) Base() *gdttypes.Spec {
 	return &s.Spec
+}
+
+func (s *priorRunSpec) Retry() *gdttypes.Retry {
+	return nil
+}
+
+func (s *priorRunSpec) Timeout() *gdttypes.Timeout {
+	return nil
 }
 
 func (s *priorRunSpec) UnmarshalYAML(node *yaml.Node) error {

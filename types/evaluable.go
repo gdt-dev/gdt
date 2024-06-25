@@ -23,4 +23,8 @@ type Evaluable interface {
 	SetBase(Spec)
 	// Base returns the Evaluable's base Spec
 	Base() *Spec
+	// Retry returns the Evaluable's Retry override, if any
+	Retry() *Retry
+	// Timeout returns the Evaluable's Timeout override, if any
+	Timeout() *Timeout
 }

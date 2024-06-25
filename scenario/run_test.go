@@ -140,6 +140,30 @@ func TestNoRetry(t *testing.T) {
 	require.Contains(debugout, "[gdt] [no-retry/0:bar] run: single-shot (no retries) ok: true")
 }
 
+func TestNoRetryEvaluableOverride(t *testing.T) {
+	require := require.New(t)
+
+	fp := filepath.Join("testdata", "no-retry-evaluable-override.yaml")
+	f, err := os.Open(fp)
+	require.Nil(err)
+
+	var b bytes.Buffer
+	w := bufio.NewWriter(&b)
+	ctx := gdtcontext.New(gdtcontext.WithDebug(w))
+
+	s, err := scenario.FromReader(f, scenario.WithPath(fp))
+	require.Nil(err)
+	require.NotNil(s)
+
+	err = s.Run(ctx, t)
+	require.Nil(err)
+	require.False(t.Failed())
+	w.Flush()
+	require.NotEqual(b.Len(), 0)
+	debugout := b.String()
+	require.Contains(debugout, "[gdt] [no-retry-evaluable-override/0:bar] run: single-shot (no retries) ok: true")
+}
+
 func TestFailRetryTestOverride(t *testing.T) {
 	if !*failFlag {
 		t.Skip("skipping without -fail flag")

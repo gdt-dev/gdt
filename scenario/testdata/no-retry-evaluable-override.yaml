@@ -1,0 +1,6 @@
+name: no-retry-evaluable-override
+description: a scenario using a plugin with an evaluable override for no retries
+tests:
+  # The bar plugin's Evaluable has a NoRetry override
+  - bar: 42
+    name: bar

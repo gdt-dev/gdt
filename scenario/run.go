@@ -78,11 +78,8 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 				time.Sleep(wait.BeforeDuration())
 			}
 			plugin := s.evalPlugins[idx]
-			pinfo := plugin.Info()
-			pretry := pinfo.Retry
-			ptimeout := pinfo.Timeout
 
-			rt := getRetry(ctx, sb.Retry, scDefaults, pretry)
+			rt := getRetry(ctx, scDefaults, plugin, spec)
 
 			// Create a brand new context that inherits the top-level context's
 			// cancel func. We want to set deadlines for each test spec and if
@@ -91,7 +88,7 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 			specCtx, specCancel := context.WithCancel(ctx)
 			defer specCancel()
 
-			to := getTimeout(ctx, sb.Timeout, ptimeout, scDefaults)
+			to := getTimeout(ctx, scDefaults, plugin, spec)
 			if to != nil {
 				var cancel context.CancelFunc
 				specCtx, cancel = context.WithTimeout(specCtx, to.Duration())
@@ -113,7 +110,7 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 				ctx = gdtcontext.StorePriorRun(ctx, res.Data())
 			}
 			for _, fail := range res.Failures() {
-				t.Error(fail)
+				t.Fatal(fail)
 			}
 		}
 	})
@@ -137,7 +134,7 @@ func (s *Scenario) runSpec(
 	defer func() {
 		ctx = gdtcontext.PopTrace(ctx)
 	}()
-	if retry == nil {
+	if retry == nil || retry == gdttypes.NoRetry {
 		// Just evaluate the test spec once
 		res, err := spec.Eval(ctx)
 		if err != nil {
@@ -214,24 +211,38 @@ func (s *Scenario) runSpec(
 	return res, nil
 }
 
-// getTimeout returns the timeout value for the test spec. If the spec has a
-// timeout override, we use that. Otherwise, we inspect the scenario's defaults
-// and, if present, use that timeout. If the scenario's defaults for not
-// indicate a timeout configuration, we ask the plugin if it has timeout
-// defaults and use that.
+// getTimeout returns the timeout configuration for the test spec. We check for
+// overrides in timeout configuration using the following precedence:
+//
+// * Spec (Evaluable) override
+// * Spec's Base override
+// * Scenario's default
+// * Plugin's default
 func getTimeout(
 	ctx context.Context,
-	specTimeout *gdttypes.Timeout,
-	pluginTimeout *gdttypes.Timeout,
 	scenDefaults *Defaults,
+	plugin gdttypes.Plugin,
+	eval gdttypes.Evaluable,
 ) *gdttypes.Timeout {
-	if specTimeout != nil {
+	evalTimeout := eval.Timeout()
+	if evalTimeout != nil {
 		debug.Println(
 			ctx, "using timeout of %s",
-			specTimeout.After,
+			evalTimeout.After,
 		)
-		return specTimeout
+		return evalTimeout
 	}
+
+	sb := eval.Base()
+	baseTimeout := sb.Timeout
+	if baseTimeout != nil {
+		debug.Println(
+			ctx, "using timeout of %s",
+			baseTimeout.After,
+		)
+		return baseTimeout
+	}
+
 	if scenDefaults != nil && scenDefaults.Timeout != nil {
 		debug.Println(
 			ctx, "using timeout of %s [scenario default]",
@@ -239,6 +250,10 @@ func getTimeout(
 		)
 		return scenDefaults.Timeout
 	}
+
+	pluginInfo := plugin.Info()
+	pluginTimeout := pluginInfo.Timeout
+
 	if pluginTimeout != nil {
 		debug.Println(
 			ctx, "using timeout of %s [plugin default]",
@@ -249,31 +264,59 @@ func getTimeout(
 	return nil
 }
 
-// getRetry returns the retry configuration for the test spec. If the spec has a
-// retry override, we use that. Otherwise, we inspect the scenario's defaults
-// and, if present, use that timeout. If the scenario's defaults do not
-// indicate a retry configuration, we ask the plugin if it has retry defaults
-// and use that.
+// getRetry returns the retry configuration for the test spec. We check for
+// overrides in retry configuration using the following precedence:
+//
+// * Spec (Evaluable) override
+// * Spec's Base override
+// * Scenario's default
+// * Plugin's default
 func getRetry(
 	ctx context.Context,
-	specRetry *gdttypes.Retry,
 	scenDefaults *Defaults,
-	pluginRetry *gdttypes.Retry,
+	plugin gdttypes.Plugin,
+	eval gdttypes.Evaluable,
 ) *gdttypes.Retry {
-	if specRetry != nil {
+	evalRetry := eval.Retry()
+	if evalRetry != nil {
+		if evalRetry == gdttypes.NoRetry {
+			return evalRetry
+		}
 		msg := "using retry"
-		if specRetry.Attempts != nil {
-			msg += fmt.Sprintf(" (attempts: %d)", *specRetry.Attempts)
+		if evalRetry.Attempts != nil {
+			msg += fmt.Sprintf(" (attempts: %d)", *evalRetry.Attempts)
 		}
-		if specRetry.Interval != "" {
-			msg += fmt.Sprintf(" (interval: %s)", specRetry.Interval)
+		if evalRetry.Interval != "" {
+			msg += fmt.Sprintf(" (interval: %s)", evalRetry.Interval)
 		}
-		msg += fmt.Sprintf(" (exponential: %t)", specRetry.Exponential)
+		msg += fmt.Sprintf(" (exponential: %t)", evalRetry.Exponential)
 		debug.Println(ctx, msg)
-		return specRetry
+		return evalRetry
 	}
+
+	sb := eval.Base()
+	baseRetry := sb.Retry
+	if baseRetry != nil {
+		if baseRetry == gdttypes.NoRetry {
+			return baseRetry
+		}
+		msg := "using retry"
+		if baseRetry.Attempts != nil {
+			msg += fmt.Sprintf(" (attempts: %d)", *baseRetry.Attempts)
+		}
+		if baseRetry.Interval != "" {
+			msg += fmt.Sprintf(" (interval: %s)", baseRetry.Interval)
+		}
+		msg += fmt.Sprintf(" (exponential: %t)", baseRetry.Exponential)
+		debug.Println(ctx, msg)
+		return baseRetry
+	}
+
 	if scenDefaults != nil && scenDefaults.Retry != nil {
 		scenRetry := scenDefaults.Retry
+		if scenRetry == gdttypes.NoRetry {
+			return scenRetry
+		}
 		msg := "using retry"
 		if scenRetry.Attempts != nil {
 			msg += fmt.Sprintf(" (attempts: %d)", *scenRetry.Attempts)
@@ -285,7 +328,14 @@ func getRetry(
 		debug.Println(ctx, msg)
 		return scenRetry
 	}
+
+	pluginInfo := plugin.Info()
+	pluginRetry := pluginInfo.Retry
+
 	if pluginRetry != nil {
+		if pluginRetry == gdttypes.NoRetry {
+			return pluginRetry
+		}
 		msg := "using retry"
 		if pluginRetry.Attempts != nil {
 			msg += fmt.Sprintf(" (attempts: %d)", *pluginRetry.Attempts)
