@@ -84,35 +84,36 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 			// we mutate the single supplied top-level context, then only the
 			// first deadline/timeout will be used.
 			specCtx, specCancel := context.WithCancel(ctx)
-			defer specCancel()
 
 			to := getTimeout(ctx, scDefaults, plugin, spec)
 			if to != nil {
-				var cancel context.CancelFunc
-				specCtx, cancel = context.WithTimeout(specCtx, to.Duration())
-				defer cancel()
+				specCtx, specCancel = context.WithTimeout(specCtx, to.Duration())
 			}
 
 			var res *api.Result
 			ch := make(chan runSpecRes, 1)
 
-			go s.runSpec(specCtx, ch, rt, to, idx, spec)
+			go s.runSpec(specCtx, ch, rt, idx, spec)
 
 			select {
 			case <-specCtx.Done():
 				t.Fatalf("assertion failed: timeout exceeded (%s)", to.After)
+				specCancel()
 				break
 			case runres := <-ch:
 				res = runres.r
 				rterr = runres.err
 			}
 			if rterr != nil {
+				specCancel()
 				break
 			}
+
 			if wait != nil && wait.After != "" {
 				debug.Println(ctx, "wait: %s after", wait.After)
 				time.Sleep(wait.AfterDuration())
 			}
+
 			// Results can have arbitrary run data stored in them and we
 			// save this prior run data in the top-level context (and pass
 			// that context to the next Run invocation).
@@ -122,6 +123,7 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 			for _, fail := range res.Failures() {
 				t.Fatal(fail)
 			}
+			specCancel()
 		}
 	})
 	return rterr
@@ -137,7 +139,6 @@ func (s *Scenario) runSpec(
 	ctx context.Context,
 	ch chan runSpecRes,
 	retry *api.Retry,
-	timeout *api.Timeout,
 	idx int,
 	spec api.Evaluable,
 ) {
