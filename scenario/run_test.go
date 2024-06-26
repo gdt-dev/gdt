@@ -113,7 +113,7 @@ func TestDebugFlushing(t *testing.T) {
 	w.Flush()
 	require.NotEqual(b.Len(), 0)
 	debugout := b.String()
-	require.Contains(debugout, "[gdt] [foo-debug-wait-flush] wait: 250ms before")
+	require.Contains(debugout, "[gdt] [foo-debug-wait-flush/0:bar] wait: 250ms before")
 }
 
 func TestNoRetry(t *testing.T) {
