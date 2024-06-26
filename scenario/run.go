@@ -86,11 +86,6 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 				specCtx = gdtcontext.PopTrace(specCtx)
 			}
 
-			wait := sb.Wait
-			if wait != nil && wait.Before != "" {
-				debug.Println(specCtx, "wait: %s before", wait.Before)
-				time.Sleep(wait.BeforeDuration())
-			}
 			plugin := s.evalPlugins[idx]
 
 			rt := getRetry(specCtx, scDefaults, plugin, spec)
@@ -102,6 +97,12 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 
 			var res *api.Result
 			ch := make(chan runSpecRes, 1)
+
+			wait := sb.Wait
+			if wait != nil && wait.Before != "" {
+				debug.Println(specCtx, "wait: %s before", wait.Before)
+				time.Sleep(wait.BeforeDuration())
+			}
 
 			go s.runSpec(specCtx, ch, rt, idx, spec)
 
