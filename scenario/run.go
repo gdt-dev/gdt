@@ -91,9 +91,6 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 			rt := getRetry(specCtx, scDefaults, plugin, spec)
 
 			to := getTimeout(specCtx, scDefaults, plugin, spec)
-			if to != nil {
-				specCtx, specCancel = context.WithTimeout(specCtx, to.Duration())
-			}
 
 			var res *api.Result
 			ch := make(chan runSpecRes, 1)
@@ -102,6 +99,10 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 			if wait != nil && wait.Before != "" {
 				debug.Println(specCtx, "wait: %s before", wait.Before)
 				time.Sleep(wait.BeforeDuration())
+			}
+
+			if to != nil {
+				specCtx, specCancel = context.WithTimeout(specCtx, to.Duration())
 			}
 
 			go s.runSpec(specCtx, ch, rt, idx, spec)
