@@ -376,3 +376,22 @@ func TestExecOnFail(t *testing.T) {
 	require.Contains(debugout, "assertion failed: not equal: expected dat but got cat")
 	require.Contains(debugout, "echo [bad kitty]")
 }
+
+func TestTimeoutWithWait(t *testing.T) {
+	require := require.New(t)
+
+	fp := filepath.Join("testdata", "timeout-with-wait.yaml")
+	f, err := os.Open(fp)
+	require.Nil(err)
+
+	s, err := scenario.FromReader(
+		f,
+		scenario.WithPath(fp),
+	)
+	require.Nil(err)
+	require.NotNil(s)
+
+	ctx := gdtcontext.New(gdtcontext.WithDebug())
+	err = s.Run(ctx, t)
+	require.Nil(err)
+}
