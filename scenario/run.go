@@ -70,14 +70,6 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 		}()
 		for idx, spec := range s.Tests {
 			sb := spec.Base()
-			wait := sb.Wait
-			if wait != nil && wait.Before != "" {
-				debug.Println(ctx, "wait: %s before", wait.Before)
-				time.Sleep(wait.BeforeDuration())
-			}
-			plugin := s.evalPlugins[idx]
-
-			rt := getRetry(ctx, scDefaults, plugin, spec)
 
 			// Create a brand new context that inherits the top-level context's
 			// cancel func. We want to set deadlines for each test spec and if
@@ -85,7 +77,25 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 			// first deadline/timeout will be used.
 			specCtx, specCancel := context.WithCancel(ctx)
 
-			to := getTimeout(ctx, scDefaults, plugin, spec)
+			specTraceMsg := strconv.Itoa(idx)
+			if sb.Name != "" {
+				specTraceMsg += ":" + sb.Name
+			}
+			specCtx = gdtcontext.PushTrace(specCtx, specTraceMsg)
+			popTracer := func() {
+				specCtx = gdtcontext.PopTrace(specCtx)
+			}
+
+			wait := sb.Wait
+			if wait != nil && wait.Before != "" {
+				debug.Println(specCtx, "wait: %s before", wait.Before)
+				time.Sleep(wait.BeforeDuration())
+			}
+			plugin := s.evalPlugins[idx]
+
+			rt := getRetry(specCtx, scDefaults, plugin, spec)
+
+			to := getTimeout(specCtx, scDefaults, plugin, spec)
 			if to != nil {
 				specCtx, specCancel = context.WithTimeout(specCtx, to.Duration())
 			}
@@ -98,6 +108,7 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 			select {
 			case <-specCtx.Done():
 				t.Fatalf("assertion failed: timeout exceeded (%s)", to.After)
+				popTracer()
 				specCancel()
 				break
 			case runres := <-ch:
@@ -105,12 +116,13 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 				rterr = runres.err
 			}
 			if rterr != nil {
+				popTracer()
 				specCancel()
 				break
 			}
 
 			if wait != nil && wait.After != "" {
-				debug.Println(ctx, "wait: %s after", wait.After)
+				debug.Println(specCtx, "wait: %s after", wait.After)
 				time.Sleep(wait.AfterDuration())
 			}
 
@@ -123,6 +135,7 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 			for _, fail := range res.Failures() {
 				t.Fatal(fail)
 			}
+			popTracer()
 			specCancel()
 		}
 	})
@@ -142,15 +155,6 @@ func (s *Scenario) runSpec(
 	idx int,
 	spec api.Evaluable,
 ) {
-	sb := spec.Base()
-	specTraceMsg := strconv.Itoa(idx)
-	if sb.Name != "" {
-		specTraceMsg += ":" + sb.Name
-	}
-	ctx = gdtcontext.PushTrace(ctx, specTraceMsg)
-	defer func() {
-		ctx = gdtcontext.PopTrace(ctx)
-	}()
 	if retry == nil || retry == api.NoRetry {
 		// Just evaluate the test spec once
 		res, err := spec.Eval(ctx)
