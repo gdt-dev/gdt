@@ -13,6 +13,11 @@ import (
 	"github.com/gdt-dev/gdt/scenario"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/gdt-dev/gdt/internal/testutil/plugin/bar"
+	"github.com/gdt-dev/gdt/internal/testutil/plugin/failer"
+	"github.com/gdt-dev/gdt/internal/testutil/plugin/foo"
+	"github.com/gdt-dev/gdt/internal/testutil/plugin/priorrun"
 )
 
 func TestFailingDefaults(t *testing.T) {
@@ -49,14 +54,16 @@ func TestNoTests(t *testing.T) {
 	assert.Equal([]string{"books_api", "books_data"}, s.Fixtures)
 	assert.Equal(
 		map[string]interface{}{
-			"foo": &fooDefaults{
-				fooInnerDefaults{
+			"foo": &foo.Defaults{
+				InnerDefaults: foo.InnerDefaults{
 					Bar: "barconfig",
 				},
 			},
-			"bar":                &barDefaults{},
-			"fail":               &failDefaults{failInnerDefaults{}},
-			"priorRun":           &priorRunDefaults{},
+			"bar": &bar.Defaults{},
+			"fail": &failer.Defaults{
+				InnerDefaults: failer.InnerDefaults{},
+			},
+			"priorRun":           &priorrun.Defaults{},
 			scenario.DefaultsKey: &scenario.Defaults{},
 		},
 		s.Defaults,
@@ -199,31 +206,35 @@ func TestKnownSpec(t *testing.T) {
 	assert.Empty(s.Fixtures)
 	assert.Equal(
 		map[string]interface{}{
-			"foo": &fooDefaults{
-				fooInnerDefaults{
+			"foo": &foo.Defaults{
+				InnerDefaults: foo.InnerDefaults{
 					Bar: "barconfig",
 				},
 			},
-			"bar":                &barDefaults{},
-			"fail":               &failDefaults{failInnerDefaults{}},
-			"priorRun":           &priorRunDefaults{},
+			"bar": &bar.Defaults{},
+			"fail": &failer.Defaults{
+				InnerDefaults: failer.InnerDefaults{},
+			},
+			"priorRun":           &priorrun.Defaults{},
 			scenario.DefaultsKey: &scenario.Defaults{},
 		},
 		s.Defaults,
 	)
 	expSpecDefaults := &api.Defaults{
-		"foo": &fooDefaults{
-			fooInnerDefaults{
+		"foo": &foo.Defaults{
+			InnerDefaults: foo.InnerDefaults{
 				Bar: "barconfig",
 			},
 		},
-		"bar":                &barDefaults{},
-		"fail":               &failDefaults{failInnerDefaults{}},
-		"priorRun":           &priorRunDefaults{},
+		"bar": &bar.Defaults{},
+		"fail": &failer.Defaults{
+			InnerDefaults: failer.InnerDefaults{},
+		},
+		"priorRun":           &priorrun.Defaults{},
 		scenario.DefaultsKey: &scenario.Defaults{},
 	}
 	expTests := []api.Evaluable{
-		&fooSpec{
+		&foo.Spec{
 			Spec: api.Spec{
 				Index:    0,
 				Name:     "bar",
@@ -231,7 +242,7 @@ func TestKnownSpec(t *testing.T) {
 			},
 			Foo: "bar",
 		},
-		&fooSpec{
+		&foo.Spec{
 			Spec: api.Spec{
 				Index:       1,
 				Description: "Bazzy Bizzy",
@@ -259,14 +270,14 @@ func TestMultipleSpec(t *testing.T) {
 	assert.Equal("foo-bar", s.Name)
 	assert.Equal(filepath.Join("testdata", "foo-bar.yaml"), s.Path)
 	expTests := []api.Evaluable{
-		&fooSpec{
+		&foo.Spec{
 			Spec: api.Spec{
 				Index:    0,
 				Defaults: &api.Defaults{},
 			},
 			Foo: "bar",
 		},
-		&barSpec{
+		&bar.Spec{
 			Spec: api.Spec{
 				Index:    1,
 				Defaults: &api.Defaults{},
@@ -299,31 +310,35 @@ func TestEnvExpansion(t *testing.T) {
 	assert.Empty(s.Fixtures)
 	assert.Equal(
 		map[string]interface{}{
-			"foo": &fooDefaults{
-				fooInnerDefaults{
+			"foo": &foo.Defaults{
+				InnerDefaults: foo.InnerDefaults{
 					Bar: "barconfig",
 				},
 			},
-			"bar":                &barDefaults{},
-			"fail":               &failDefaults{failInnerDefaults{}},
-			"priorRun":           &priorRunDefaults{},
+			"bar": &bar.Defaults{},
+			"fail": &failer.Defaults{
+				InnerDefaults: failer.InnerDefaults{},
+			},
+			"priorRun":           &priorrun.Defaults{},
 			scenario.DefaultsKey: &scenario.Defaults{},
 		},
 		s.Defaults,
 	)
 	expSpecDefaults := &api.Defaults{
-		"foo": &fooDefaults{
-			fooInnerDefaults{
+		"foo": &foo.Defaults{
+			InnerDefaults: foo.InnerDefaults{
 				Bar: "barconfig",
 			},
 		},
-		"bar":                &barDefaults{},
-		"fail":               &failDefaults{failInnerDefaults{}},
-		"priorRun":           &priorRunDefaults{},
+		"bar": &bar.Defaults{},
+		"fail": &failer.Defaults{
+			InnerDefaults: failer.InnerDefaults{},
+		},
+		"priorRun":           &priorrun.Defaults{},
 		scenario.DefaultsKey: &scenario.Defaults{},
 	}
 	expTests := []api.Evaluable{
-		&fooSpec{
+		&foo.Spec{
 			Spec: api.Spec{
 				Index:    0,
 				Name:     "$NOT_EXPANDED",
@@ -331,7 +346,7 @@ func TestEnvExpansion(t *testing.T) {
 			},
 			Foo: "bar",
 		},
-		&fooSpec{
+		&foo.Spec{
 			Spec: api.Spec{
 				Index:       1,
 				Description: "Bazzy Bizzy",
@@ -361,10 +376,12 @@ func TestScenarioDefaults(t *testing.T) {
 	assert.Empty(s.Fixtures)
 	assert.Equal(
 		map[string]interface{}{
-			"foo":      &fooDefaults{},
-			"bar":      &barDefaults{},
-			"fail":     &failDefaults{failInnerDefaults{}},
-			"priorRun": &priorRunDefaults{},
+			"foo": &foo.Defaults{},
+			"bar": &bar.Defaults{},
+			"fail": &failer.Defaults{
+				InnerDefaults: failer.InnerDefaults{},
+			},
+			"priorRun": &priorrun.Defaults{},
 			scenario.DefaultsKey: &scenario.Defaults{
 				Timeout: &api.Timeout{
 					After: "2s",
@@ -374,10 +391,12 @@ func TestScenarioDefaults(t *testing.T) {
 		s.Defaults,
 	)
 	expSpecDefaults := &api.Defaults{
-		"foo":      &fooDefaults{},
-		"bar":      &barDefaults{},
-		"fail":     &failDefaults{failInnerDefaults{}},
-		"priorRun": &priorRunDefaults{},
+		"foo": &foo.Defaults{},
+		"bar": &bar.Defaults{},
+		"fail": &failer.Defaults{
+			InnerDefaults: failer.InnerDefaults{},
+		},
+		"priorRun": &priorrun.Defaults{},
 		scenario.DefaultsKey: &scenario.Defaults{
 			Timeout: &api.Timeout{
 				After: "2s",
@@ -385,7 +404,7 @@ func TestScenarioDefaults(t *testing.T) {
 		},
 	}
 	expTests := []api.Evaluable{
-		&fooSpec{
+		&foo.Spec{
 			Spec: api.Spec{
 				Index:    0,
 				Defaults: expSpecDefaults,
@@ -395,7 +414,7 @@ func TestScenarioDefaults(t *testing.T) {
 			},
 			Foo: "baz",
 		},
-		&fooSpec{
+		&foo.Spec{
 			Spec: api.Spec{
 				Index:    1,
 				Defaults: expSpecDefaults,
