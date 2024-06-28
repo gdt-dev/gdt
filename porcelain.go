@@ -89,10 +89,10 @@ var (
 	NewJSONFixture = jsonfix.New
 )
 
-// From returns a new suite.Suite from an `io.Reader`, a string file or
+// From returns a new `api.Runnable` from an `io.Reader`, a string file or
 // directory path, or the raw bytes of YAML content describing a scenario or
 // suite.
-func From(source interface{}) (*suite.Suite, error) {
+func From(source interface{}) (api.Runnable, error) {
 	switch src := source.(type) {
 	case io.Reader:
 		s, err := scenario.FromReader(src)

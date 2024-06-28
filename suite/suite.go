@@ -23,9 +23,9 @@ type Suite struct {
 	// During parsing, plugins are handed this raw data and asked to interpret
 	// it into known configuration values for that plugin.
 	Defaults map[string]interface{} `yaml:"defaults,omitempty"`
-	// Require specifies an ordered list of fixtures the test suite's test
-	// cases depends on.
-	Require []string `yaml:"require,omitempty"`
+	// Fixtures specifies an ordered list of fixtures the test suite's test
+	// cases depend on.
+	Fixtures []string `yaml:"fixtures,omitempty"`
 	// Scenarios is a collection of test scenarios in this test suite
 	Scenarios []*scenario.Scenario `yaml:"-"`
 }
@@ -61,10 +61,10 @@ func WithDefaults(defaults map[string]interface{}) SuiteModifier {
 	}
 }
 
-// WithRequires sets a test suite's Requires attribute
-func WithRequires(require []string) SuiteModifier {
+// WithFixtures sets a test suite's Fixtures attribute
+func WithFixtures(fixtures []string) SuiteModifier {
 	return func(s *Suite) {
-		s.Require = require
+		s.Fixtures = fixtures
 	}
 }
 
