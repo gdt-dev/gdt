@@ -70,10 +70,9 @@ func FromScenario(s *scenario.Scenario) *Suite {
 		Path:        s.Path,
 		Name:        suiteNameFromScenarioPath(s.Path),
 		Description: s.Description,
-		// NOTE: require needs to be named to fixture?
-		Require:   s.Fixtures,
-		Defaults:  s.Defaults,
-		Scenarios: []*scenario.Scenario{s},
+		Fixtures:    s.Fixtures,
+		Defaults:    s.Defaults,
+		Scenarios:   []*scenario.Scenario{s},
 	}
 }
 

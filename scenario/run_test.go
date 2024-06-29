@@ -19,6 +19,8 @@ import (
 	"github.com/gdt-dev/gdt/scenario"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/gdt-dev/gdt/internal/testutil/fixture/errstarter"
 )
 
 var failFlag = flag.Bool("fail", false, "run tests expected to fail")
@@ -85,7 +87,7 @@ func TestFixtureStartError(t *testing.T) {
 	require.NotNil(s)
 
 	ctx := gdtcontext.New()
-	ctx = gdtcontext.RegisterFixture(ctx, "start-error", errStarterFixture)
+	ctx = gdtcontext.RegisterFixture(ctx, "start-error", errstarter.Fixture)
 
 	err = s.Run(ctx, t)
 	assert.NotNil(err)

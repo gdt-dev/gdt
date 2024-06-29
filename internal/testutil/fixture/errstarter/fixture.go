@@ -2,7 +2,7 @@
 //
 // See the COPYING file in the root project directory for full text.
 
-package scenario_test
+package errstarter
 
 import (
 	"context"
@@ -16,7 +16,7 @@ var (
 		return fmt.Errorf("error starting fixture!")
 	}
 
-	errStarterFixture = fixture.New(
+	Fixture = fixture.New(
 		fixture.WithStarter(errStarter),
 	)
 )
