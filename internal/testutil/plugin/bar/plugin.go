@@ -14,8 +14,13 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+var (
+	// this is just for testing purposes...
+	PluginRef = &Plugin{}
+)
+
 func init() {
-	plugin.Register(&Plugin{})
+	plugin.Register(PluginRef)
 }
 
 type Defaults struct {

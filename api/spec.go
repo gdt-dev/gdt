@@ -28,6 +28,8 @@ var (
 // output or behaviour. All gdt plugins have their own Spec structs that
 // inherit from this base struct.
 type Spec struct {
+	// Plugin is a pointer to the plugin that successfully parsed the test spec
+	Plugin Plugin `yaml:"-"`
 	// Defaults contains the parsed defaults for the Spec. These are injected
 	// by the scenario during parse.
 	Defaults *Defaults `yaml:"-"`

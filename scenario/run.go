@@ -41,12 +41,6 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 			defer fix.Stop(ctx)
 		}
 	}
-	var rterr error
-	var scDefaults *Defaults
-	scDefaultsAny, found := s.Defaults[DefaultsKey]
-	if found {
-		scDefaults = scDefaultsAny.(*Defaults)
-	}
 	// If the test author has specified any pre-flight checks in the `skip-if`
 	// collection, evaluate those first and if any failed, skip the scenario's
 	// tests.
@@ -63,6 +57,10 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 			return nil
 		}
 	}
+
+	var err error
+	scDefaults := s.getScenarioDefaults()
+
 	t.Run(s.Title(), func(t *testing.T) {
 		ctx = gdtcontext.PushTrace(ctx, s.Title())
 		defer func() {
@@ -86,7 +84,7 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 				specCtx = gdtcontext.PopTrace(specCtx)
 			}
 
-			plugin := s.evalPlugins[idx]
+			plugin := sb.Plugin
 
 			rt := getRetry(specCtx, scDefaults, plugin, spec)
 
@@ -109,15 +107,14 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 
 			select {
 			case <-specCtx.Done():
-				t.Fatalf("assertion failed: timeout exceeded (%s)", to.After)
 				popTracer()
-				specCancel()
+				t.Fatalf("assertion failed: timeout exceeded (%s)", to.After)
 				break
 			case runres := <-ch:
 				res = runres.r
-				rterr = runres.err
+				err = runres.err
 			}
-			if rterr != nil {
+			if err != nil {
 				popTracer()
 				specCancel()
 				break
@@ -134,14 +131,14 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 			if res.HasData() {
 				ctx = gdtcontext.StorePriorRun(ctx, res.Data())
 			}
+			popTracer()
+			specCancel()
 			for _, fail := range res.Failures() {
 				t.Fatal(fail)
 			}
-			popTracer()
-			specCancel()
 		}
 	})
-	return rterr
+	return err
 }
 
 type runSpecRes struct {
@@ -372,6 +369,16 @@ func getRetry(
 		msg += fmt.Sprintf(" (exponential: %t) [plugin default]", pluginRetry.Exponential)
 		debug.Println(ctx, msg)
 		return pluginRetry
+	}
+	return nil
+}
+
+// getScenarioDefaults returns the Defaults parsed from the scenario's YAML
+// file's `defaults` field, or nil if none were specified.
+func (s *Scenario) getScenarioDefaults() *Defaults {
+	scDefaultsAny, found := s.Defaults[DefaultsKey]
+	if found {
+		return scDefaultsAny.(*Defaults)
 	}
 	return nil
 }

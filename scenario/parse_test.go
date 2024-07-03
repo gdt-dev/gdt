@@ -236,6 +236,7 @@ func TestKnownSpec(t *testing.T) {
 	expTests := []api.Evaluable{
 		&foo.Spec{
 			Spec: api.Spec{
+				Plugin:   foo.PluginRef,
 				Index:    0,
 				Name:     "bar",
 				Defaults: expSpecDefaults,
@@ -244,6 +245,7 @@ func TestKnownSpec(t *testing.T) {
 		},
 		&foo.Spec{
 			Spec: api.Spec{
+				Plugin:      foo.PluginRef,
 				Index:       1,
 				Description: "Bazzy Bizzy",
 				Defaults:    expSpecDefaults,
@@ -272,6 +274,7 @@ func TestMultipleSpec(t *testing.T) {
 	expTests := []api.Evaluable{
 		&foo.Spec{
 			Spec: api.Spec{
+				Plugin:   foo.PluginRef,
 				Index:    0,
 				Defaults: &api.Defaults{},
 			},
@@ -279,6 +282,7 @@ func TestMultipleSpec(t *testing.T) {
 		},
 		&bar.Spec{
 			Spec: api.Spec{
+				Plugin:   bar.PluginRef,
 				Index:    1,
 				Defaults: &api.Defaults{},
 			},
@@ -340,6 +344,7 @@ func TestEnvExpansion(t *testing.T) {
 	expTests := []api.Evaluable{
 		&foo.Spec{
 			Spec: api.Spec{
+				Plugin:   foo.PluginRef,
 				Index:    0,
 				Name:     "$NOT_EXPANDED",
 				Defaults: expSpecDefaults,
@@ -348,6 +353,7 @@ func TestEnvExpansion(t *testing.T) {
 		},
 		&foo.Spec{
 			Spec: api.Spec{
+				Plugin:      foo.PluginRef,
 				Index:       1,
 				Description: "Bazzy Bizzy",
 				Defaults:    expSpecDefaults,
@@ -406,6 +412,7 @@ func TestScenarioDefaults(t *testing.T) {
 	expTests := []api.Evaluable{
 		&foo.Spec{
 			Spec: api.Spec{
+				Plugin:   foo.PluginRef,
 				Index:    0,
 				Defaults: expSpecDefaults,
 				Timeout: &api.Timeout{
@@ -416,6 +423,7 @@ func TestScenarioDefaults(t *testing.T) {
 		},
 		&foo.Spec{
 			Spec: api.Spec{
+				Plugin:   foo.PluginRef,
 				Index:    1,
 				Defaults: expSpecDefaults,
 			},
