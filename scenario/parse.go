@@ -82,8 +82,6 @@ func (s *Scenario) UnmarshalYAML(node *yaml.Node) error {
 			s.Defaults = defaults
 		}
 	}
-	// We store a lookup to the parsing plugin for each parsed test spec
-	evalPlugins := map[int]api.Plugin{}
 	for i := 0; i < len(node.Content); i += 2 {
 		keyNode := node.Content[i]
 		if keyNode.Kind != yaml.ScalarNode {
@@ -116,10 +114,10 @@ func (s *Scenario) UnmarshalYAML(node *yaml.Node) error {
 							}
 							return err
 						}
+						base.Plugin = plugin
 						sp.SetBase(base)
 						s.Tests = append(s.Tests, sp)
 						parsed = true
-						evalPlugins[idx] = plugin
 						break
 					}
 				}
@@ -161,6 +159,5 @@ func (s *Scenario) UnmarshalYAML(node *yaml.Node) error {
 			}
 		}
 	}
-	s.evalPlugins = evalPlugins
 	return nil
 }

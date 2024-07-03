@@ -12,16 +12,21 @@ import (
 )
 
 var (
+	// this is just for testing purposes...
+	PluginRef = &plugin{}
+)
+
+func init() {
+	gdtplugin.Register(PluginRef)
+}
+
+var (
 	DefaultTimeout = "10s"
 )
 
 // OverrideDefaultTimeout is only used in testing...
 func OverrideDefaultTimeout(d string) {
 	DefaultTimeout = d
-}
-
-func init() {
-	gdtplugin.Register(Plugin())
 }
 
 const (

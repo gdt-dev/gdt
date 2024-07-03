@@ -53,6 +53,7 @@ func TestSimpleCommand(t *testing.T) {
 	expTests := []api.Evaluable{
 		&gdtexec.Spec{
 			Spec: api.Spec{
+				Plugin:   gdtexec.PluginRef,
 				Index:    0,
 				Defaults: &api.Defaults{},
 			},
