@@ -7,6 +7,7 @@ package api
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"gopkg.in/yaml.v3"
 )
@@ -294,10 +295,46 @@ var (
 		"%w: required fixture missing",
 		RuntimeError,
 	)
+	// ErrTimeoutConflict is returned when the Go test tool's timeout conflicts
+	// with either a total wait time or a timeout in a scenario or test spec
+	ErrTimeoutConflict = fmt.Errorf(
+		"%w: timeout conflict",
+		RuntimeError,
+	)
 )
 
 // RequiredFixtureMissing returns an ErrRequiredFixture with the supplied
 // fixture name
 func RequiredFixtureMissing(name string) error {
 	return fmt.Errorf("%w: %s", ErrRequiredFixture, name)
+}
+
+// TimeoutConflict returns an ErrTimeoutConflict describing how the Go test
+// tool's timeout conflicts with either a total wait time or a timeout value
+// from a scenario or spec.
+func TimeoutConflict(
+	gotestDeadline time.Duration,
+	totalWait time.Duration,
+	maxTimeout time.Duration,
+) error {
+	msg := fmt.Sprintf(
+		"go test -timeout value of %s ",
+		(gotestDeadline + time.Second).Round(time.Second),
+	)
+	if totalWait > 0 {
+		msg += fmt.Sprintf(
+			"is shorter than the total wait time in the scenario: %s. "+
+				"either decrease the wait times or increase the "+
+				"go test -timeout value.",
+			totalWait.Round(time.Second),
+		)
+	} else {
+		msg += fmt.Sprintf(
+			"is shorter than the maximum timeout specified in the "+
+				"scenario: %s. either decrease the scenario or spec "+
+				"timeout or increase the go test -timeout value.",
+			maxTimeout.Round(time.Second),
+		)
+	}
+	return fmt.Errorf("%w: %s", ErrTimeoutConflict, msg)
 }

@@ -4,4 +4,3 @@ fixtures:
   - start-error
 tests:
   - foo: bar
-

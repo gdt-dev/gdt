@@ -27,6 +27,38 @@ import (
 // which will mark the test units failed or skipped if a test unit evaluates to
 // false.
 func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
+	ctx = gdtcontext.PushTrace(ctx, s.Title())
+	defer func() {
+		ctx = gdtcontext.PopTrace(ctx)
+	}()
+	now := time.Now()
+	d, ok := t.Deadline()
+	if ok && !d.IsZero() {
+		s.Timings.GoTestTimeout = d.Sub(now)
+		debug.Println(
+			ctx, "scenario/run: go test tool deadline: %s",
+			(s.Timings.GoTestTimeout + time.Second).Round(time.Second),
+		)
+		if s.Timings.TotalWait > 0 {
+			if s.Timings.TotalWait.Abs() > s.Timings.GoTestTimeout.Abs() {
+				return api.TimeoutConflict(
+					s.Timings.GoTestTimeout,
+					s.Timings.TotalWait,
+					s.Timings.MaxTimeout,
+				)
+			}
+		}
+		if s.Timings.MaxTimeout > 0 {
+			if s.Timings.MaxTimeout.Abs() > s.Timings.GoTestTimeout.Abs() {
+				return api.TimeoutConflict(
+					s.Timings.GoTestTimeout,
+					s.Timings.TotalWait,
+					s.Timings.MaxTimeout,
+				)
+			}
+		}
+	}
+
 	if len(s.Fixtures) > 0 {
 		fixtures := gdtcontext.Fixtures(ctx)
 		for _, fname := range s.Fixtures {
@@ -62,10 +94,6 @@ func (s *Scenario) Run(ctx context.Context, t *testing.T) error {
 	scDefaults := s.getScenarioDefaults()
 
 	t.Run(s.Title(), func(t *testing.T) {
-		ctx = gdtcontext.PushTrace(ctx, s.Title())
-		defer func() {
-			ctx = gdtcontext.PopTrace(ctx)
-		}()
 		for idx, spec := range s.Tests {
 			sb := spec.Base()
 
