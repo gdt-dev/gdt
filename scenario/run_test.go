@@ -74,6 +74,60 @@ func TestMissingFixtures(t *testing.T) {
 	assert.ErrorIs(err, api.RuntimeError)
 }
 
+func TestTimeoutConflictTotalWait(t *testing.T) {
+	require := require.New(t)
+	assert := assert.New(t)
+
+	fp := filepath.Join("testdata", "timeout-conflict-total-wait.yaml")
+	f, err := os.Open(fp)
+	require.Nil(err)
+
+	s, err := scenario.FromReader(f, scenario.WithPath(fp))
+	require.Nil(err)
+	require.NotNil(s)
+
+	err = s.Run(context.TODO(), t)
+	assert.NotNil(err)
+	assert.ErrorIs(err, api.ErrTimeoutConflict)
+	assert.ErrorIs(err, api.RuntimeError)
+}
+
+func TestTimeoutConflictSpecTimeout(t *testing.T) {
+	require := require.New(t)
+	assert := assert.New(t)
+
+	fp := filepath.Join("testdata", "timeout-conflict-spec-timeout.yaml")
+	f, err := os.Open(fp)
+	require.Nil(err)
+
+	s, err := scenario.FromReader(f, scenario.WithPath(fp))
+	require.Nil(err)
+	require.NotNil(s)
+
+	err = s.Run(context.TODO(), t)
+	assert.NotNil(err)
+	assert.ErrorIs(err, api.ErrTimeoutConflict)
+	assert.ErrorIs(err, api.RuntimeError)
+}
+
+func TestTimeoutConflictDefaultTimeout(t *testing.T) {
+	require := require.New(t)
+	assert := assert.New(t)
+
+	fp := filepath.Join("testdata", "timeout-conflict-default-timeout.yaml")
+	f, err := os.Open(fp)
+	require.Nil(err)
+
+	s, err := scenario.FromReader(f, scenario.WithPath(fp))
+	require.Nil(err)
+	require.NotNil(s)
+
+	err = s.Run(context.TODO(), t)
+	assert.NotNil(err)
+	assert.ErrorIs(err, api.ErrTimeoutConflict)
+	assert.ErrorIs(err, api.RuntimeError)
+}
+
 func TestFixtureStartError(t *testing.T) {
 	require := require.New(t)
 	assert := assert.New(t)

@@ -1,0 +1,6 @@
+name: timeout-conflict-default-timeout
+description: a scenario with a default timeout greater than the go test tool timeout
+defaults:
+  timeout: 1m
+tests:
+  - foo: baz

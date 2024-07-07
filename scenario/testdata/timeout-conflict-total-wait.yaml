@@ -1,0 +1,6 @@
+name: timeout-conflict-total-wait
+description: a scenario with total wait times greater than the go test tool timeout
+tests:
+  - wait:
+      before: 1m
+    foo: baz

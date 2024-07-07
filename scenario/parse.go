@@ -19,6 +19,7 @@ func (s *Scenario) UnmarshalYAML(node *yaml.Node) error {
 	if node.Kind != yaml.MappingNode {
 		return api.ExpectedMapAt(node)
 	}
+	s.Timings = &api.Timings{}
 	plugins := plugin.Registered()
 	defaults := api.Defaults{}
 	// maps/structs are stored in a top-level Node.Content field which is a
@@ -78,6 +79,13 @@ func (s *Scenario) UnmarshalYAML(node *yaml.Node) error {
 			if err := valNode.Decode(&scenDefaults); err != nil {
 				return err
 			}
+			if scenDefaults.Timeout != nil {
+				s.Timings.AddTimeout(
+					scenDefaults.Timeout.Duration(),
+					api.SetOnDefault,
+					-1,
+				)
+			}
 			defaults[DefaultsKey] = &scenDefaults
 			s.Defaults = defaults
 		}
@@ -107,7 +115,7 @@ func (s *Scenario) UnmarshalYAML(node *yaml.Node) error {
 					pluginSpecs[p] = p.Specs()
 				}
 				for plugin, specs := range pluginSpecs {
-					for _, sp := range specs {
+					for idx, sp := range specs {
 						if err := testNode.Decode(sp); err != nil {
 							if errors.Is(err, api.ErrUnknownField) {
 								continue
@@ -115,6 +123,25 @@ func (s *Scenario) UnmarshalYAML(node *yaml.Node) error {
 							return err
 						}
 						base.Plugin = plugin
+						if base.Wait != nil {
+							if base.Wait.Before != "" {
+								s.Timings.AddWait(
+									base.Wait.BeforeDuration(),
+								)
+							}
+							if base.Wait.After != "" {
+								s.Timings.AddWait(
+									base.Wait.AfterDuration(),
+								)
+							}
+						}
+						if base.Timeout != nil {
+							s.Timings.AddTimeout(
+								base.Timeout.Duration(),
+								api.SetOnSpec,
+								idx,
+							)
+						}
 						sp.SetBase(base)
 						s.Tests = append(s.Tests, sp)
 						parsed = true

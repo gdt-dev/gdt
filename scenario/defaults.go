@@ -45,12 +45,20 @@ func (d *Defaults) UnmarshalYAML(node *yaml.Node) error {
 		valNode := node.Content[i+1]
 		switch key {
 		case "timeout":
-			if valNode.Kind != yaml.MappingNode {
-				return api.ExpectedMapAt(valNode)
-			}
 			var to *api.Timeout
-			if err := valNode.Decode(&to); err != nil {
-				return api.ExpectedTimeoutAt(valNode)
+			switch valNode.Kind {
+			case yaml.MappingNode:
+				// We support the old-style timeout:after
+				if err := valNode.Decode(&to); err != nil {
+					return api.ExpectedTimeoutAt(valNode)
+				}
+			case yaml.ScalarNode:
+				// We also support a straight string duration
+				to = &api.Timeout{
+					After: valNode.Value,
+				}
+			default:
+				return api.ExpectedScalarOrMapAt(valNode)
 			}
 			_, err := time.ParseDuration(to.After)
 			if err != nil {
