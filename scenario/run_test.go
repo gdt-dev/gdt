@@ -193,7 +193,7 @@ func TestNoRetry(t *testing.T) {
 	w.Flush()
 	require.NotEqual(b.Len(), 0)
 	debugout := b.String()
-	require.Contains(debugout, "[gdt] [no-retry/0:bar] run: single-shot (no retries) ok: true")
+	require.Contains(debugout, "[gdt] [no-retry/0:bar] spec/run: single-shot (no retries) ok: true")
 }
 
 func TestNoRetryEvaluableOverride(t *testing.T) {
@@ -217,7 +217,7 @@ func TestNoRetryEvaluableOverride(t *testing.T) {
 	w.Flush()
 	require.NotEqual(b.Len(), 0)
 	debugout := b.String()
-	require.Contains(debugout, "[gdt] [no-retry-evaluable-override/0:bar] run: single-shot (no retries) ok: true")
+	require.Contains(debugout, "[gdt] [no-retry-evaluable-override/0:bar] spec/run: single-shot (no retries) ok: true")
 }
 
 func TestFailRetryTestOverride(t *testing.T) {
@@ -253,7 +253,7 @@ func TestRetryTestOverride(t *testing.T) {
 	require.NotNil(err)
 
 	debugout := string(outerr)
-	require.Contains(debugout, "[gdt] [retry-test-override/0:baz] run: exceeded max attempts 2. stopping.")
+	require.Contains(debugout, "[gdt] [retry-test-override/0:baz] spec/run: exceeded max attempts 2. stopping.")
 }
 
 func TestSkipIf(t *testing.T) {
