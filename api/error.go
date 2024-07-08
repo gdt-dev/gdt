@@ -313,10 +313,11 @@ func RequiredFixtureMissing(name string) error {
 // tool's timeout conflicts with either a total wait time or a timeout value
 // from a scenario or spec.
 func TimeoutConflict(
-	gotestDeadline time.Duration,
-	totalWait time.Duration,
-	maxTimeout time.Duration,
+	ti *Timings,
 ) error {
+	gotestDeadline := ti.GoTestTimeout
+	totalWait := ti.TotalWait
+	maxTimeout := ti.MaxTimeout
 	msg := fmt.Sprintf(
 		"go test -timeout value of %s ",
 		(gotestDeadline + time.Second).Round(time.Second),
