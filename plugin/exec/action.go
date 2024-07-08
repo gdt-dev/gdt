@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"context"
 	"os/exec"
+	"strings"
 
 	"github.com/gdt-dev/gdt/api"
 	gdtcontext "github.com/gdt-dev/gdt/context"
@@ -79,7 +80,10 @@ func (a *Action) Do(
 			debug.Println(ctx, "exec: error reading from stdout: %s", err)
 		}
 		if outbuf.Len() > 0 {
-			debug.Println(ctx, "exec: stdout: %s", outbuf.String())
+			debug.Println(
+				ctx, "exec: stdout: %s",
+				strings.TrimSpace(outbuf.String()),
+			)
 		}
 	}
 	if errbuf != nil {
@@ -87,7 +91,10 @@ func (a *Action) Do(
 			debug.Println(ctx, "exec: error reading from stderr: %s", err)
 		}
 		if errbuf.Len() > 0 {
-			debug.Println(ctx, "exec: stderr: %s", errbuf.String())
+			debug.Println(
+				ctx, "exec: stderr: %s",
+				strings.TrimSpace(errbuf.String()),
+			)
 		}
 	}
 
