@@ -166,9 +166,13 @@ func newAssertions(
 	outPipe *bytes.Buffer,
 	errPipe *bytes.Buffer,
 ) api.Assertions {
+	expExitCode := 0
+	if e != nil {
+		expExitCode = e.ExitCode
+	}
 	a := &assertions{
 		failures:    []error{},
-		expExitCode: exitCode,
+		expExitCode: expExitCode,
 		exitCode:    exitCode,
 	}
 	if e != nil {
