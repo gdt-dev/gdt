@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"context"
 	"flag"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -69,6 +70,52 @@ func TestExitCode(t *testing.T) {
 	ctx := context.TODO()
 	err = s.Run(ctx, t)
 	require.Nil(err)
+}
+
+func TestFailExecExitCodeNotSpecified(t *testing.T) {
+	if !*failFlag {
+		t.Skip("skipping without -fail flag")
+	}
+	require := require.New(t)
+
+	fp := filepath.Join("testdata", "ls-fail-no-exit-code.yaml")
+	f, err := os.Open(fp)
+	require.Nil(err)
+
+	s, err := scenario.FromReader(
+		f,
+		scenario.WithPath(fp),
+	)
+	require.Nil(err)
+	require.NotNil(s)
+
+	ctx := gdtcontext.New(gdtcontext.WithDebug())
+	err = s.Run(ctx, t)
+	require.Nil(err)
+}
+
+func TestExecFailExitCodeNotSpecified(t *testing.T) {
+	require := require.New(t)
+	target := os.Args[0]
+	failArgs := []string{
+		"-test.v",
+		"-test.run=FailExecExitCodeNotSpecified",
+		"-fail",
+	}
+	outerr, err := exec.Command(target, failArgs...).CombinedOutput()
+
+	// The test should have failed...
+	require.NotNil(err)
+	debugout := string(outerr)
+	ec := 2
+	// Yay, different exit codes for the same not found error...
+	if runtime.GOOS == "darwin" {
+		ec = 1
+	}
+	msg := fmt.Sprintf(
+		"assertion failed: not equal: expected 0 but got %d", ec,
+	)
+	require.Contains(debugout, msg)
 }
 
 func TestShellList(t *testing.T) {
