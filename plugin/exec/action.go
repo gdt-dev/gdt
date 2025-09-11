@@ -45,7 +45,6 @@ type Action struct {
 // respectively.
 func (a *Action) Do(
 	ctx context.Context,
-	vars Variables,
 	outbuf *bytes.Buffer,
 	errbuf *bytes.Buffer,
 	exitcode *int,
@@ -63,9 +62,9 @@ func (a *Action) Do(
 		args = []string{"-c", a.Exec}
 	}
 
-	target = vars.Replace(ctx, target)
+	target = gdtcontext.ReplaceVariables(ctx, target)
 	args = lo.Map(args, func(arg string, _ int) string {
-		return vars.Replace(ctx, arg)
+		return gdtcontext.ReplaceVariables(ctx, arg)
 	})
 
 	debug.Println(ctx, "exec: %s %s", target, args)

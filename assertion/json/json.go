@@ -336,7 +336,7 @@ func (a *assertions) schemaOK() bool {
 		errStr = "- " + strings.Join(errStrs, "\n- ")
 	}
 	if !res.Valid() {
-		a.Fail(JSONSchemaInvalid(schemaPath, fmt.Errorf(errStr)))
+		a.Fail(JSONSchemaInvalid(schemaPath, fmt.Errorf("%s", errStr)))
 	}
 	return res.Valid()
 }
