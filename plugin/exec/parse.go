@@ -36,6 +36,7 @@ func (s *Spec) UnmarshalYAML(node *yaml.Node) error {
 	if node.Kind != yaml.MappingNode {
 		return api.ExpectedMapAt(node)
 	}
+	vars := Variables{}
 	var execValNode *yaml.Node
 	// maps/structs are stored in a top-level Node.Content field which is a
 	// concatenated slice of Node pointers in pairs of key/values.
@@ -47,6 +48,39 @@ func (s *Spec) UnmarshalYAML(node *yaml.Node) error {
 		key := keyNode.Value
 		valNode := node.Content[i+1]
 		switch key {
+		case "var-stdout", "var.stdout", "var_stdout":
+			if valNode.Kind != yaml.ScalarNode {
+				return api.ExpectedScalarAt(valNode)
+			}
+			varName := strings.TrimSpace(valNode.Value)
+			vars[varName] = VarEntry{
+				From: varFromStdout,
+			}
+		case "var-stderr", "var.stderr", "var_stderr":
+			if valNode.Kind != yaml.ScalarNode {
+				return api.ExpectedScalarAt(valNode)
+			}
+			varName := strings.TrimSpace(valNode.Value)
+			vars[varName] = VarEntry{
+				From: varFromStderr,
+			}
+		case "var-rc", "var.rc", "var_rc", "var-returncode", "var.returncode", "var_returncode":
+			if valNode.Kind != yaml.ScalarNode {
+				return api.ExpectedScalarAt(valNode)
+			}
+			varName := strings.TrimSpace(valNode.Value)
+			vars[varName] = VarEntry{
+				From: varFromRC,
+			}
+		case "var":
+			if valNode.Kind != yaml.MappingNode {
+				return api.ExpectedMapAt(valNode)
+			}
+			var specVars Variables
+			if err := valNode.Decode(&specVars); err != nil {
+				return err
+			}
+			vars = lo.Assign(specVars, vars)
 		case "shell":
 			if valNode.Kind != yaml.ScalarNode {
 				return api.ExpectedScalarAt(valNode)
@@ -88,6 +122,9 @@ func (s *Spec) UnmarshalYAML(node *yaml.Node) error {
 			}
 			return api.UnknownFieldAt(key, keyNode)
 		}
+	}
+	if len(vars) > 0 {
+		s.Var = vars
 	}
 	if s.Exec == "" {
 		return ExecEmpty(node)

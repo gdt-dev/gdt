@@ -1,0 +1,21 @@
+name: var-save-restore
+description: a scenario that tests variable save/restore across multiple test specs
+tests:
+  - exec: echo 42
+    var-stdout: VAR_STDOUT
+
+  - exec: echo $$VAR_STDOUT
+    var-rc: VAR_RC
+    assert:
+      out:
+        is: 42
+
+  - exec: echo $$VAR_RC
+    assert:
+      out:
+        is: 0
+
+  - exec: echo 42
+    assert:
+      out:
+        is: $$VAR_STDOUT

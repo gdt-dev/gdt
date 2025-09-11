@@ -7,6 +7,8 @@ package exec
 import (
 	"bytes"
 	"context"
+	"os"
+	"strings"
 
 	"github.com/gdt-dev/gdt/api"
 	"github.com/gdt-dev/gdt/debug"
@@ -25,24 +27,37 @@ func (s *Spec) Eval(
 
 	var ec int
 
-	if err := s.Do(ctx, outbuf, errbuf, &ec); err != nil {
+	if err := s.Do(ctx, s.Var, outbuf, errbuf, &ec); err != nil {
 		if err == api.ErrTimeoutExceeded {
 			return api.NewResult(api.WithFailures(api.ErrTimeoutExceeded)), nil
 		}
 		return nil, ExecRuntimeError(err)
 	}
-	a := newAssertions(s.Assert, ec, outbuf, errbuf)
+	a := newAssertions(s.Assert, s.Var, ec, outbuf, errbuf)
 	if !a.OK(ctx) {
 		if s.On != nil {
 			if s.On.Fail != nil {
 				outbuf.Reset()
 				errbuf.Reset()
-				err := s.On.Fail.Do(ctx, outbuf, errbuf, nil)
+				err := s.On.Fail.Do(ctx, s.Var, outbuf, errbuf, nil)
 				if err != nil {
 					debug.Println(ctx, "error in on.fail.exec: %s", err)
 				}
 			}
 		}
 	}
-	return api.NewResult(api.WithFailures(a.Failures()...)), nil
+	res := api.NewResult(api.WithFailures(a.Failures()...))
+	for varName, entry := range s.Var {
+		switch entry.From {
+		case varFromStdout:
+			res.SetData(varName, strings.TrimSpace(outbuf.String()))
+		case varFromStderr:
+			res.SetData(varName, strings.TrimSpace(errbuf.String()))
+		case varFromRC:
+			res.SetData(varName, ec)
+		default:
+			res.SetData(varName, os.Getenv(entry.From))
+		}
+	}
+	return res, nil
 }

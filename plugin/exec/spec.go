@@ -17,6 +17,10 @@ type Spec struct {
 	Assert *Expect `yaml:"assert,omitempty"`
 	// On is an object containing actions to take upon certain conditions.
 	On *On `yaml:"on,omitempty"`
+	// Var allows the test author to save arbitrary data to the test scenario,
+	// facilitating the passing of variables between test specs potentially
+	// provided by different gdt Plugins.
+	Var Variables `yaml:"var,omitempty"`
 }
 
 func (s *Spec) SetBase(b api.Spec) {

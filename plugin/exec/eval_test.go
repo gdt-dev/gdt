@@ -395,3 +395,24 @@ func TestTimeoutWithWait(t *testing.T) {
 	err = s.Run(ctx, t)
 	require.Nil(err)
 }
+
+func TestVar(t *testing.T) {
+	require := require.New(t)
+
+	fp := filepath.Join("testdata", "var-save-restore.yaml")
+	f, err := os.Open(fp)
+	require.Nil(err)
+
+	s, err := scenario.FromReader(
+		f,
+		scenario.WithPath(fp),
+	)
+	require.Nil(err)
+	require.NotNil(s)
+
+	t.Setenv("MY_ENVVAR", "meaning of life")
+
+	ctx := context.TODO()
+	err = s.Run(ctx, t)
+	require.Nil(err)
+}
