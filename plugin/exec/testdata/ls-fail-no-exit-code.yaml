@@ -1,0 +1,4 @@
+name: ls-fail-no-exit-code
+description: a scenario that runs the `ls` command with a non-0 exit code and no assertion on exit code
+tests:
+  - exec: ls /this/dir/does/not/exist

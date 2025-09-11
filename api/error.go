@@ -313,28 +313,33 @@ func RequiredFixtureMissing(name string) error {
 // tool's timeout conflicts with either a total wait time or a timeout value
 // from a scenario or spec.
 func TimeoutConflict(
-	gotestDeadline time.Duration,
-	totalWait time.Duration,
-	maxTimeout time.Duration,
+	ti *Timings,
 ) error {
+	goTestTimeout := ti.GoTestTimeout
+	totalWait := ti.TotalWait
+	maxTimeout := ti.MaxTimeout
 	msg := fmt.Sprintf(
 		"go test -timeout value of %s ",
-		(gotestDeadline + time.Second).Round(time.Second),
+		(goTestTimeout + time.Second).Round(time.Second),
 	)
 	if totalWait > 0 {
-		msg += fmt.Sprintf(
-			"is shorter than the total wait time in the scenario: %s. "+
-				"either decrease the wait times or increase the "+
-				"go test -timeout value.",
-			totalWait.Round(time.Second),
-		)
+		if totalWait.Abs() > goTestTimeout.Abs() {
+			msg += fmt.Sprintf(
+				"is shorter than the total wait time in the scenario: %s. "+
+					"either decrease the wait times or increase the "+
+					"go test -timeout value.",
+				totalWait.Round(time.Second),
+			)
+		}
 	} else {
-		msg += fmt.Sprintf(
-			"is shorter than the maximum timeout specified in the "+
-				"scenario: %s. either decrease the scenario or spec "+
-				"timeout or increase the go test -timeout value.",
-			maxTimeout.Round(time.Second),
-		)
+		if maxTimeout.Abs() > goTestTimeout.Abs() {
+			msg += fmt.Sprintf(
+				"is shorter than the maximum timeout specified in the "+
+					"scenario: %s. either decrease the scenario or spec "+
+					"timeout or increase the go test -timeout value.",
+				maxTimeout.Round(time.Second),
+			)
+		}
 	}
 	return fmt.Errorf("%w: %s", ErrTimeoutConflict, msg)
 }
