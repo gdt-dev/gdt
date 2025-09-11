@@ -14,6 +14,7 @@ import (
 	gdtcontext "github.com/gdt-dev/gdt/context"
 	"github.com/gdt-dev/gdt/debug"
 	"github.com/google/shlex"
+	"github.com/samber/lo"
 )
 
 // Action describes a single execution of one or more commands via the
@@ -30,6 +31,12 @@ type Action struct {
 	// (the default), no shell is used to execute the command and instead the
 	// operating system's `exec` family of calls is used.
 	Shell string `yaml:"shell,omitempty"`
+	// VarStdout is a shortcut for Var:{VARIABLE_NAME}:from:stdout
+	VarStdout string `yaml:"var-stdout,omitempty"`
+	// VarStderr is a shortcut for Var:{VARIABLE_NAME}:from:stderr
+	VarStderr string `yaml:"var-stderr,omitempty"`
+	// VarRC is a shortcut for Var:{VARIABLE_NAME}:from:returncode
+	VarRC string `yaml:"var-rc,omitempty"`
 }
 
 // Do performs a single command or shell execution returning the corresponding
@@ -38,6 +45,7 @@ type Action struct {
 // respectively.
 func (a *Action) Do(
 	ctx context.Context,
+	vars Variables,
 	outbuf *bytes.Buffer,
 	errbuf *bytes.Buffer,
 	exitcode *int,
@@ -54,6 +62,11 @@ func (a *Action) Do(
 		target = a.Shell
 		args = []string{"-c", a.Exec}
 	}
+
+	target = vars.Replace(ctx, target)
+	args = lo.Map(args, func(arg string, _ int) string {
+		return vars.Replace(ctx, arg)
+	})
 
 	debug.Println(ctx, "exec: %s %s", target, args)
 

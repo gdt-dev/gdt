@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/gdt-dev/gdt/api"
+	"github.com/samber/lo"
 )
 
 // Expect contains the assertions about an Exec Spec's actions
@@ -40,6 +41,7 @@ type PipeExpect struct {
 // pipeAssertions contains assertions about the contents of a pipe
 type pipeAssertions struct {
 	PipeExpect
+	vars Variables
 	// pipe is the contents of the pipe that we will evaluate.
 	pipe *bytes.Buffer
 	// name is the string name of the pipe.
@@ -74,6 +76,9 @@ func (a *pipeAssertions) OK(ctx context.Context) bool {
 		// When there is just a single value, we use the NotEqual error,
 		// otherwise we use the NotIn error
 		vals := a.ContainsAll.Values()
+		vals = lo.Map(vals, func(val string, _ int) string {
+			return a.vars.Replace(ctx, val)
+		})
 		if len(vals) == 1 {
 			if !strings.Contains(contents, vals[0]) {
 				a.Fail(api.NotEqual(vals[0], contents))
@@ -90,19 +95,27 @@ func (a *pipeAssertions) OK(ctx context.Context) bool {
 	}
 	if a.ContainsAny != nil {
 		found := false
-		for _, find := range a.ContainsAny.Values() {
+		vals := a.ContainsAny.Values()
+		vals = lo.Map(vals, func(val string, _ int) string {
+			return a.vars.Replace(ctx, val)
+		})
+		for _, find := range vals {
 			if idx := strings.Index(contents, find); idx > -1 {
 				found = true
 				break
 			}
 		}
 		if !found {
-			a.Fail(api.NoneIn(a.ContainsAny.Values(), a.name))
+			a.Fail(api.NoneIn(vals, a.name))
 			res = false
 		}
 	}
 	if a.ContainsNone != nil {
-		for _, find := range a.ContainsNone.Values() {
+		vals := a.ContainsNone.Values()
+		vals = lo.Map(vals, func(val string, _ int) string {
+			return a.vars.Replace(ctx, val)
+		})
+		for _, find := range vals {
 			if strings.Contains(contents, find) {
 				a.Fail(api.In(find, a.name))
 				res = false
@@ -114,6 +127,7 @@ func (a *pipeAssertions) OK(ctx context.Context) bool {
 
 // assertions contains all assertions made for the exec test
 type assertions struct {
+	vars Variables
 	// failures contains the set of error messages for failed assertions
 	failures []error
 	// expExitCode contains the expected exit code
@@ -162,6 +176,7 @@ func (a *assertions) OK(ctx context.Context) bool {
 // spec assertions
 func newAssertions(
 	e *Expect,
+	vars Variables,
 	exitCode int,
 	outPipe *bytes.Buffer,
 	errPipe *bytes.Buffer,
@@ -171,6 +186,7 @@ func newAssertions(
 		expExitCode = e.ExitCode
 	}
 	a := &assertions{
+		vars:        vars,
 		failures:    []error{},
 		expExitCode: expExitCode,
 		exitCode:    exitCode,
@@ -179,6 +195,7 @@ func newAssertions(
 		if e.Out != nil {
 			a.expOutPipe = &pipeAssertions{
 				PipeExpect: *e.Out,
+				vars:       vars,
 				name:       "stdout",
 				pipe:       outPipe,
 			}
@@ -186,6 +203,7 @@ func newAssertions(
 		if e.Err != nil {
 			a.expErrPipe = &pipeAssertions{
 				PipeExpect: *e.Err,
+				vars:       vars,
 				name:       "stderr",
 				pipe:       errPipe,
 			}

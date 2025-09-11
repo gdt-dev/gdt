@@ -511,6 +511,27 @@ test spec also contains these fields:
 * `shell`: (optional) a string with the specific shell to use in executing the
   command. If empty (the default), no shell is used to execute the command and
   instead the operating system's `exec` family of calls is used.
+* `var-stdout`: (optional) a string with the name of a variable to save the
+  contents of the test spec's `stdout` stream. This named variable can then be
+  referred from subsequent test specs. Note: this is a shortcut for the
+  longer-form `var:{VAR_NAME}:from:stdout`
+* `var-stderr`: (optional) a string with the name of a variable to save the
+  contents of the test spec's `stderr` stream. This named variable can then be
+  referred from subsequent test specs. Note: this is a shortcut for the
+  longer-form `var:{VAR_NAME}:from:stderr`
+* `var-rc`: (optional) a string with the name of a variable to save the
+  contents of the test spec's return/exitcode value. This named variable can
+  then be referred from subsequent test specs. Note: this is a shortcut for the
+  longer-form `var:{VAR_NAME}:from:returncode`
+* `var`: (optional) an object describing variables that can have values saved
+  and referred to by subsequent test specs. Each key in the `var` object is the
+  name of the variable to define. The `var.from` field contains a string
+  describing where the value for the variable should be sourced.
+* `var.$VARIABLE_NAME.from`: (required) a string describing where the variable
+  with name `$VARIABLE_NAME` should source its value. The strings `stdout`,
+  `stderr` and `returncode` refer to the corresponding stdout, stderr
+  and return/exitcode values. All other string values for `var.from` indicate
+  the name of the environment variable to read into the named variable.
 * `assert`: (optional) an object describing the conditions that will be
   asserted about the test action.
 * `assert.exit-code`: (optional) an integer with the expected exit code from the
@@ -539,6 +560,87 @@ test spec also contains these fields:
 
 [execspec]: https://github.com/gdt-dev/gdt/blob/2791e11105fd3c36d1f11a7d111e089be7cdc84c/exec/spec.go#L11-L34
 [pipeexpect]: https://github.com/gdt-dev/gdt/blob/2791e11105fd3c36d1f11a7d111e089be7cdc84c/exec/assertions.go#L15-L26
+
+### Passing variables to subsequent test specs
+
+A `gdt` test scenario is comprised of a list of test specs. These test specs
+are executed in sequential order. If you want to have one test spec be able to
+use some output or value calculated or asserted in a previous step, you can use
+the `gdt` variable system.
+
+Here's an test scenario that shows how to define variables in a test spec and
+how to use those variables in later test specs.
+
+file: `plugin/exec/testdata/var-save-restore.yaml`:
+
+```yaml
+name: var-save-restore
+description: a scenario that tests variable save/restore across multiple test specs
+tests:
+  - exec: echo 42
+    var-stdout: VAR_STDOUT
+
+  - exec: echo $$VAR_STDOUT
+    var-rc: VAR_RC
+    assert:
+      out:
+        is: 42
+
+  - exec: echo $$VAR_RC
+    assert:
+      out:
+        is: 0
+
+  - exec: echo 42
+    assert:
+      out:
+        is: $$VAR_STDOUT
+```
+
+In the first test spec, we specify that we want to store the value of the
+`stdout` stream in a variable called `VAR_STDOUT`:
+
+```yaml
+  - exec: echo 42
+    var-stdout: VAR_STDOUT
+```
+
+In the second test spec, we refer to the `VAR_STDOUT` variable using the
+double-dollar-sign notation in the `exec` field and also specify a `VAR_RC`
+variable to contain the value of the return/exitcode from the executed
+statement (`echo 42`):
+
+```yaml
+  - exec: echo $$VAR_STDOUT
+    var-rc: VAR_RC
+    assert:
+      out:
+        is: 42
+```
+
+> **NOTE**: We use the double-dollar-sign notation because by default, `gdt`
+> replaces all single-dollar-sign notations with environment variables *BEFORE*
+> executing the test specs in a test scenario. Using the double-dollar-sign
+> notation means that environment variable substitution does not impact the
+> referencing of `gdt` variables referenced in a test spec.
+
+In the third test spec, we simply echo out the value of that `VAR_RC` variable
+and assert that the stdout stream contains the string "0" (since `echo 42`
+returns 0.):
+
+```yaml
+  - exec: echo $$VAR_RC
+    assert:
+      out:
+        is: 0
+```
+
+Finally, in the fourth step, we demonstrate that we can refer to the
+`VAR_STDOUT` variable defined in the very first test spec from the
+`assert.out.is` field. This shows the flexibility of the `gdt` variable system.
+You can define variables using a simple declarative syntax and then refer to
+the value of those variables using the double-dollar-sign notation in any
+subsequent test spec.
 
 ### Timeouts and retrying assertions
 
