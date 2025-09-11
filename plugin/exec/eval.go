@@ -27,19 +27,19 @@ func (s *Spec) Eval(
 
 	var ec int
 
-	if err := s.Do(ctx, s.Var, outbuf, errbuf, &ec); err != nil {
+	if err := s.Do(ctx, outbuf, errbuf, &ec); err != nil {
 		if err == api.ErrTimeoutExceeded {
 			return api.NewResult(api.WithFailures(api.ErrTimeoutExceeded)), nil
 		}
 		return nil, ExecRuntimeError(err)
 	}
-	a := newAssertions(s.Assert, s.Var, ec, outbuf, errbuf)
+	a := newAssertions(s.Assert, ec, outbuf, errbuf)
 	if !a.OK(ctx) {
 		if s.On != nil {
 			if s.On.Fail != nil {
 				outbuf.Reset()
 				errbuf.Reset()
-				err := s.On.Fail.Do(ctx, s.Var, outbuf, errbuf, nil)
+				err := s.On.Fail.Do(ctx, outbuf, errbuf, nil)
 				if err != nil {
 					debug.Println(ctx, "error in on.fail.exec: %s", err)
 				}
