@@ -1,6 +1,0 @@
-name: fixture-start-error
-description: a scenario with a fixture that errors in start
-fixtures:
-  - start-error
-tests:
-  - foo: bar

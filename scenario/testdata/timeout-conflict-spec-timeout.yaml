@@ -1,5 +1,0 @@
-name: timeout-conflict-spec-timeout
-description: a scenario with a spec timeout greater than the go test tool timeout
-tests:
-  - timeout: 1m
-    foo: baz

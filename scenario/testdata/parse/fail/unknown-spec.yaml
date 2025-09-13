@@ -1,7 +1,0 @@
-name: unknown-spec
-description: a scenario with a test that no plugin can parse
-tests:
-  - gibber:
-      ish:
-        jabber:
-          wocky: this

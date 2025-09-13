@@ -1,8 +1,0 @@
-name: prior-run
-description: a scenario demonstrating a plugin's use of prior run data
-tests:
-  - state: foo
-  - state: bar
-    prior: foo
-  - state: baz
-    prior: bar
