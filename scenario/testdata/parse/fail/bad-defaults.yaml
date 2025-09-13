@@ -1,5 +1,0 @@
-name: bad-defaults
-description: a scenario with some bad defaults
-defaults:
-  fail:
-    fail: true

@@ -86,7 +86,7 @@ tests:
 When using Ginkgo, developers create tests for a particular module (say, the
 `books` module) by creating a `books_test.go` file and calling some Ginkgo
 functions in a BDD test style. A sample Ginkgo test might look something like
-this ([`types_test.go`](examples/books/api/types_test.go.txt)):
+this:
 
 ```go
 package api_test
@@ -141,9 +141,7 @@ var _ = Describe("Books API Types", func() {
 This is perfectly fine for simple unit tests of Go code. However, once the
 tests begin to call multiple APIs or packages, the Ginkgo Go tests start to get
 cumbersome. Consider the following example of *functionally* testing the
-failure modes for a simple HTTP REST API endpoint
-([`failure_test.go`](https://github.com/gdt-dev/gdt-examples/blob/main/http/api/failure_test.go)):
-
+failure modes for a simple HTTP REST API endpoint:
 
 ```go
 package api_test
@@ -257,8 +255,7 @@ var _ = Describe("Books API - GET /books failures", func() {
 
 The above test code obscures what is being tested by cluttering the test
 assertions with the Go closures and accessor code. Compare the above with
-how `gdt` allows the test author to describe the same assertions
-([`failures.yaml`](https://github.com/gdt-dev/gdt-examples/blob/main/http/tests/api/failures.yaml)):
+how `gdt` allows the test author to describe the same assertions:
 
 ```yaml
 fixtures:
@@ -300,8 +297,7 @@ Consider a Ginkgo test case that checks the following behaviour:
 * The newly-created book's ID field is a valid UUID
 * The newly-created book's publisher has an address containing a known state code
 
-A typical implementation of a Ginkgo test might look like this
-([`create_then_get_test.go`](https://github.com/gdt-dev/gdt-examples/blob/main/http/api/create_then_get_test.go)):
+A typical implementation of a Ginkgo test might look like this:
 
 ```go
 package api_test
@@ -381,8 +377,7 @@ var _ = Describe("Books API - POST /books -> GET /books from Location", func() {
 ```
 
 Compare the above test code to the following YAML document that a `gdt` user
-might create to describe the same assertions 
-([`create_then_get.yaml`](https://github.com/gdt-dev/gdt-examples/blob/main/http/tests/api/create_then_get.yaml)):
+might create to describe the same assertions:
 
 ```yaml
 fixtures:
@@ -432,7 +427,7 @@ All `gdt` scenarios have the following fields:
 * `tests`: list of [`Spec`][basespec] specializations that represent the
   runnable test units in the test scenario.
 
-[basespec]: https://github.com/gdt-dev/gdt/blob/ecee17249e1fa10147cf9191be0358923da44094/types/spec.go#L30
+[basespec]: https://github.com/gdt-dev/core/blob/023f92ee3468852d1d477df91cf42789e472b3b5/api/spec.go#L27-L48
 
 The scenario's `tests` field is the most important and the [`Spec`][basespec]
 objects that it contains are the meat of a test scenario.
@@ -490,10 +485,10 @@ All test specs have the following fields:
   is used to execute the command and instead the operating system's `exec` family
   of calls is used.
 
-[exec-plugin]: https://github.com/gdt-dev/gdt/tree/ecee17249e1fa10147cf9191be0358923da44094/plugin/exec
+[exec-plugin]: https://github.com/gdt-dev/core/tree/023f92ee3468852d1d477df91cf42789e472b3b5/plugin/exec
 [http-plugin]: https://github.com/gdt-dev/http
 [kube-plugin]: https://github.com/gdt-dev/kube
-[wait]: https://github.com/gdt-dev/gdt/blob/2791e11105fd3c36d1f11a7d111e089be7cdc84c/types/wait.go#L11-L25
+[wait]: https://github.com/gdt-dev/core/blob/023f92ee3468852d1d477df91cf42789e472b3b5/api/wait.go#L11-L25
 
 #### `exec` test spec structure
 
@@ -558,8 +553,8 @@ test spec also contains these fields:
 * `assert.err.none`: (optional) a string or list of strings of which *none
   should be present* in `stderr`.
 
-[execspec]: https://github.com/gdt-dev/gdt/blob/2791e11105fd3c36d1f11a7d111e089be7cdc84c/exec/spec.go#L11-L34
-[pipeexpect]: https://github.com/gdt-dev/gdt/blob/2791e11105fd3c36d1f11a7d111e089be7cdc84c/exec/assertions.go#L15-L26
+[execspec]: https://github.com/gdt-dev/core/blob/023f92ee3468852d1d477df91cf42789e472b3b5/plugin/exec/spec.go#L11-L24
+[pipeexpect]: https://github.com/gdt-dev/core/blob/023f92ee3468852d1d477df91cf42789e472b3b5/plugin/exec/assertions.go#L30-L41
 
 ### Passing variables to subsequent test specs
 

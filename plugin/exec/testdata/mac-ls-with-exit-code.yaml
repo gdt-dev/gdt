@@ -1,6 +1,0 @@
-name: mac-ls-with-exit-code
-description: a scenario that runs the `ls` command expecting a non-0 exit code on Mac
-tests:
-  - exec: ls /this/dir/does/not/exist
-    assert:
-      exit-code: 1

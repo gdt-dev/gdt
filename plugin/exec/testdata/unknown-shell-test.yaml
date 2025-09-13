@@ -1,4 +1,0 @@
-name: unknown-shell-test
-description: a scenario that runs an unknown shell
-tests:
-  - shell: asioudgaksljhbalsdkj

@@ -1,5 +1,0 @@
-name: bad-timeout-duration-scenario
-description: a scenario with an invalid duration string in a scenario default timeout
-defaults:
-  timeout:
-    after: notaduration

@@ -1,5 +1,0 @@
-name: bad-retry
-description: a scenario with an invalid retry spec
-tests:
-  - foo: baz
-    retry: notaretry

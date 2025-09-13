@@ -8,13 +8,13 @@ import (
 	"io"
 	"os"
 
-	"github.com/gdt-dev/gdt/api"
-	gdtcontext "github.com/gdt-dev/gdt/context"
-	jsonfix "github.com/gdt-dev/gdt/fixture/json"
-	"github.com/gdt-dev/gdt/plugin"
-	_ "github.com/gdt-dev/gdt/plugin/exec"
-	"github.com/gdt-dev/gdt/scenario"
-	"github.com/gdt-dev/gdt/suite"
+	"github.com/gdt-dev/core/api"
+	gdtcontext "github.com/gdt-dev/core/context"
+	jsonfix "github.com/gdt-dev/core/fixture/json"
+	"github.com/gdt-dev/core/plugin"
+	_ "github.com/gdt-dev/core/plugin/exec"
+	"github.com/gdt-dev/core/scenario"
+	"github.com/gdt-dev/core/suite"
 )
 
 var (
@@ -92,7 +92,7 @@ var (
 // From returns a new `api.Runnable` from an `io.Reader`, a string file or
 // directory path, or the raw bytes of YAML content describing a scenario or
 // suite.
-func From(source interface{}) (api.Runnable, error) {
+func From(source any) (api.Runnable, error) {
 	switch src := source.(type) {
 	case io.Reader:
 		s, err := scenario.FromReader(src)

@@ -1,8 +1,0 @@
-name: timeout-scalar-or-map
-description: a scenario with both scalar and object timeout spec
-tests:
-  - foo: baz
-    timeout: 1s
-  - foo: bar
-    timeout:
-      after: 1s

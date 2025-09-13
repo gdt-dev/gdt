@@ -1,5 +1,0 @@
-name: timeout-plugin-default
-description: a scenario that tests the plugin default timeout
-tests:
-  - name: uses plugin default timeout
-    exec: sleep 1
