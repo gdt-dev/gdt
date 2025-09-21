@@ -16,9 +16,9 @@ var (
 )
 
 func init() {
-	CommonOptionsFlagSet.BoolVar(
+	CommonOptionsFlagSet.BoolVarP(
 		&CommonOptions.Debug,
-		"debug", false,
+		"debug", "d", false,
 		"Enable or disable debug mode",
 	)
 	CommonOptionsFlagSet.BoolVarP(

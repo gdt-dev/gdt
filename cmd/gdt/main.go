@@ -5,8 +5,10 @@ import (
 
 	"github.com/spf13/cobra"
 
+	_ "github.com/gdt-dev/core/plugin/exec"
 	"github.com/gdt-dev/gdt/cmd/gdt/cmd"
 	"github.com/gdt-dev/gdt/cmd/gdt/pkg/cli"
+	_ "github.com/gdt-dev/kube"
 )
 
 var rootCmd = &cobra.Command{
@@ -28,6 +30,7 @@ func init() {
 	rootCmd.PersistentFlags().AddFlagSet(cli.CommonOptionsFlagSet)
 
 	rootCmd.AddCommand(cmd.LintCmd)
+	rootCmd.AddCommand(cmd.RunCmd)
 	rootCmd.SilenceUsage = true
 }
 

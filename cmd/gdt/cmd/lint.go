@@ -8,7 +8,7 @@ import (
 
 	"github.com/gdt-dev/core/parse"
 	"github.com/gdt-dev/core/scenario"
-	_ "github.com/gdt-dev/gdt"
+	_ "github.com/gdt-dev/kube"
 	"github.com/samber/lo"
 	"github.com/spf13/cobra"
 
@@ -66,20 +66,27 @@ func doLint(cmd *cobra.Command, args []string) error {
 			return err
 		}
 		if fi.IsDir() {
-			cli.Vf("checking directory %q ...", path)
+			cli.Df("checking directory %q ...", path)
 			dirResults, err := lintDir(path)
 			if err != nil {
 				return err
 			}
 			results = append(results, dirResults...)
 		} else {
-			cli.Vf("checking file %q ...", path)
+			cli.Df("checking file %q ...", path)
 			res := lintResult{path: path}
 			f, err := os.Open(path)
 			if err != nil {
 				return err
 			}
 			defer f.Close()
+
+			// Need to chdir here so that test scenario may reference files in
+			// relative directories
+			if err := os.Chdir(filepath.Dir(path)); err != nil {
+				return err
+			}
+
 			sc, err := scenario.FromReader(f, scenario.WithPath(path))
 			if err != nil {
 				if ep, ok := err.(*parse.Error); ok {
