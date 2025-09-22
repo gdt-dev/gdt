@@ -8,6 +8,7 @@ import (
 	_ "github.com/gdt-dev/core/plugin/exec"
 	"github.com/gdt-dev/gdt/cmd/gdt/cmd"
 	"github.com/gdt-dev/gdt/cmd/gdt/pkg/cli"
+	_ "github.com/gdt-dev/http"
 	_ "github.com/gdt-dev/kube"
 )
 
