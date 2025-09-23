@@ -2,8 +2,8 @@ github.com/cenkalti/backoff v2.2.1+incompatible h1:tNowT99t7UNflLxfYYSlKYsBpXdEe
 github.com/cenkalti/backoff v2.2.1+incompatible/go.mod h1:90ReRw6GdpyfrHakVjL/QHaoyV4aDUVVkXQJJJ3NXXM=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/gdt-dev/core v1.10.0 h1:yX0MG2Tt+O34JGDFWcS63LV47lWpizto4HAyR/ugAC0=
-github.com/gdt-dev/core v1.10.0/go.mod h1:Bw8J6kUW0b7MUL8qW5e7qSbxb4SI9EAWQ0a4cAoPVpo=
+github.com/gdt-dev/core v1.10.1 h1:x6ooO1WzW3fS4/ogk+oQFulNCXaRaOxt8jeXOKISlSE=
+github.com/gdt-dev/core v1.10.1/go.mod h1:Bw8J6kUW0b7MUL8qW5e7qSbxb4SI9EAWQ0a4cAoPVpo=
 github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 h1:El6M4kTTCOh6aBiKaUGG7oYTSPP8MxqL4YI3kZKwcP4=
 github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510/go.mod h1:pupxD2MaaD3pAXIBCelhxNneeOaAeabZDe5s4K6zSpQ=
 github.com/kr/pretty v0.3.0 h1:WgNl7dwNpEZ6jJ9k1snq4pZsg7DOEN8hP9Xw0Tsjwk0=
