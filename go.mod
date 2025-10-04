@@ -2,7 +2,7 @@ module github.com/gdt-dev/gdt
 
 go 1.24.3
 
-require github.com/gdt-dev/core v1.10.1
+require github.com/gdt-dev/core v1.10.2
 
 require (
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
