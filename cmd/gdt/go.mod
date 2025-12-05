@@ -3,9 +3,9 @@ module github.com/gdt-dev/gdt/cmd/gdt
 go 1.24.3
 
 require (
-	github.com/gdt-dev/core v1.10.4
-	github.com/gdt-dev/http v1.10.0
-	github.com/gdt-dev/kube v1.10.3
+	github.com/gdt-dev/core v1.12.0
+	github.com/gdt-dev/http v1.11.0
+	github.com/gdt-dev/kube v1.11.0
 	github.com/samber/lo v1.51.0
 	github.com/spf13/cobra v1.10.1
 	github.com/spf13/pflag v1.0.10
@@ -13,6 +13,7 @@ require (
 )
 
 require (
+	github.com/Masterminds/semver/v3 v3.4.0 // indirect
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/emicklei/go-restful/v3 v3.12.2 // indirect
