@@ -3,7 +3,7 @@ module github.com/gdt-dev/gdt/cmd/gdt
 go 1.24.3
 
 require (
-	github.com/gdt-dev/core v1.12.0
+	github.com/gdt-dev/core v1.12.1
 	github.com/gdt-dev/http v1.11.0
 	github.com/gdt-dev/kube v1.11.0
 	github.com/samber/lo v1.51.0

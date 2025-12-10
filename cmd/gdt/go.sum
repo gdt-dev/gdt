@@ -21,8 +21,8 @@ github.com/evanphx/json-patch/v5 v5.9.11 h1:/8HVnzMq13/3x9TPvjG08wUGqBTmZBsCWzjT
 github.com/evanphx/json-patch/v5 v5.9.11/go.mod h1:3j+LviiESTElxA4p3EMKAB9HXj3/XEtnUf6OZxqIQTM=
 github.com/fxamacker/cbor/v2 v2.9.0 h1:NpKPmjDBgUfBms6tr6JZkTHtfFGcMKsw3eGcmD/sapM=
 github.com/fxamacker/cbor/v2 v2.9.0/go.mod h1:vM4b+DJCtHn+zz7h3FFp/hDAI9WNWCsZj23V5ytsSxQ=
-github.com/gdt-dev/core v1.12.0 h1:/Apz/cwEWhkT3jmexIDQmnVbbzzC6iwmgunfpPMyMx0=
-github.com/gdt-dev/core v1.12.0/go.mod h1:hGXsI+PXavvLkm0BQIYKZ1O3yRw86m/VD2xFiNwFR/Y=
+github.com/gdt-dev/core v1.12.1 h1:nW6/+aY42ZpQZaWbKwDQyYt10XXwZj0scV5ca3NMAnY=
+github.com/gdt-dev/core v1.12.1/go.mod h1:hGXsI+PXavvLkm0BQIYKZ1O3yRw86m/VD2xFiNwFR/Y=
 github.com/gdt-dev/http v1.11.0 h1:xEkdLLXbI3wwd61RDcjE2lQdsQ+R0y7ROlbjbBDAe/o=
 github.com/gdt-dev/http v1.11.0/go.mod h1:SHsSUi6+OybfQCY7kSaLc9LaKovXokVjVKaAzVkZvFE=
 github.com/gdt-dev/kube v1.11.0 h1:o6/Dq5ho6LJP1FPxili1jvYuRl+D6HNhzCyXlfmQOpg=
