@@ -3,10 +3,10 @@ module github.com/gdt-dev/gdt/cmd/gdt
 go 1.24.3
 
 require (
-	github.com/gdt-dev/core v1.12.1
+	github.com/gdt-dev/core v1.12.2
 	github.com/gdt-dev/http v1.11.0
-	github.com/gdt-dev/kube v1.11.0
-	github.com/samber/lo v1.51.0
+	github.com/gdt-dev/kube v1.12.2
+	github.com/samber/lo v1.52.0
 	github.com/spf13/cobra v1.10.1
 	github.com/spf13/pflag v1.0.10
 	golang.org/x/term v0.35.0
