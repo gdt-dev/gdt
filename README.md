@@ -527,31 +527,31 @@ test spec also contains these fields:
   `stderr` and `returncode` refer to the corresponding stdout, stderr
   and return/exitcode values. All other string values for `var.from` indicate
   the name of the environment variable to read into the named variable.
-* `assert`: (optional) an object describing the conditions that will be
-  asserted about the test action.
+* `assert`: (optional) object containing assertions to make about the action
+  performed by the test. Failed assertions will not cause the test scenario's
+  execution to stop. To have failed assertions stop the test scenario's
+  execution, use the `require` object.
 * `assert.exit-code`: (optional) an integer with the expected exit code from the
   executed command. The default successful exit code is 0 and therefore you do
   not need to specify this if you expect a successful exit code.
-* `assert.out`: (optional) a [`PipeExpect`][pipeexpect] object containing
+* `assert.out`: (optional) an [`ExpectContains`][expectcontains] object containing
   assertions about content in `stdout`.
-* `assert.out.is`: (optional) a string with the exact contents of `stdout` you expect
-  to get.
-* `assert.out.all`: (optional) a string or list of strings that *all* must be
-  present in `stdout`.
-* `assert.out.any`: (optional) a string or list of strings of which *at
-  least one* must be present in `stdout`.
-* `assert.out.none`: (optional) a string or list of strings of which *none
-  should be present* in `stdout`.
-* `assert.err`: (optional) a [`PipeAssertions`][pipeexpect] object containing
+* `assert.err`: (optional) an [`ExpectContains`][expectcontains] object containing
   assertions about content in `stderr`.
-* `assert.err.is`: (optional) a string with the exact contents of `stderr` you expect
-  to get.
-* `assert.err.all`: (optional) a string or list of strings that *all* must be
-  present in `stderr`.
-* `assert.err.any`: (optional) a string or list of strings of which *at
-  least one* must be present in `stderr`.
-* `assert.err.none`: (optional) a string or list of strings of which *none
-  should be present* in `stderr`.
+* `require`: (optional) object containing assertions to make about the action
+  performed by the test. Failed assertions will cause the test scenario's
+  execution to stop. To have failed assertions not stop the test scenario's
+  execution, use the `assert` object.
+* `require.exit-code`: (optional) an integer with the expected exit code from the
+  executed command. The default successful exit code is 0 and therefore you do
+  not need to specify this if you expect a successful exit code.
+* `require.out`: (optional) an [`ExpectContains`][expectcontains] object containing
+  assertions about content in `stdout`.
+* `require.err`: (optional) an [`ExpectContains`][expectcontains] object containing
+  assertions about content in `stderr`.
+
+[execspec]: https://github.com/gdt-dev/core/blob/2791e11105fd3c36d1f11a7d111e089be7cdc84c/exec/spec.go#L11-L34
+[expectcontains]: https://github.com/gdt-dev/core/blob/main/api/expect.go
 
 [execspec]: https://github.com/gdt-dev/core/blob/023f92ee3468852d1d477df91cf42789e472b3b5/plugin/exec/spec.go#L11-L24
 [pipeexpect]: https://github.com/gdt-dev/core/blob/023f92ee3468852d1d477df91cf42789e472b3b5/plugin/exec/assertions.go#L30-L41
